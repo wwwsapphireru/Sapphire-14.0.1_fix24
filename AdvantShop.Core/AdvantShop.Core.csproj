@@ -176,6 +176,9 @@
       <HintPath>..\packages\Permission.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
+    <Reference Include="Pyrus.ApiClient, Version=5.2.1.0, Culture=neutral, PublicKeyToken=70186976b15df897, processorArchitecture=MSIL">
+      <HintPath>..\packages\Pyrus.ApiClient.5.2.1\lib\net45\Pyrus.ApiClient.dll</HintPath>
+    </Reference>
     <Reference Include="Quartz, Version=2.6.2.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
       <HintPath>..\packages\Quartz.2.6.2\lib\net40\Quartz.dll</HintPath>
     </Reference>
@@ -309,6 +312,7 @@
     <Compile Include="Common\Extensions\Booleans.cs" />
     <Compile Include="Common\Extensions\Floats.cs" />
     <Compile Include="Common\Extensions\HttpClientExtensions.cs" />
+    <Compile Include="Common\Extensions\InplaceExtensions.cs" />
     <Compile Include="Common\Extensions\ObjectFlattener.cs" />
     <Compile Include="Common\Extensions\Objects.cs" />
     <Compile Include="Common\Extensions\ObjectToDictionary.cs" />
@@ -611,6 +615,8 @@
     <Compile Include="Services\Payment\ICloseReceipt.cs" />
     <Compile Include="Services\Payment\OrderDataForClosingReceipt.cs" />
     <Compile Include="Services\Payment\PaymentMethodRegistrationService.cs" />
+    <Compile Include="Services\Payment\PayOnline\FiscalRequestModel.cs" />
+    <Compile Include="Services\Payment\PayOnline\PayOnlineService.cs" />
     <Compile Include="Services\Payment\Robokassa\Receipt.cs" />
     <Compile Include="Services\Payment\Robokassa\Robokassa.ICloseReceipt.cs">
       <DependentUpon>Robokassa.cs</DependentUpon>
@@ -649,6 +655,7 @@
     </Compile>
     <Compile Include="Services\Shipping\Boxberry\DeliveryPoints\DeliveryPointDto.cs" />
     <Compile Include="Services\Shipping\Boxberry\DeliveryPoints\DeliveryPointService.cs" />
+    <Compile Include="Services\Shipping\FixedRate\FixedRateOption.cs" />
     <Compile Include="Services\Shipping\Measoft\DeliveryPoints\DeliveryPointDto.cs" />
     <Compile Include="Services\Shipping\Measoft\DeliveryPoints\DeliveryPointService.cs" />
     <Compile Include="Services\Shipping\Measoft\Measoft.IShippingWithBackgroundMaintenance.cs">
@@ -671,6 +678,7 @@
     <Compile Include="Services\Shipping\Rules\RuleRepository.cs" />
     <Compile Include="Services\Shipping\Rules\RuleService.cs" />
     <Compile Include="Services\Shipping\Rules\RulesExtensions.cs" />
+    <Compile Include="Services\Shipping\RussianPost\RussianPostService.cs" />
     <Compile Include="Services\Shipping\Sdek\DeliveryPoints\DeliveryPointDto.cs" />
     <Compile Include="Services\Shipping\Sdek\DeliveryPoints\DeliveryPointService.cs" />
     <Compile Include="Services\Shipping\Sdek\Sdek.IShippingWithBackgroundMaintenance.cs">

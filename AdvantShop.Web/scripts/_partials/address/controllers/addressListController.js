@@ -324,6 +324,8 @@ function AddressListCtrl(
         account.IsShowName = ctrl.isShowName;
         account.IsMain = ctrl.addressSelected != null ? form.contactId === ctrl.addressSelected.ContactId : false;
 
+        account.IsRequiredAddress = ctrl.isRequiredAddress;//GlorySoft_011
+
         return account;
     };
 

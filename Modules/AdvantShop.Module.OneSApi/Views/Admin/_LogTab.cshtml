@@ -1,0 +1,26 @@
+﻿@using AdvantShop.Core.Common.Extensions
+@model KeyValuePair<int, string[]>
+
+@{ 
+    var gridExtendCtrl = "oneLogs" + Model.Key;
+}
+
+<div class="container-fluid">
+    <div class="form-group row">
+        <div class="col-xs-12">
+            <ui-grid-custom class="grid-properties"
+                            grid-unique-id="@("gridLogs" + Model.Key)"
+                            grid-extend-ctrl="@gridExtendCtrl"
+                            grid-row-identificator="'Filename'"
+                            grid-options="@(gridExtendCtrl + ".gridOptions")"
+                            grid-on-init="@(gridExtendCtrl + ".gridOnInit(grid)")"
+                            grid-search-visible="false"
+                            grid-selection-enabled="false"
+                            grid-params="{folders: '@Model.Value.AggregateString(',')'}"
+                            grid-url="'../OneSAdmin/getLogs'">
+                <ui-grid-custom-footer class="ui-grid-custom-footer" ng-bind="@(gridExtendCtrl + ".grid.gridOptions.TotalString")">
+                </ui-grid-custom-footer>
+            </ui-grid-custom>
+        </div>
+    </div>
+</div>

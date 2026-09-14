@@ -1,0 +1,6 @@
+<div ng-init="shippingTemplate.fireTemplateReady()"><!--GlorySoft_001-->
+    <div data-ng-if="shippingTemplate.shipping.NeedPassport == null && shippingTemplate.isSelected" class="shipping-extend-error error-color">
+        Укажите паспортные данные в разделе <a href="/myaccount#tab=commoninf">Личные данные</a>
+    </div>
+    <input data-ng-if="shippingTemplate.isSelected" class="shipping-extend-input-hidden" type="text" data-ng-model="shippingTemplate.shipping.NeedPassport" required readonly data-validation-input-text="Укажите паспортные данные" />
+</div>

@@ -79,7 +79,28 @@ namespace AdvantShop.Module.YandexSearch
         
         public SearchResult Find(string term)
         {
-            return new YandexSearchService().Find(term);
+            //return new YandexSearchService().Find(term);GlorySoft_010
+
+            //GlorySoft_010
+            var yandexSearch = new YandexSearchService();
+            var found = yandexSearch.Find(term);
+            //if (found.Hits > 0 || found.SearchResultItems.Count > 0)
+            //    return found;
+            if (found == null)
+            {
+                var defaultSearch = new FullSearch.LuceneProductSearch();
+                found = defaultSearch.Find(term);
+            }
+            //else
+            //{
+            //    var ff = found.SearchResultItems;
+            //    //var oids = ProductService.GetProductIdsByOfferIds(ff.Select(x => x.Id).ToList());
+            //    found = f;
+            //    var ids = found.SearchResultItems.Select(x => x.Id);
+            //    found.SearchResultItems.AddRange(ff.Where(x => !ids.Contains(x.Id)));
+            //    found.Hits = found.SearchResultItems.Count;
+            //}
+            return found;
         }
 
         #endregion

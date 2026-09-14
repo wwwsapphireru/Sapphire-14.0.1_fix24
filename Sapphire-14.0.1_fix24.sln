@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvantShop.Core.Test", "Tests\UnitTests\AdvantShop.Core.Test\AdvantShop.Core.Test.csproj", "{2CD64919-B41B-41EC-9CA6-4E88E2FC046A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvantShop.Module.OneSApi", "Modules\AdvantShop.Module.OneSApi\AdvantShop.Module.OneSApi.csproj", "{8A8A0182-D955-4D08-BCCF-F979D1FAEC2B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvantShop.Module.SmsConfirmation", "Modules\AdvantShop.Module.SmsConfirmation\AdvantShop.Module.SmsConfirmation.csproj", "{3A4A9C8F-A9ED-4E0C-BCD1-836A4ECAABA9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvantShop.Module.ShippingPaymentPage", "Modules\AdvantShop.Module.ShippingPaymentPage\AdvantShop.Module.ShippingPaymentPage.csproj", "{2C31D1BA-A076-48EE-B3BA-3FBE8D471EAA}"

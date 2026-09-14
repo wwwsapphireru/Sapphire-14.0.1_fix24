@@ -219,21 +219,26 @@ namespace AdvantShop.Controllers
             if (!CustomerContext.CurrentCustomer.RegistredUser)
                 return Json(null);
 
-            var orders = OrderService.GetCustomerOrderHistory(CustomerContext.CurrentCustomer.Id);
+            var ordershistory = OrderService.GetCustomerOrderHistory(CustomerContext.CurrentCustomer.Id);//GlorySoft_027
+            var orders = ordershistory.Select(x => OrderService.GetOrder(x.OrderID)).ToList()/*GlorySoft_027 OrderService.GetCustomerOrderHistory(CustomerContext.CurrentCustomer.Id)*/;
 
             var customerOrders = from item in orders
                                  select new
                                  {
                                      item.ArchivedPaymentName,
-                                     Status = OrderStatusService.GetOrderStatus(item.StatusID).Hidden ? item.PreviousStatus : item.Status,
+                                     Status = item.OrderStatus/*GlorySoft_027 OrderStatusService.GetOrderStatus(item.StatusID)*/.Hidden ? item.PreviousStatus : item.OrderStatus.StatusName/*GlorySoft_027 Status*/,
                                      item.ShippingMethodName,
                                      OrderDate = item.OrderDate.ToString(SettingsMain.ShortDateFormat),
                                      OrderTime = item.OrderDate.ToString("HH:mm"),
-                                     Sum = PriceFormatService.FormatPrice(item.Sum, item.CurrencyValue, item.CurrencySymbol, item.CurrencyCode, item.IsCodeBefore, null),
-                                     item.OrderNumber,
+                                     //Sum = PriceFormatService.FormatPrice(item.Sum, item.CurrencyValue, item.CurrencySymbol, item.CurrencyCode, item.IsCodeBefore, null),GlorySoft_027
+                                     Sum = PriceFormatService.FormatPrice(item.Sum, item.OrderCurrency.CurrencyValue, item.OrderCurrency.CurrencySymbol, item.OrderCurrency.CurrencyCode, item.OrderCurrency.IsCodeBefore, null),//GlorySoft_027
+                                     item.Number/*GlorySoft_027 OrderNumber*/,
                                      item.Payed,
-                                     item.TrackNumber,
-                                     DeliveryAddress = item.PickPointAddress.IsNullOrEmpty()
+                                     //item.TrackNumber,GlorySoft_027
+                                     TrackNumber = item.ShippingMethod != null ?//GlorySoft_027
+                                         ((item.ShippingMethod?.TrackingUrl ?? "").IsNotEmpty() ?
+                                             string.Format(item.ShippingMethod?.TrackingUrl, item.TrackNumber) : null) : null,
+                                     DeliveryAddress = item.OrderPickPoint == null || item.OrderPickPoint.PickPointAddress/*GlorySoft_027 item.PickPointAddress*/.IsNullOrEmpty()
                                          ? StringHelper.AggregateStrings(", ",
                                              item.OrderCustomer.Country,
                                              item.OrderCustomer.Region,
@@ -244,11 +249,37 @@ namespace AdvantShop.Controllers
                                              item.OrderCustomer.House,
                                              item.OrderCustomer.Structure,
                                              item.OrderCustomer.Apartment)
-                                         : item.PickPointAddress,
+                                         : item.OrderPickPoint.PickPointAddress/*GlorySoft_027 PickPointAddress*/,
                                      DeliveryDate = item.DeliveryDate?.ToString(SettingsMain.ShortDateFormat),
-                                     item.OrderItems
+                                     item.OrderItems,
+
+                                     //GlorySoft_068
+                                     StatusColor = $"#{item.OrderStatus.Color}",
+                                     ProcessType = (int)(item.PaymentMethod != null ? item.PaymentMethod.ProcessType : ProcessType.None),
+                                     Code = item.Code.ToString(),
+                                     item.PaymentMethodId,
+                                     item.PayCode,
+                                     Hash = OrderService.GetBillingLinkHash(item),
+                                     KeepFreeUntil = item.ShippingMethod != null ?
+                                         (!item.OrderStatus.IsCompleted && !item.OrderStatus.IsCanceled ? OrderService.GetOrderAdditionalData(item.OrderID, "KeepFreeUntil") : null) : null,
+                                     PaymentMethodIsOnline = item.PaymentMethod?.ProcessType != null && item.PaymentMethod?.ProcessType != ProcessType.None,
+                                     Canceled = item.OrderStatus?.IsCanceled ?? false,
+                                     IsPaymentBill = item.PaymentMethod?.PaymentKey == "Bill",
+                                     item.ManagerConfirmed,
+                                     Products = from it in OrderService.GetOrderItems(item.OrderID)
+                                                select new
+                                                {
+                                                    it.ProductID,
+                                                    it.ArtNo,
+                                                    it.Name,
+                                                    it.Amount,
+                                                    it.Price,
+                                                    it.Size,
+                                                    it.Color,
+                                                    Photo = it.Photo?.ImageSrcXSmall()
+                                                }
                                  };
-            var totalPrice = orders.Where(item => item.Payed).Sum(item => item.Sum * item.CurrencyValue);
+            var totalPrice = orders.Where(item => item.Payed).Sum(item => item.Sum * item.OrderCurrency.CurrencyValue/*GlorySoft_027 CurrencyValue*/);
             totalPrice = totalPrice / CurrencyService.CurrentCurrency.Rate;
 
             return Json(new

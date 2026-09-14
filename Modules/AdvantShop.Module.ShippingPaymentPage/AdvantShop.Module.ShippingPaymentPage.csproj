@@ -75,6 +75,7 @@
     <Compile Include="Controllers\ShippingPaymentPageAdminController.cs" />
     <Compile Include="Models\SettingsModel.cs" />
     <Compile Include="Services\ShippingPaymentPageRepository.cs" />
+    <Compile Include="Services\ShippingPaymentPageService.cs" />
     <Compile Include="Services\ShippingPaymentPageSettings.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Models\ShippingPaymentModel.cs" />

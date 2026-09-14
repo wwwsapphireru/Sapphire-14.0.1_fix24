@@ -13,17 +13,26 @@ using AdvantShop.Core.Services.Mails;
 using AdvantShop.Handlers.Checkout;
 using AdvantShop.Models.Checkout;
 using AdvantShop.Models.PreOrder;
+using AdvantShop.ViewModel.PreOrder;
+using AdvantShop.CMS;
+using AdvantShop.Core.Services.Localization;
+using AdvantShop.FilePath;
+using System.Web.Mvc;
+using System.Web;
+using AdvantShop.Web.Infrastructure.Extensions;
 
 namespace AdvantShop.Handlers.PreOrderProducts
 {
     public class PreOrderHandler
     {
+        private readonly UrlHelper _urlHelper;//GlorySoft_029
 
         public PreOrderHandler()
         {
+            _urlHelper = new UrlHelper(HttpContext.Current.Request.RequestContext);//GlorySoft_029
         }
 
-        public PreOrderModel Get(PreOrderModel model)
+        public PreOrderViewModel/*GlorySoft_029 PreOrderModel*/ Get(PreOrderViewModel/*GlorySoft_029 PreOrderModel*/ model)
         {
             Offer offer = null;
 
@@ -54,17 +63,60 @@ namespace AdvantShop.Handlers.PreOrderProducts
                 : model.Amount;
             
             model.CanOrderByRequest = offer.IsAvailableForPreOrder(model.Amount);
-           
+
+            //GlorySoft_029
+            model.ManufacturerName = offer.Product.Brand != null ? offer.Product.Brand.Name : string.Empty;
+            model.ManufacturerUrl = offer.Product.Brand != null ? offer.Product.Brand.UrlPath : string.Empty;
+            model.Ratio = offer.Product.Ratio;
+            model.ManualRatio = offer.Product.ManualRatio;
+            model.EnabledReviewsCount = SettingsCatalog.AllowReviews;
+            if (model.EnabledReviewsCount)
+            {
+                var reviewsCount = ReviewService.GetReviewsCount(offer.Product.ProductId, EntityType.Product, SettingsCatalog.ModerateReviews, true);
+                model.ReviewsCount = string.Format("{0} {1}",
+                    reviewsCount.ToString(CultureInfo.InvariantCulture),
+                    Strings.Numerals(reviewsCount,
+                        LocalizationService.GetResource("Product.Reviews0"),
+                            LocalizationService.GetResource("Product.Reviews1"),
+                            LocalizationService.GetResource("Product.Reviews2"),
+                            LocalizationService.GetResource("Product.Reviews5")));
+            }
+            var productPhotoName = string.Empty;
+            if (offer.ColorID != null)
+            {
+                var photo =
+                    PhotoService.GetPhotos(offer.Product.ProductId, PhotoType.Product)
+                        .FirstOrDefault(item => item.ColorID == offer.ColorID);
+
+                if (photo != null)
+                    productPhotoName = photo.PhotoName;
+            }
+            model.ImageSrc =
+                FoldersHelper.GetImageProductPath(ProductImageType.Middle,
+                    string.IsNullOrEmpty(productPhotoName) ? offer.Product.Photo : productPhotoName,
+                    false);
+
+            float optionsPrice = 0;//GlorySoft_029
             if (model.OptionsHash.IsNotEmpty())
             {
                 var listOptions = CustomOptionsService.GetFromJsonHash(model.OptionsHash, offer.Product.Currency.Rate);
                 model.OptionsRendered = OrderService.RenderSelectedOptions(listOptions, offer.Product.Currency);
+                optionsPrice = CustomOptionsService.GetCustomOptionPrice(offer.RoundedPrice, listOptions);//GlorySoft_029
             }
+
+            //GlorySoft_029
+            var priceWithDiscount = PriceService.GetFinalPrice(offer, customer.CustomerGroup, optionsPrice);
+            model.PreparedPrice = PriceFormatService.FormatPrice(offer.RoundedPrice + optionsPrice, priceWithDiscount, offer.Product.Discount, true);
+            model.BreadCrumbs = new List<BreadCrumbs>()
+            {
+                new BreadCrumbs(LocalizationService.GetResource("MainPage"), _urlHelper.AbsoluteRouteUrl("Home")),
+                new BreadCrumbs(LocalizationService.GetResource("PreOrder.Index.Header"), _urlHelper.AbsoluteRouteUrl("PreOrder"))
+            };
 
             return model;
         }
 
-        public bool Send(PreOrderModel model, Offer offer)
+        public bool Send(PreOrderViewModel/*GlorySoft_029 PreOrderModel*/ model, Offer offer)
         {
             var listOptions = new List<EvaluatedCustomOptions>();
             if (model.OptionsHash.IsNotEmpty())

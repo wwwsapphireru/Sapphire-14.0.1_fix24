@@ -1,0 +1,51 @@
+﻿@using AdvantShop.Core.UrlRewriter
+@using AdvantShop.Module.OneSApi
+@{
+    var url = UrlService.GetUrl();
+    var scripts = new List<string>()
+    {
+        url + "modules/" + OneSApi.ModuleStringId + "/content/Scripts/admin/logs/logs.js"
+    };
+    var version = Html.GetModuleVersion(OneSApi.ModuleStringId);
+}
+
+<div data-oc-lazy-load="[@String.Join(",", scripts.Select(x => "'" + x + "?" + version + "'"))]">
+    <div>
+        <div>
+            <div>
+                <uib-tabset active uid="logstab" style="margin: -20px -25px;">
+                    <uib-tab active index="0" heading="Импорт товаров" classes="ng-tab">
+                        <div data-ng-controller="OneLogsCtrl as oneLogs0">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_LogTab.cshtml", new KeyValuePair<int, string[]>(0, new string[] { "ImportProducts" }))
+                        </div>
+                    </uib-tab>
+                    <uib-tab active index="1" heading="Экспорт заказов" classes="ng-tab">
+                        <div data-ng-controller="OneLogsCtrl as oneLogs1">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_LogTab.cshtml", new KeyValuePair<int, string[]>(1, new string[] { "GetOrders" }))
+                        </div>
+                    </uib-tab>
+                    <uib-tab active index="2" heading="Импорт заказов" classes="ng-tab">
+                        <div data-ng-controller="OneLogsCtrl as oneLogs2">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_LogTab.cshtml", new KeyValuePair<int, string[]>(2, new string[] { "ImportOrders" }))
+                        </div>
+                    </uib-tab>
+                    <uib-tab active index="3" heading="Импорт покупателей" classes="ng-tab">
+                        <div data-ng-controller="OneLogsCtrl as oneLogs3">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_LogTab.cshtml", new KeyValuePair<int, string[]>(3, new string[] { "ImportCustomers" }))
+                        </div>
+                    </uib-tab>
+                    <uib-tab active index="4" heading="Экспорт товаров" classes="ng-tab">
+                        <div data-ng-controller="OneLogsCtrl as oneLogs4">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_LogTab.cshtml", new KeyValuePair<int, string[]>(4, new string[] { "ExportProducts" }))
+                        </div>
+                    </uib-tab>
+                    <uib-tab active index="5" heading="Расчет доставки" classes="ng-tab">
+                        <div data-ng-controller="OneLogsCtrl as oneLogs5">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_LogTab.cshtml", new KeyValuePair<int, string[]>(5, new string[] { "CalculateShippings" }))
+                        </div>
+                    </uib-tab>
+                </uib-tabset>
+            </div>
+        </div>
+    </div>
+</div>

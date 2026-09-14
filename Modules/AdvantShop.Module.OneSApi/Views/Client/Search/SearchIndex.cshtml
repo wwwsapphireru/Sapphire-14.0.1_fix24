@@ -1,0 +1,77 @@
+﻿@model AdvantShop.Module.OneSApi.Models.Client.SearchCatalogViewModel
+@{
+    Html.AddAsset("catalogSearch");
+}
+@{
+    var sumFounded = Model.Pager.TotalItemsCount /*GlorySoft_045 + Model.Categories.Categories.Count*/;
+}
+<div class="row col-p-v">
+    <div class="col-xs-3 site-body-aside">
+        <div data-catalog-filter data-url="ones/searchfilter"@*"search/filter"*@@*GlorySoft_045*@
+             data-url-count="search/filterproductCount"
+             data-parameters='{searchQuery : "@Html.AttributeEncode(Model.SearchCatalogModel.Q)", productIds: "@Html.AttributeEncode(Model.Filter.SearchItemsResult.AggregateString(','))"}'></div>@*GlorySoft_045*@
+        @Html.StaticBlock("search_page_leftcolumn")
+    </div>
+    <div class="col-xs-9 site-body-main">
+        <div class="page-title-row catalog-title-row">
+            <div class="catalog-title page-title h2">
+                @(string.IsNullOrWhiteSpace(Model.SearchCatalogModel.Q)
+                    ? T("Search.Index.EnterSearchTerm")
+                      : T("Search.Index.Found", sumFounded, Model.SearchCatalogModel.Q.HtmlEncode()))
+            </div>
+        </div>
+        @Html.SingleBreadCrumb(Model.SearchCatalogModel.Q)
+
+        @Html.StaticBlock("search_page_top")
+        @Html.RenderModules("search_page_top", Model.SearchCatalogModel.Q)
+
+        @*@Html.Partial("~/Views/Catalog/CategoryList.cshtml", Model.Categories)GlorySoft_045*@
+
+        @if (Model.HasProducts)
+        {
+            <div class="row">
+                <div class="col-xs-10">
+                    <div class="row between-xs middle-xs">
+                        @Html.Partial("~/Views/Catalog/Sorting.cshtml", Model.Filter)
+                        <div class="products-view-sort-result">
+                            <span class="products-view-sort-result-text cs-t-3">@T("Catalog.Index.ItemsFound")</span>
+                            <span class="products-view-sort-result-number">@Model.Pager.TotalItemsCount</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-2">
+                    @if (Model.Filter.AllowChangeViewMode)
+                    {
+                        @Html.Action("ChangeMode", "Catalog", new { name = "productViewCatalog", viewMode = Model.Filter.ViewMode })
+                    }
+                </div>
+            </div>
+            <div class="products-view products-view-@Model.Filter.ViewMode products-view-container" data-product-view-mode
+                 data-name="productViewCatalog" data-ng-class="catalog.getViewClass('productViewCatalog')" data-current="@Model.Filter.ViewMode">
+                @Html.Partial("_ProductView", Model.Products)
+            </div>
+            @Html.Paging(Model.Pager)
+        }
+        else if (sumFounded == 0)
+        {
+            <div class="row">
+                <div class="col-xs-12" style="text-align: center;">
+                    @T("Search.Index.NothingFound")
+                </div>
+            </div>
+        }
+
+        @*GlorySoft_045*@
+        @if (!string.IsNullOrWhiteSpace(Model.SearchCatalogModel.Q) && Model.Categories.Categories.Count > 0)
+        { 
+            <div class="page-title-row catalog-title-row">
+                <div class="catalog-title page-title h2">
+                    @T("Search.Index.FoundCategories", Model.Categories.Categories.Count, Model.SearchCatalogModel.Q.HtmlEncode())
+                </div>
+            </div>
+        }
+        @Html.Partial("~/Views/Catalog/CategoryList.cshtml", Model.Categories)
+
+        @Html.StaticBlock("search_page_bottom")
+    </div>
+</div>

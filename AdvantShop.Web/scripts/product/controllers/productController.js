@@ -136,6 +136,8 @@ const ProductCtrl = function (
                 return null;
             }
 
+            ctrl.allowPreOrder = data.AllowPreOrder;//GlorySoft_022
+
             ctrl.data = ctrl.prepareOffers(data);
 
             ctrl.offerSelected = productService.findOfferSelected(data.Offers, data.StartOfferIdSelected);

@@ -70,14 +70,15 @@ namespace AdvantShop.Handlers.User
             AgreeValidate();
             BonusValidate();
             SpamValidate();
+            LocationValidate();//GlorySoft_017
         }
 
         private void Process()
         {
             AddCustomer();
-            Authorize();
+            //Authorize();GlorySoft_033
             AddBonusCart();
-            SendMails();
+            //SendMails();GlorySoft_033
             SetTempData();
             
             ModulesExecuter.Registration(_customer);
@@ -109,6 +110,9 @@ namespace AdvantShop.Handlers.User
             
             if (!string.IsNullOrWhiteSpace(_model.Email) && CustomerService.IsEmailExist(_model.Email))
                 throw new BlException(LocalizationService.GetResource("User.Registration.IsExistCustomerError"));
+
+            if (_model.Email.EndsWith(".com"))//GlorySoft_030
+                throw new BlException(LocalizationService.GetResource("User.Registration.ErrorEmailDotCom"));
         }
 
         private void PasswordValidate()
@@ -135,7 +139,7 @@ namespace AdvantShop.Handlers.User
 
             var standardPhone = StringHelper.ConvertToStandardPhone(HttpUtility.HtmlEncode(_model.Phone));
 
-            if (CustomerService.IsPhoneExist(_model.Phone, standardPhone))
+            if (CustomerService.IsPhoneExist(_model.Phone, standardPhone,/*GlorySoft_030*/ CustomerType.PhysicalEntity) &&/*GlorySoft_030*/ _model.CustomerType.TryParseEnum<CustomerType>() != CustomerType.LegalEntity)
                 throw new BlException(LocalizationService.GetResource("User.Registration.ErrorCustomerPhoneExist"));
 
             if (SettingsAuth.UsePhoneConfirmation 
@@ -186,12 +190,20 @@ namespace AdvantShop.Handlers.User
         private void SpamValidate()
         {
             if (!ModulesExecuter.CheckInfo(
-                    HttpContext.Current, 
-                    ECheckType.Registration, 
-                    _model.Email, 
-                    _model.FirstName, 
+                    HttpContext.Current,
+                    ECheckType.Registration,
+                    _model.Email,
+                    _model.FirstName,
                     phone: _model.Phone))
                 throw new BlException(LocalizationService.GetResource("Common.SpamCheckFailed"));
+        }
+
+        private void LocationValidate()//GlorySoft_017
+        {
+            if (_model.Location == null)
+                throw new BlException(LocalizationService.GetResource("Не указан населенный пункт"));
+            if (_model.Location.CountryId != SettingsMain.SellerCountryId)
+                throw new BlException(LocalizationService.GetResource("Указан некорректный населенный пункт"));
         }
 
         #endregion
@@ -230,10 +242,30 @@ namespace AdvantShop.Handlers.User
                 IsAgreeForPromotionalNewsletter = 
                     SettingsDesign.ShowUserAgreementForPromotionalNewsletter
                         ? _model.UserAgreementForPromotionalNewsletter
-                        : SettingsDesign.SetUserAgreementForPromotionalNewsletterChecked
+                        : SettingsDesign.SetUserAgreementForPromotionalNewsletterChecked,
+
+                Enabled = false//GlorySoft_033
             };
-            
-            CustomerService.InsertNewCustomer(_customer, _model.CustomerFields);
+
+            var newGuid /*GlorySoft_074*/= CustomerService.InsertNewCustomer(_customer, _model.CustomerFields);
+
+            //GlorySoft_033
+            CustomerService.AddContact(new CustomerContact
+            {
+                CustomerGuid = newGuid,
+                Name = new string[] { _customer.LastName, _customer.FirstName, _customer.Patronymic }.AggregateString(" "),
+                IsMain = true,
+                CountryId = SettingsMain.SellerCountryId,
+                Country = Repository.CountryService.GetCountry(SettingsMain.SellerCountryId)?.Name,
+                RegionId = _model.Location.RegionId,
+                Region = _model.Location.Region,
+                City = _model.Location.Name,
+            },
+            newGuid, false);
+            if (_model.CustomerType.TryParseEnum<CustomerType>() == CustomerType.LegalEntity)
+                CustomerService.SetConfirmPhone(CustomerContext.CustomerId.ToString(), _customer.Phone);
+            var regCode = CommonHelper.GenerateRandomString(100);
+            CustomerService.SetRegCode(CustomerContext.CustomerId, regCode);
         }
 
         private void Authorize()
@@ -273,6 +305,24 @@ namespace AdvantShop.Handlers.User
         private void SetTempData()
         {
             _tempData["IsRegisteredNow"] = "true";
+        }
+
+        public void Update(Customer customer, RegistrationModel model)//GlorySoft_033
+        {
+            customer.FirstName = HttpUtility.HtmlEncode(model.FirstName);
+            customer.LastName = HttpUtility.HtmlEncode(model.LastName);
+            customer.Patronymic = HttpUtility.HtmlEncode(model.Patronymic);
+            customer.Phone = HttpUtility.HtmlEncode(model.Phone);
+            customer.StandardPhone = StringHelper.ConvertToStandardPhone(SettingsCheckout.IsShowPhone ? HttpUtility.HtmlEncode(model.Phone) : "");
+
+            CustomerService.UpdateCustomer(customer);
+
+            CustomerService.ChangePassword(customer.Id, model.Password, false);
+
+            var regCode = CustomerService.GetRegCode(customer.Id);
+            if (regCode.IsNullOrEmpty())
+                regCode = CommonHelper.GenerateRandomString(100);
+            CustomerService.SetRegCode(customer.Id, regCode);
         }
 
         #endregion

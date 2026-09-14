@@ -1,0 +1,73 @@
+﻿
+<h3 class="m-b">&nbsp;</h3>
+<div class="container-fluid">
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Общее</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Api key
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <input type="text" ng-model="oneSettings.apiKey" readonly="readonly" class="form-control" />
+        </div>
+    </div>
+
+    @*<div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Размер блока выгрузки заказов
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.itemsPerPage" ng-options="s.label for s in oneSettings.itemsPerPageList track by s.value" class="form-control"></select>
+        </div>
+    </div>*@
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Выгрузка изменений</h3>
+            </div>
+        </div>
+    </div>
+
+    @*<div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Выгружать изменения описаний
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ExportProduct.ExportChangeDescription" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>*@
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Начальная выгрузка</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <button type="button" class="btn btn-sm btn-success" ng-click="oneSettings.exportProductsToFile()">
+                Выгрузить товары в файл
+            </button>
+        </div>
+    </div>
+
+</div>

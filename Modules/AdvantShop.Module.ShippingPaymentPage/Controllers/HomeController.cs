@@ -59,5 +59,30 @@ namespace AdvantShop.Module.ShippingPaymentPage.Controllers
 
             return Json(listProduct, JsonRequestBehavior.AllowGet);
         }
+
+        [HttpPost, ValidateJsonAntiForgeryToken]
+        public JsonResult CheckoutShippingJson(Orders.CheckoutAddress contact, List<PreOrderItem> preorderList = null)//GlorySoft_008
+        {
+            //var current = MyCheckout.Factory(CustomerContext.CustomerId);
+
+            var options = new List<BaseShippingOption>();
+
+            //if (!current.Data.HideShippig)
+            //{
+            options = ShippingPaymentPageService/*current*/.AvailableShippingOptions(contact, preorderList);
+
+            //    if (current.Data.SelectShipping == null || !options.Any(x => x.Id == current.Data.SelectShipping.Id))
+            //        current.Data.SelectShipping = null;
+
+            //    current.UpdateSelectShipping(preorderList, current.Data.SelectShipping, options);
+            //}
+            //else
+            //{
+            //    options.Add(current.Data.SelectShipping);
+            //}
+
+            return Json(new { selectShipping = options.Count > 0 ? options[0] : null/*current.Data.SelectShipping*/, option = options });
+        }
+
     }
 }

@@ -44,3 +44,22 @@
         </help-trigger>
     </div>
 </div>
+
+<div class="form-group row middle-xs">@*GlorySoft_030*@
+    @if (!isMobile)
+    {
+        <div class="flex-grow-n col-fixed-size-md">
+            <label for="WithInsure">@T("Доставка до ТК")</label>
+        </div>
+    }
+    <div class="col-xs-12 col-md-6 relative">
+        <label class="adv-checkbox-label form-label-block">
+            @Html.CheckBoxFor(x => x.ShippingForTK, new { ng_model = "shippingMethod.Params.ShippingForTK", ng_init = "shippingMethod.Params.ShippingForTK=" + Model.ShippingForTK.ToLowerString(), @class = "adv-checkbox-input" })
+            <span class="adv-checkbox-emul" data-e2e="MethodWithInsure"></span>
+            @if (isMobile)
+            {
+                <span>@T("Доставка до ТК")</span>
+            }
+        </label>
+    </div>
+</div>

@@ -51,5 +51,7 @@ namespace AdvantShop.ViewModel.Catalog
         public string Description { get; set; }
 
         //filtering
+
+        public int? SalesType { get; set; }//GlorySoft_016
     }
 }

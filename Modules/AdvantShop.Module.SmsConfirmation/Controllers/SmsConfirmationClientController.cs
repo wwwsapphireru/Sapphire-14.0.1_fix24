@@ -51,11 +51,16 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
                 pageType = "registration";
             }
 
+            if (controllerName == "preorder" && actionName == "index" && SmsConfirmationSettings.RegistrationPageActive)//GlorySoft_009
+            {
+                pageType = "registration";
+            }
+
             return PartialView("~/modules/" + ModuleID + "/Views/Client/_SmsConfirmation.cshtml", pageType);
         }
 
         [HttpGet]
-        public JsonResult GetFormSettings(string pageToRedirect)
+        public JsonResult GetFormSettings(string pageToRedirect,/*GlorySoft_018*/ string pageType)
         {
             if (string.IsNullOrEmpty(pageToRedirect))
                 pageToRedirect = "login";
@@ -66,6 +71,9 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
                 FormContent = SmsConfirmationSettings.FormContent,
                 UseCaptcha = SmsConfirmationSettings.UseCaptcha
             };
+
+            if (pageType == "registration" || pageType == "checkout")//GlorySoft_018
+                settings.FormTitle = "Подтверждение телефона";
 
             string socialLinks = null;
 
@@ -133,9 +141,22 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
             if (string.IsNullOrEmpty(phone) || phone.Contains('_'))
                 return JsonError("Пустой номер телефона");
 
-            var standardPhone = Helpers.StringHelper.ConvertToStandardPhone(phone);
+            var standardPhone = SmsConfirmationService/*GlorySoft_004 Helpers.StringHelper*/.ConvertToStandardPhone(phone);
             if (!standardPhone.HasValue)
                 return JsonError("Введите корректный номер телефона");
+
+            //GlorySoft_004
+            var exist = SmsConfirmationService.GetCustomersByPhone(phone, null, null).Count > 0;
+            var enabled = SmsConfirmationService.GetCustomersByPhone(phone, true, null).Count > 0;
+            var confirmed = SmsConfirmationService.GetCustomersByPhone(phone, true, true).Count > 0;
+            if ((pageType == "registration" || pageType == "checkout") && confirmed)
+                return JsonError("Указанный номер телефона уже используется");
+            else if ((pageType == "login") && !exist)
+                return JsonError(T("SmsConfirmation.Alert.NotFound"));
+            else if ((pageType == "login") && !enabled)
+                return JsonError(T("SmsConfirmation.Alert.EmailNotConfirmed"));
+            else if ((pageType == "login") && !confirmed)
+                return JsonError(T("SmsConfirmation.Alert.PhoneNotConfirmed"));
 
             var activeSmsModule = SmsNotifier.GetActiveSmsModule();
             if (activeSmsModule == null)
@@ -217,7 +238,7 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
                     if (pageType != "login")
                         return JsonOk();
 
-                    var customersByPhone = CustomerService.GetCustomersByPhone(phone);
+                    var customersByPhone = SmsConfirmationService/*GlorySoft_004 CustomerService*/.GetCustomersByPhone(phone, /*GlorySoft_004*/null, null);
                     var customer = customersByPhone.FirstOrDefault(x => !string.IsNullOrEmpty(x.EMail)) 
                                    ?? customersByPhone.FirstOrDefault();
 
@@ -229,7 +250,8 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
                             SmsConfirmationService.UpdateCustomerEmailByCustomerId(customer.Id, customer.EMail);
                         }
 
-                        AuthorizeService.SignIn(customer.EMail, customer.Password, true, true);
+                        if (!AuthorizeService.SignIn(customer.EMail, customer.Password, true, true))/*GlorySoft_004*/
+                            return JsonError("Ошибка при авторизации");//GlorySoft_004
                     }
                     else
                     {

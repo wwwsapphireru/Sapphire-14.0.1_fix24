@@ -1,0 +1,55 @@
+﻿<div class="row m-b-md">
+    <div class="col-xs-12">
+        <div class="ibox" ng-if="oneExportCustomers.IsRun">
+            <div class="ibox-content">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <uib-progressbar max="oneExportCustomers.ProgressTotal" value="oneExportCustomers.ProgressValue">
+                            <span style="color:white; white-space:nowrap;"><span ng-bind="oneExportCustomers.ProgressValue"></span> / <span ng-bind="oneExportCustomers.ProgressTotal"></span></span>
+                        </uib-progressbar>
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <div class="form-group row">
+                        <div class="col-xs-10">
+                            Текущий процесс
+                            <a class="link-decoration-none" ng-href="{{oneExportCustomers.Process}}" ng-bind="oneExportCustomers.ProcessName"></a>
+                        </div>
+                        <div class="col-xs-2" ng-show="true">
+                            <input type="button" ng-click="oneExportCustomers.breakProcess()" class="btn btn-sm btn-success" value="Прервать" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12" ng-if="!oneExportCustomers.IsRun && oneExportCustomers.ExportFileName != null">
+        <div class="form-group row">
+            <div class="col-sm-2">
+                <div class="setting-label-wrap">
+                    Процесс завершен
+                </div>
+            </div>
+            <div class="col-sm-10">
+                <a ng-href="{{oneExportCustomers.ExportFileName}}">Скачать файл экспорта</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="form-group row">
+        <div class="col-xs-12">
+            <ui-grid-custom class="grid-properties"
+                            grid-unique-id="gridCustomers"
+                            grid-extend-ctrl="oneExportCustomers"
+                            grid-row-identificator="'CustomerId'"
+                            grid-options="oneExportCustomers.gridOptions"
+                            grid-on-init="oneExportCustomers.gridOnInit(gridCustomers)"
+                            grid-url="'../OneSAdmin/getCustomerList'">
+                <ui-grid-custom-footer class="ui-grid-custom-footer" ng-bind="oneExportCustomers.grid.gridOptions.TotalString">
+                </ui-grid-custom-footer>
+            </ui-grid-custom>
+        </div>
+    </div>
+</div>

@@ -30,10 +30,14 @@ namespace AdvantShop.Handlers.Checkout
 
         public CheckoutCartModel Get(CheckoutData checkoutData, ShoppingCart cart, float shippingPrice, float paymentCost, Currency currency)
         {
-            var productsPrice = cart.TotalPrice;
+            var productsPrice = cart.Sum(x => x.Price * x.Amount)/*GlorySoft_026 cart.TotalPrice*/;
             var discountOnTotalPrice = cart.DiscountPercentOnTotalPrice;
-            var totalDiscount = cart.TotalDiscount;
-            
+            var totalDiscount = cart.Sum(x => (x.Price - x.PriceWithDiscount) * x.Amount)/*GlorySoft_026 cart.TotalDiscount*/;
+
+            //GlorySoft_026
+            var priceWithDiscount = productsPrice - totalDiscount;
+            var discountOnTotalPriceAmount = (discountOnTotalPrice * priceWithDiscount / 100).RoundPrice(currency);
+
             var bonusPrice = 0f;
             var bonusPlus = 0f;
             var couponPrice = totalDiscount;
@@ -54,7 +58,7 @@ namespace AdvantShop.Handlers.Checkout
             var taxesItems = TaxService.CalculateTaxes(cart, productsPrice - totalDiscount, shippingPrice, shippingTaxType);
             var taxesTotal = taxesItems.Where(tax => !tax.Key.ShowInPrice).Sum(item => item.Value);
 
-            var totalTemp = (productsPrice + shippingPrice + taxesTotal - totalDiscount + paymentCost).RoundPrice(CurrencyService.CurrentCurrency.Rate);
+            var totalTemp = (productsPrice + shippingPrice + taxesTotal - totalDiscount + paymentCost -/*GlorySoft_026*/ discountOnTotalPriceAmount).RoundPrice(CurrencyService.CurrentCurrency.Rate);
             totalTemp = totalTemp > 0 ? totalTemp : 0;
             var totalPrice = totalTemp.FormatPrice();
 
@@ -117,13 +121,21 @@ namespace AdvantShop.Handlers.Checkout
                     Value = paymentCost.FormatPrice()
                 };
 
-            if (discountOnTotalPrice > 0)
+            if (totalDiscount/*GlorySoft_026 discountOnTotalPrice*/ > 0)
                 model.Discount = new CheckoutCartParam()
                 {
+                    //Key = discountOnTotalPrice.ToString(),
+                    //Value = ((cart.TotalPrice - cart.TotalPriceIgnoreDiscount) * discountOnTotalPrice / 100)
+                    //            .RoundPrice(CurrencyService.CurrentCurrency.Rate)
+                    //            .FormatPrice()GlorySoft_026
+                    Value = totalDiscount.FormatPrice()//GlorySoft_026
+                };
+
+            if (discountOnTotalPrice > 0)//GlorySoft_026
+                model.DiscountOnTotalPrice = new CheckoutCartParam()
+                {
                     Key = discountOnTotalPrice.ToString(),
-                    Value = ((cart.TotalPrice - cart.TotalPriceIgnoreDiscount) * discountOnTotalPrice / 100)
-                                .RoundPrice(CurrencyService.CurrentCurrency.Rate)
-                                .FormatPrice()
+                    Value = discountOnTotalPriceAmount.RoundPrice(CurrencyService.CurrentCurrency.Rate).FormatPrice()
                 };
 
             if (cart.Certificate != null)

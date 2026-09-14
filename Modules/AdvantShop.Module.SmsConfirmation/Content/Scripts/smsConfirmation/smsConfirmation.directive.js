@@ -17,7 +17,8 @@
                 scope: {
                     pageType: '@',
                     isMobile: '=',
-                    pageToRedirect: '@'
+                    pageToRedirect: '@',
+                    applyFn: '&'//GlorySoft_018
                 },
                 controller: 'moduleSmsConfirmationCtrl',
                 controllerAs: 'moduleSmsConfirmation',

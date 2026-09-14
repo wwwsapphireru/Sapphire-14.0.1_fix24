@@ -1,0 +1,13 @@
+﻿@model AdvantShop.Module.OneSApi.Models.Client.CategoryFiltering
+<div class="products-view-sort">
+    <span class="products-view-sort-text cs-t-3">@T("Catalog.Sorting.SortBy"):</span>
+    <span class="products-view-sort-select cs-t-1 select-custom icon-down-open-after-abs">
+        @Html.DropDownListFor(x => x.Sorting, Model.Sortings, new
+        {
+            @class = "cs-br-1 cs-t-1",
+            data_catalog_filter_select_sort = "",
+            ng_model = "catalogFilterSort.sorting",
+            ng_change = "catalogFilterSort.sortBy()"
+        })
+    </span>
+</div>

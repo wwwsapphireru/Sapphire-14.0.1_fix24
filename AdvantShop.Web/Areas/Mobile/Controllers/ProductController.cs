@@ -39,11 +39,22 @@ namespace AdvantShop.Areas.Mobile.Controllers
             if (string.IsNullOrWhiteSpace(url))
                 return Error404();
 
+            var isManager = (CustomerContext.CurrentCustomer?.IsAdmin == true || CustomerContext.CurrentCustomer?.IsManager == true || CustomerContext.CurrentCustomer?.IsModerator == true);//GlorySoft_002
+
             var product = ProductService.GetProductByUrl(url);
-            if (product == null || !product.Enabled || !product.CategoryEnabled)
+            if (product == null || (!product.Enabled &&/*GlorySoft_002*/ !isManager) || !product.CategoryEnabled)
                 return Error404();
 
             var model = new GetProductHandler(product, color, size, null).Get();
+
+            if (isManager)//GlorySoft_002
+            {
+                var offer = OfferService.GetMainOffer(product.Offers, product.AllowPreOrder, color, size);
+                var amountByMultiplicity = offer.GetAmountByMultiplicity(product.Multiplicity);
+                var amount = amountByMultiplicity > 0 ? offer.Amount : 0;
+                var isAvailable = offer != null && amountByMultiplicity > 0;
+                model.IsAvailable = isAvailable || product.AllowBuyOutOfStockProducts();
+            }
 
             model.BreadCrumbs =
                 CategoryService.GetParentCategories(product.CategoryId)
@@ -71,7 +82,7 @@ namespace AdvantShop.Areas.Mobile.Controllers
                 price: PriceFormatService.FormatPricePlain(model.FinalPrice, CurrencyService.CurrentCurrency),
                 offerArtNo: offerArtNo.Count > 0 ? string.Join(", ", offerArtNo) : string.Empty,
                 productArtNo: productArtNo);
-            
+
             var tagManager = GoogleTagManagerContext.Current;
             if (tagManager.Enabled)
             {
@@ -86,10 +97,10 @@ namespace AdvantShop.Areas.Mobile.Controllers
 
             var referrer = Request.GetUrlReferrer();
 
-            if (referrer != null 
-                && referrer.AbsolutePath != "/" 
-                && referrer.AbsoluteUri.StartsWith(UrlService.GetUrl()) 
-                && referrer.AbsolutePath != Request.Url.AbsolutePath 
+            if (referrer != null
+                && referrer.AbsolutePath != "/"
+                && referrer.AbsoluteUri.StartsWith(UrlService.GetUrl())
+                && referrer.AbsolutePath != Request.Url.AbsolutePath
                 && referrer.AbsolutePath.ToLower().Contains("/categories/"))
             {
                 model.ReturnUrl = referrer.AbsoluteUri;
@@ -97,7 +108,7 @@ namespace AdvantShop.Areas.Mobile.Controllers
             }
             else if (product.MainCategory != null)
             {
-                model.ReturnUrl = Url.AbsoluteRouteUrl("Category", new {url = product.MainCategory.UrlPath});
+                model.ReturnUrl = Url.AbsoluteRouteUrl("Category", new { url = product.MainCategory.UrlPath });
                 model.UseHistoryApiForBack = false;
             }
 
@@ -126,7 +137,7 @@ namespace AdvantShop.Areas.Mobile.Controllers
                     GlobalStringVariableService.TranslateExpression(
                         SettingsSEO.ProductAdditionalDescription, MetaType.Product, productModel.Product.Name,
                         CategoryService.GetCategory(productModel.Product.CategoryId).Name,
-                        productModel.Product.Brand != null ? productModel.Product.Brand.Name : string.Empty, 
+                        productModel.Product.Brand != null ? productModel.Product.Brand.Name : string.Empty,
                         price: PriceFormatService.FormatPricePlain(productModel.FinalPrice, CurrencyService.CurrentCurrency),
                         tags: productModel.Product.Tags.Select(x => x.Name).ToList().AggregateString(" "),
                         productArtNo: productModel.Product.ArtNo);
@@ -156,7 +167,7 @@ namespace AdvantShop.Areas.Mobile.Controllers
                 ColorId = productModel.ColorId.HasValue ? productModel.ColorId : (productModel.Offer != null ? productModel.Offer.ColorID : null),
                 Offer = productModel.Offer,
             };
-            
+
             model.CarouselPhotoHeight = SettingsPictureSize.SmallProductImageHeight;
             model.CarouselPhotoWidth = SettingsPictureSize.SmallProductImageWidth;
             model.PreviewPhotoHeight = SettingsPictureSize.MiddleProductImageHeight;
@@ -172,7 +183,7 @@ namespace AdvantShop.Areas.Mobile.Controllers
                     : photo.Description;
             }
 
-            
+
             // if (productModel.Offer != null && productModel.Offer.Photo != null) //&& productModel.Offer.Photo.PhotoName.IsNotEmpty())
             // {
             //     model.Photos = model.Photos.OrderBy(x => x.PhotoId == productModel.Offer.Photo.PhotoId).ToList();
@@ -184,7 +195,7 @@ namespace AdvantShop.Areas.Mobile.Controllers
             //             .ThenBy(item => item.PhotoSortOrder)
             //             .ToList();
             // }
-            model.VideosList = product.ProductVideos; 
+            model.VideosList = product.ProductVideos;
             model.Video = product.ProductVideos.FirstOrDefault();
 
             var customLabels = new List<ProductLabel>();
@@ -209,7 +220,7 @@ namespace AdvantShop.Areas.Mobile.Controllers
 
             return PartialView(model);
         }
-        
+
         public ActionResult ProductViewPhoto(ProductPhotoMobileViewModel model)
         {
             return PartialView(model);
@@ -227,31 +238,31 @@ namespace AdvantShop.Areas.Mobile.Controllers
             {
                 Photos = photos,
                 ProductImageType = setting.ProductViewMode == ProductViewMode.Single ? ProductImageType.Middle : ProductImageType.Small,
-                
+
             };
             return PartialView(model);
         }
-       public ActionResult ProductQuickView(int productId, int? color, int? size, string from, int? landingId,
-                                             bool? hideShipping, bool? showLeadButton, int? blockId, bool? showVideo = true, string descriptionMode = "", 
-                                             SettingsDesign.eCartAddTypeButton cartAddType = SettingsDesign.eCartAddTypeButton.Classic, int? offerId = null)
+        public ActionResult ProductQuickView(int productId, int? color, int? size, string from, int? landingId,
+                                              bool? hideShipping, bool? showLeadButton, int? blockId, bool? showVideo = true, string descriptionMode = "",
+                                              SettingsDesign.eCartAddTypeButton cartAddType = SettingsDesign.eCartAddTypeButton.Classic, int? offerId = null)
         {
             try
             {
                 var (model, modelProduct, product, category, offerArtNos) = new ProductQuickViewHandler(
                     productId,
-                    color, 
-                    size, 
-                    from, 
-                    landingId, 
-                    hideShipping, 
-                    showLeadButton, 
-                    blockId, 
-                    showVideo, 
-                    descriptionMode, 
+                    color,
+                    size,
+                    from,
+                    landingId,
+                    hideShipping,
+                    showLeadButton,
+                    blockId,
+                    showVideo,
+                    descriptionMode,
                     cartAddType,
                     offerId
                 ).Execute();
-                
+
                 SetMetaInformation(
                     product.Meta, product.Name, category != null ? category.Name : string.Empty,
                     product.Brand != null ? product.Brand.Name : string.Empty,
@@ -261,7 +272,7 @@ namespace AdvantShop.Areas.Mobile.Controllers
                     productArtNo: product.ArtNo);
 
                 if (modelProduct == null) return PartialView(model);
-                
+
                 return PartialView("ProductQuickViewLanding", modelProduct);
             }
             catch (BlException)

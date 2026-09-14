@@ -129,6 +129,20 @@ namespace AdvantShop.Web.Admin.Handlers.Customers
             sw.Stop();
             model.Elapsed = sw.Elapsed.TotalMilliseconds;
 
+            //GlorySoft_020
+            var hash = CustomerService.GetRegCode(customer.Id);
+            //var c = CustomerService.GetCustomerFromDb(customer.Id);
+            model.Enabled = customer.Enabled;
+            if (!model.Enabled)
+                model.RegConfirmUrl = Core.UrlRewriter.UrlService.GetUrl() + $"confirmregistration/{hash}";
+            else
+                model.PhoneConfirmed = customer.CustomerType == CustomerType.LegalEntity ? true : CustomerService.GetConfirmPhone(customer.Id.ToString());
+            if (CustomerContext.CurrentCustomer?.IsAdmin == true)
+            {
+                var lk = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{customer.EMail}&&{customer.Password}"));
+                model.AccountUrl = Core.UrlRewriter.UrlService.GetUrl() + $"accountforadmin/{lk}";
+            }
+
             return model;
         }
     }

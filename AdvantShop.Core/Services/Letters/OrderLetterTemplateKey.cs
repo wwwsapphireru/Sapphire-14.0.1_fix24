@@ -140,8 +140,11 @@ namespace AdvantShop.Letters
         
         [LetterFormatKey("#RECIPIENT_FIRST_NAME#", Description = "Имя получатель заказа")]
         RecipientFirstName,
-        
+
         [LetterFormatKey("#RECIPIENT_PHONE#", Description = "Номер телефона получатель заказа")]
         RecipientPhone,
+
+        [LetterFormatKey("#GENERATED_COUPON_CODE#", Description = "GENERATED_COUPON_CODE")]
+        GeneratedCouponCode,//GlorySoft_003
     }
 }

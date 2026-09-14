@@ -608,7 +608,7 @@ namespace AdvantShop.Shipping.Sdek.Api
             return AccessTokens[KeyAccessToken];
         }
 
-        private List<Error> GetErrors(object obj)
+        public /*GlorySoft_001 private*/ List<Error> GetErrors(object obj)
         {
             var list = new List<Error>();
             if (obj == null)

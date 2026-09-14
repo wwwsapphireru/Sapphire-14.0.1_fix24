@@ -1,0 +1,35 @@
+﻿@model AdvantShop.Module.OneSApi.Models.Admin.DepotsProductModel
+
+<div class="product-setting">
+    <div id="productTabs">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-12">
+                    <h2 class="inline product-setting-title content-header">
+                        Остатки по филиалам
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            @{ int i = -1; }
+            @foreach (var offer in Model.Amounts)
+            {
+                i++;
+                <div>
+                    <div class="row category-row">
+                        <div class="col-xs-4">
+                            <div>@offer.DepotName</div>
+                        </div>
+                        <div class="col-xs-1 relative">
+                            @*<span class="italic sub">@offer.DepotName</span>*@
+                            @{ var item = Model.Amounts[i]; }
+                            @Html.TextBoxFor(model => model.Amounts[i].Amount, new { @class = "form-control", ng_model = "product.aadDepotsOffers_" + item.DepotId, id = "aadDepotsOffers_" + item.DepotId })
+                            @Html.HiddenFor(model => model.Amounts[i].DepotId, new { id = "aadDepotsOffers_Depot" + item.DepotId })
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

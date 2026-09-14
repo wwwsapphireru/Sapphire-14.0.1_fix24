@@ -37,6 +37,7 @@
         };
 
         ctrl.saveSettings = function () {
+            ctrl.settings.FeedId = ctrl.currentFeed.Id;//GlorySoft_021
             $http.post("../module/Rees46Admin/SaveSettings", ctrl.settings).then(function (response) {
                 var data = response.data;
                 if (data.result === true) {

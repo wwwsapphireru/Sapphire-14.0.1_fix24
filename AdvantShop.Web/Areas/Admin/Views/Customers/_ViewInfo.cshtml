@@ -363,4 +363,57 @@
         </div>
     }
 
+    @*GlorySoft_020*@
+    @if (!Model.Enabled)
+    { 
+        <div class="ibox-content category-content block-additional-parameters-content@(!isMobile ? " p-r-lg" : " m-b-md") border_none block-additional-border-top">
+            <div class="clear">
+                <div class="order__subblock-title view-info__title pull-left">Регистрация не подтверждена</div>
+            </div>
+            <div class="block-additional-parameters-row">
+                <div class="block-additional-parameters-name">
+                    Ссылка для подтверждения регистрации
+                </div>
+                <div class="block-additional-parameters-value">
+                    @Html.TextAreaFor(x => x.RegConfirmUrl, new
+                    {
+                        @class = "form-control",
+                        ng_model = "customer.regConfirmUrl",
+                        ng_init = "customer.regConfirmUrl=" + Model.RegConfirmUrl,
+                        @readonly = "readonly",
+                        rows = 4
+                    })
+                </div>
+            </div>
+        </div>
+    }
+    else if (!Model.PhoneConfirmed)
+    {
+        <div class="ibox-content category-content block-additional-parameters-content@(!isMobile ? " p-r-lg" : " m-b-md") border_none block-additional-border-top">
+            <div class="clear">
+                <div class="order__subblock-title view-info__title pull-left">Телефон не подтвержден</div>
+            </div>
+        </div>
+    }
+    @if (Model.AccountUrl != null)
+    {
+        <div class="ibox-content category-content block-additional-parameters-content@(!isMobile ? " p-r-lg" : " m-b-md") border_none block-additional-border-top">
+            <div class="block-additional-parameters-row">
+                <div class="block-additional-parameters-name">
+                    ЛК
+                </div>
+                <div class="block-additional-parameters-value">
+                    @Html.TextAreaFor(x => x.AccountUrl, new
+                    {
+                        @class = "form-control",
+                        ng_model = "customer.accountUrl",
+                        ng_init = "customer.accountUrl=" + Model.AccountUrl,
+                        @readonly = "readonly",
+                        rows = 4
+                    })
+                </div>
+            </div>
+        </div>
+    }
+
 </div>

@@ -57,9 +57,30 @@ namespace AdvantShop.Controllers
             category = ModulesExecuter.GetVirtualCategory(category);
             categoryModel = (CategoryModel)ModulesExecuter.GetVirtualCategoryModel(categoryModel);
 
-            if (category == null || !category.Enabled || !category.ParentsEnabled)
-                return Error404();
-            
+            //if (category == null || !category.Enabled || !category.ParentsEnabled)GlorySoft_025
+            //    return Error404();
+
+            //GlorySoft_025
+            if (category == null)
+            {
+                Response.Redirect(Url.RouteUrl("CatalogRoot"), false);
+                return new EmptyResult();
+            }
+            if (!category.Enabled || !category.ParentsEnabled)
+            {
+                while (category.CategoryId > 0)
+                {
+                    category = category.ParentCategory;
+                    if (category.Enabled && category.ParentsEnabled)
+                        break;
+                }
+                if (category.ParentCategoryId == 0)
+                {
+                    Response.Redirect(Url.RouteUrl("CatalogRoot"), false);
+                    return new EmptyResult();
+                }
+            }
+
             var indepth = categoryModel.Indepth || category.DisplayChildProducts;
 
             Request.RequestContext.HttpContext.Items["CurrentCategoryId"] = category.CategoryId;
@@ -436,12 +457,12 @@ namespace AdvantShop.Controllers
 
         #region Product list page
 
-        public ActionResult ProductList(EProductOnMain? type, CategoryModel categoryModel, string list)
+        public ActionResult ProductList(EProductOnMain? type, CategoryModel categoryModel, string list,/*GlorySoft_016*/ int? salesType)
         {
             try
             {
                 var (model, meta, title) = new GetProductListHandler(type, categoryModel, list, 
-                        new UrlHelper(HttpContext.Request.RequestContext)).Execute();
+                        new UrlHelper(HttpContext.Request.RequestContext),/*GlorySoft_016*/ salesType).Execute();
                 
                 SetNgController(NgControllers.NgControllersTypes.ProductListCtrl);
                 SetMetaInformation(meta, title, page: categoryModel.Page ?? 1, totalPages: model.Pager != null 
@@ -466,7 +487,7 @@ namespace AdvantShop.Controllers
             return PartialView(model);
         }
 
-        public JsonResult FilterProductList(EProductOnMain type, CategoryModel modelIn, int? list)
+        public JsonResult FilterProductList(EProductOnMain type, CategoryModel modelIn, int? list,/*GlorySoft_016*/ int? salesType)
         {
             if (modelIn.Page != null && modelIn.Page < 0)
                 return Json(null);
@@ -475,12 +496,12 @@ namespace AdvantShop.Controllers
             if (tag != null)
                 modelIn.TagId = tag.Id;
 
-            var paging = new ProductListHandler(type, true, modelIn, list, false).GetForFilter();
+            var paging = new ProductListHandler(type, true, modelIn, list, false,/*GlorySoft_016*/ salesType).GetForFilter();
             var filter = paging.Filter;
 
             var sqlTasks = new List<Task<List<FilterItemModel>>>
             {
-                new FilterSelectCategoryHandler(modelIn.CategoryId ?? 0).GetAsync()
+                new FilterSelectCategoryHandler(modelIn.CategoryId ?? 0,/*GlorySoft_023*/ paging.ProductIds.ToList()).GetAsync()
             };
 
             if (SettingsCatalog.ShowPriceFilter && !SettingsCatalog.HidePrice)
@@ -523,10 +544,10 @@ namespace AdvantShop.Controllers
                         .GetAsync());
             }
 
-            if (SettingsCatalog.ShowPropertiesFilterInProductList)
+            if (SettingsCatalog.ShowPropertiesFilterInProductList &&/*GlorySoft_023*/ (modelIn.CategoryId ?? 0) != 0)
             {
                 sqlTasks.Add(
-                    new FilterPropertyHandler(filter.CategoryId, filter.Indepth, filter.PropertyIds,
+                    new FilterPropertyHandler(modelIn.CategoryId.Value/*GlorySoft_023 filter.CategoryId*/, filter.Indepth, filter.PropertyIds,
                             filter.AvailablePropertyIds, filter.RangePropertyIds, null, type, list)
                         .GetAsync());
             }
@@ -536,7 +557,7 @@ namespace AdvantShop.Controllers
             return Json(resultFilter);
         }
 
-        public JsonResult FilterProductListCount(EProductOnMain type, CategoryModel modelIn, int? list)
+        public JsonResult FilterProductListCount(EProductOnMain type, CategoryModel modelIn, int? list,/*GlorySoft_016*/ int? salesType)
         {
             if (modelIn.Page != null && modelIn.Page < 0)
                 return Json(null);
@@ -546,7 +567,7 @@ namespace AdvantShop.Controllers
             if (tag != null)
                 modelIn.TagId = tag.Id;
 
-            var paging = new ProductListHandler(type, true, modelIn, list, false).GetForFilterProductCount();
+            var paging = new ProductListHandler(type, true, modelIn, list, false,/*GlorySoft_016*/ salesType).GetForFilterProductCount();
             if (paging.Filter == null || paging.Pager == null)
                 return Json(null);
 

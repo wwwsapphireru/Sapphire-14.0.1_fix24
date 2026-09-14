@@ -908,6 +908,37 @@ else
 {
     @Html.HiddenFor(x => x.TypeOfDelivery, new { @class = "form-control", ng_model = "shippingMethod.CargoExtrachargeType" })
 }
+
+<div class="form-group row middle-xs setting__form-group">@*GlorySoft_027*@
+    <div class="flex-grow-n setting__label @(isMobile ? "col-xs-12" : "col-fixed-size-md")">
+        <span>@T("Admin.ShippingMethods.Common.TrackingUrl")</span>
+    </div>
+    <div class="col-xs-12 col-md-6 relative @(isMobile ? "flex middle-xs m-t-sm" : "")">
+        @Html.TextBoxFor(x => x.TrackingUrl, new { @class = "form-control input-alt", ng_model = "shippingMethod.trackingUrl" })
+    </div>
+</div>
+
+@*<div class="form-group row middle-xs setting__form-group">@*GlorySoft_030
+    @if (!isMobile)
+    {
+        <div class="flex-grow-n col-fixed-size-md setting__label">
+            @T("Доставка до ТК")
+        </div>
+    }
+    <div class="col-xs-12 col-md-6 relative @(isMobile ? "flex middle-xs" : "")">
+        <label class="adv-checkbox-label form-label-block">
+            @Html.CheckBoxFor(x => x.ShippingForTK, new { ng_model = "shippingMethod.shippingForTK", ng_init = "shippingMethod.shippingForTK=" + Model.ShippingForTK.ToLowerString(), @class = "adv-checkbox-input" })
+            <span class="adv-checkbox-emul"></span>
+        </label>
+        @if (isMobile)
+        {
+            <label for="Enabled" class="col-xs setting__label">
+                @T("Доставка до ТК")
+            </label>
+        }
+    </div>
+</div>*@
+
 @if (Model.UseDeliveryInterval)
 {
     <div class="form-group row middle-xs">

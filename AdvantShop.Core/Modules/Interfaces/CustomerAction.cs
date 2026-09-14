@@ -64,5 +64,10 @@ namespace AdvantShop.Core.Modules.Interfaces
         {
             return;
         }
+
+        public virtual int GetDefaultCustomerGroup()//GlorySoft_003
+        {
+            return CustomerGroupService.DefaultCustomerGroup;
+        }
     }
 }

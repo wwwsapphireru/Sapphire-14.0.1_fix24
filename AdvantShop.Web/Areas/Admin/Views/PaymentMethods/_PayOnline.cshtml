@@ -41,3 +41,11 @@
     </div>
 </div>
 
+<div class="form-group row middle-xs setting__form-group">@*GlorySoft_001*@
+    <div class="flex-grow-n setting__label @(isMobile ? "col-xs-12" : "col-fixed-size-md")">
+        Отображение для пользователей
+    </div>
+    <div class="col-xs-12 col-md-6 relative setting--m-t-sm">
+        @Html.DropDownListFor(x => x.ShowForNewUsers, Model.ShowForNewUsersTypes, new { ng_model = "paymentMethod.Parameters.ShowForNewUsers", ng_init = "paymentMethod.Parameters.ShowForNewUsers='" + Model.ShowForNewUsers + "'", @class = "form-control input-alt" })
+    </div>
+</div>

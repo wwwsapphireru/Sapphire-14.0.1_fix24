@@ -54,6 +54,7 @@ using Debug = AdvantShop.Diagnostics.Debug;
 using AdvantShop.Core.Services.Attachments;
 using CategoryService = AdvantShop.Catalog.CategoryService;
 using Task = System.Threading.Tasks.Task;
+using AdvantShop.Core.UrlRewriter;
 
 namespace AdvantShop.Orders
 {
@@ -3436,5 +3437,83 @@ namespace AdvantShop.Orders
         }
 
         #endregion OrderStateOfClosingReceipt
+
+        public static string GetOrderPay(Order order, int? paymentMethodId)//GlorySoft_026
+        {
+            //var order =
+            //    orderCode.IsNotEmpty()
+            //        ? OrderService.GetOrderByCode(orderCode)
+            //        : null;
+            // order = order ??
+            //         (model.OrderId.HasValue
+            //             ? OrderService.GetOrder(model.OrderId.Value)
+            //             : null);
+
+            var paymentMethod =
+                paymentMethodId.HasValue
+                        ? PaymentService.GetPaymentMethod(paymentMethodId.Value)
+                        : order?.PaymentMethod;
+
+            if (
+                order == null
+                || order.Payed
+                || order.OrderStatus.IsCanceled
+                || paymentMethod is null
+                || (SettingsCheckout.ManagerConfirmed && !order.ManagerConfirmed)
+               )
+                return null;
+
+            if (paymentMethod is ICreditPaymentMethod creditPaymentMethod
+                && creditPaymentMethod.ActiveCreditPayment
+                && (creditPaymentMethod.MinimumPrice > order.Sum.ConvertCurrency(order.OrderCurrency, paymentMethod.PaymentCurrency ?? order.OrderCurrency)
+                    || creditPaymentMethod.MaximumPrice < order.Sum.ConvertCurrency(order.OrderCurrency, paymentMethod.PaymentCurrency ?? order.OrderCurrency)))
+                return null;
+
+
+            if (paymentMethod.ProcessType == ProcessType.FormPost)
+            {
+                var paymentForm = paymentMethod.GetPaymentForm(order);
+                var url = paymentForm.Url + "?";
+                foreach (var key in paymentForm.InputValues.AllKeys)
+                {
+                    url += string.Format("{0}={1}&", key, System.Web.HttpUtility.UrlEncode(paymentForm.InputValues[key]));
+                }
+                return url.TrimEnd('&');
+            }
+
+            if (paymentMethod.ProcessType == ProcessType.ServerRequest)
+            {
+                return UrlService.GetUrl("checkout/payredirect/" + order.Code);
+            }
+
+            //var viewModel =
+            //    new OrderPayHandler(
+            //            order,
+            //            paymentMethod,
+            //            model.PageWithPaymentButton,
+            //            model.ValidationDisabled)
+            //        .Execute();
+
+            //if (viewModel == null)
+            //    return null;
+
+            ////if (
+            ////    viewModel.ViewPath != null &&
+            ////    ViewEngineCollection.FindPartialView(ControllerContext, viewModel.ViewPath)?.View != null
+            ////    )
+            ////    return PartialView(viewModel.ViewPath, viewModel);
+            ////return PartialView("OrderPay/_Common", viewModel);
+
+            return null;////
+        }
+
+        public static string GetOrderStringColumn(int orderId, string column)//GlorySoft_027
+        {
+            return SQLDataAccess.ExecuteScalar<string>(
+                $"SELECT [{column}] FROM [Order].[Order] WHERE [OrderID] = @OrderId",
+                CommandType.Text,
+                new SqlParameter("@OrderId", orderId));
+        }
+
     }
 }

@@ -1,0 +1,78 @@
+@using AdvantShop.Module.OneSApi
+@{
+    var url = UrlService.GetUrl();
+    var scripts = new List<string>
+    {
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/module-service.js",
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/settings/settings.js",
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/settings/modals/ModalAddEditDepot.js",
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/settings/modals/ModalAddEditShippingMethod.js",
+    };
+    var version = Html.GetModuleVersion(OneSApi.ModuleStringId);
+}
+
+<div data-oc-lazy-load="[@String.Join(",", scripts.Select(x => "'" + x + "?" + version + "'"))]">
+    
+    <div data-ng-controller="OneSettingsCtrl as oneSettings">
+
+        <form name="oneSettingsForm" novalidate="novalidate">
+            <div ng-init="oneSettings.oneSettingsForm=oneSettingsForm">
+
+                <div>
+                    <uib-tabset active uid="settingstab" on-select-batch="oneSettings.floatHeader = tab.heading;">
+                        <uib-tab active index="0" heading="Импорт товаров" classes="ng-tab">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_SettingsProductImport.cshtml")
+                        </uib-tab>
+                        <uib-tab active index="1" heading="Экспорт товаров" classes="ng-tab">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_SettingsProductExport.cshtml")
+                        </uib-tab>
+                        <uib-tab active index="2" heading="Список складов" classes="ng-tab">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_SettingsDepotList.cshtml")
+                        </uib-tab>
+                        <uib-tab active index="3" heading="Экспорт заказов" classes="ng-tab">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_SettingsOrderExport.cshtml")
+                        </uib-tab>
+                        <uib-tab active index="4" heading="Импорт заказов" classes="ng-tab">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_SettingsOrderImport.cshtml")
+                        </uib-tab>
+                        <uib-tab active index="5" heading="Импорт покупателей" classes="ng-tab">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_SettingsCustomersImport.cshtml")
+                        </uib-tab>
+                        <uib-tab active index="6" heading="Методы доставки" classes="ng-tab">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_SettingsShippingMethods.cshtml")
+                        </uib-tab>
+                        <div class="js-not-tabs page-name-block-item-AdditionTypeal">
+                            @*<div class="btn-group m-l-xs">
+                <a href="" class="btn btn-sm btn-success" ng-click="aliCatalog.startProductPost(false)" style="background-color: #2d9cee; border-color: #2d9cee; color: #FFFFFF;">Проверить и выгрузить каталог товаров</a>
+                <button type="button" class="btn btn-sm btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="caret"></span>
+                    <span class="sr-only">@T("Admin.Catalog.Index.Expand")</span>
+                </button>
+                <ul class="dropdown-menu pull-right">
+                    <li class="dropdown-submenu">
+                        <a href="" class="dropdown-menu-link js-menu-link" ng-click="aliCatalog.startCheckCatalog()">
+                            Проверить каталог товаров
+                        </a>
+                    </li>
+                </ul>
+            </div>*@
+                            <div class="btn-group m-l-xs">
+                                @*<ui-modal-trigger class="btn btn-sm btn-success" size="xs-11" data-controller="'ModalOffersSelectvizrCtrl'" data-controller-as="ctrl"
+                                  data-on-close="aliCatalog.addProductsToCategory(result)" ng-show="aliCatalog.selectedCategory.IsLeaf == true"
+                                  template-url="../areas/admin/content/src/_shared/modal/offers-selectvizr/offersSelectvizrModal.html">
+                    <a href="" class="" style="background-color: #2d9cee; border-color: #2d9cee; color: #FFFFFF;">Добавить товары</a>
+                </ui-modal-trigger>*@
+                                @*<a href="" class="btn btn-sm btn-success" ng-show="aliCatalog.selectedCategory.IsLeaf == false" ng-disabled="true" style="border-color: #bbb;">
+                    Добавить товары
+                </a>*@
+                                <button type="submit" class="btn btn-sm btn-success" data-button-validation data-button-validation-success="oneSettings.saveChanges()" ng-disabled="!oneSettingsForm.modified" disabled>
+                                    <i class="fa fa-check"></i> @T("Admin.Save")
+                                </button>
+                            </div>
+                        </div>
+                    </uib-tabset>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

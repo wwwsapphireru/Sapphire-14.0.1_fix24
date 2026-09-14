@@ -1,0 +1,29 @@
+//GlorySoft_015
+
+@import "../_settings.scss";
+@import "../functions/_util.scss";
+
+.preorder-text {
+    padding-bottom: rem-calc(30px);
+    font-size: $font-size-medium;
+}
+
+.preorder-product {
+    margin-left: $margin-value-base;
+    text-align: center;
+}
+
+.preorder-form .form-field-name {
+    font-size: $font-size-medium;
+}
+
+.preorder-success-txt {
+    font-size: $font-size-xmedium;
+    padding: rem-calc(20px) 0.625rem;
+}
+
+.preorder-price-wrap {
+    .price-new, .price-current {
+        font-size: $font-size-xmedium;
+    }
+}

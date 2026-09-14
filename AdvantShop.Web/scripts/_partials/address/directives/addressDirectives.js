@@ -23,6 +23,7 @@ function addressListDirective() {
             requiredValidationEnabled: '<?',
             isGeoMode: '<?',
             isProgress: '<?',
+            isRequiredAddress: '<?'//GlorySoft_011
         },
         controller: 'AddressListCtrl',
         controllerAs: 'addressList',

@@ -1,0 +1,61 @@
+﻿
+<h3 class="m-b">Настройки</h3> 
+<form role="form" name="mSettingsForm" novalidate class="form-inline">
+    <div class="container-fluid">
+
+        <div class="row m-b-md" style="vertical-align: middle; line-height: 34px;">
+            <div class="col-xs-3 text-required">
+                App Key
+            </div>
+            <div class="col-xs-7">
+                <input type="text" class="form-control" ng-model="$ctrl.appKey" style="width: 100%; height: 34px;" />
+            </div>
+        </div>
+        <div class="row m-b-md" style="vertical-align: middle; line-height: 34px;">
+            <div class="col-xs-3">
+                App Secret
+            </div>
+            <div class="col-xs-7">
+                <input type="text" class="form-control" ng-model="$ctrl.appSecret" style="width: 100%; height: 34px;" />
+            </div>
+        </div>
+        <div class="row m-b-md" style="vertical-align: middle; line-height: 34px;">
+            <div class="col-xs-3">
+                Token
+            </div>
+            <div class="col-xs-7">
+                <input type="text" class="form-control" ng-model="$ctrl.sessionKey" style="width: 100%; height: 34px;" ng-readonly="true" />
+            </div>
+            <div class="col-xs-2">
+                <!--<a class="form-control" ng-model="$ctrl.sessionKey" style="width: 100%; height: 34px;" ng-readonly="true">Получить токен</a>-->
+                <a href="{{'https://oauth.aliexpress.com/authorize' + '?response_type=code&sp=ae&client_id=' + $ctrl.appKey + '&redirect_uri=' + $ctrl.redirectUrl}}" 
+                   class="edit link-decoration-none" target="_blank">Получить токен</a>
+            </div>
+        </div>
+
+        <!--<div class="row m-b-md" style="vertical-align: middle; line-height: 34px;">
+        <div class="col-xs-5">
+            Выгружать в качестве артикула товара
+        </div>
+        <div class="col-xs-4 relative">
+            <select ng-model="$ctrl.productIdType" ng-options="s.label for s in $ctrl.productTypes track by s.value" class="form-control" style="width: 100%;"></select>
+            <help-trigger class="ng-cloak help-trigger-icon-abs m-l-xs">
+            </help-trigger>
+        </div>
+    </div>-->
+        <!--<div class="row m-b-md" style="vertical-align: middle; line-height: 34px;">
+        <div class="col-xs-5">
+            Выгружать в качестве артикула модификации
+        </div>
+        <div class="col-xs-4 relative">
+            <select ng-model="$ctrl.offerIdType" ng-options="s.label for s in $ctrl.offerTypes track by s.value" class="form-control" style="width: 100%;"></select>
+            <help-trigger class="ng-cloak help-trigger-icon-abs m-l-xs">
+            </help-trigger>
+        </div>
+    </div>-->
+
+        <div class="m-b-md">
+            <input type="button" ng-click="$ctrl.saveChanges(mSettingsForm)" class="btn btn-sm btn-success" value="Сохранить" />&nbsp;
+        </div>
+    </div>
+</form>

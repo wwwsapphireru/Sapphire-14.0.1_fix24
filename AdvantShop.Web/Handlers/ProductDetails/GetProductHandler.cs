@@ -111,7 +111,7 @@ namespace AdvantShop.Handlers.ProductDetails
                     ? string.Format(
                         " (<div class=\"details-avalable-text inplace-offset inplace-rich-simple inplace-obj\" {1}>{0}</div><div class=\"details-avalable-unit\">{2}</div>)",
                         StockLabelService.GetLabel(amountByMultiplicity),
-                        InplaceExtensions.InplaceOfferAmount(offer.OfferId),
+                        Core.Common.Extensions.InplaceExtensions.InplaceOfferAmount(offer.OfferId),
                         (_product.Unit?.DisplayName).IsNotEmpty() ? "&nbsp" + _product.Unit?.DisplayName : "")
                     : string.Empty,
                 showCountWarehousesWithAvailable

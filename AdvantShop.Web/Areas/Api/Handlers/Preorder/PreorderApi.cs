@@ -11,6 +11,7 @@ using AdvantShop.Core.Services.Catalog;
 using AdvantShop.Handlers.PreOrderProducts;
 using AdvantShop.Helpers;
 using AdvantShop.Models.PreOrder;
+using AdvantShop.ViewModel.PreOrder;
 using AdvantShop.Web.Infrastructure.Handlers;
 
 namespace AdvantShop.Areas.Api.Handlers.Preorder
@@ -61,7 +62,7 @@ namespace AdvantShop.Areas.Api.Handlers.Preorder
             if (!_offer.IsAvailableForPreOrder(amount))
                 throw new BlException(T("PreOrder.Index.CantBeOrdered"));
             
-            var preOrderModel = new PreOrderModel
+            var preOrderModel = new PreOrderViewModel
             {
                 Email = HttpUtility.HtmlDecode(_model.Customer.Email),
                 FirstName = HttpUtility.HtmlDecode(_model.Customer.FirstName),

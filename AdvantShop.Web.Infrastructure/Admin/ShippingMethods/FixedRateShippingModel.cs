@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using AdvantShop.Core.Common.Attributes;
+﻿using AdvantShop.Core.Common.Attributes;
 using AdvantShop.Core.Common.Extensions;
 using AdvantShop.Core.Services.Shipping;
 using AdvantShop.Shipping.FixedRate;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace AdvantShop.Web.Infrastructure.Admin.ShippingMethods
 {
@@ -20,6 +20,12 @@ namespace AdvantShop.Web.Infrastructure.Admin.ShippingMethods
         {
             get { return Params.ElementOrDefault(FixeRateShippingTemplate.DeliveryTime); }
             set { Params.TryAddValue(FixeRateShippingTemplate.DeliveryTime, value.DefaultOrEmpty()); }
+        }
+
+        public bool ShippingForTK//GlorySoft_030
+        {
+            get { return Params.ElementOrDefault(FixeRateShippingTemplate.ShippingForTK).TryParseBool(); }
+            set { Params.TryAddValue(FixeRateShippingTemplate.ShippingForTK, value.ToString()); }
         }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

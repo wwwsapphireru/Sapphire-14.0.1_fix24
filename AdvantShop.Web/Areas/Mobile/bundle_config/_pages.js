@@ -23,6 +23,7 @@ obj.addItem('login', 'login.js');
 obj.addItem('myaccount', 'myaccount.js');
 obj.addItem('news', 'news.js');
 obj.addItem('newsItem', 'newsItem.js');
+obj.addItem('preorder', 'preorder.js');//GlorySoft_015
 obj.addItem('product', 'product.js');
 obj.addItem('productList', 'productList.js');
 obj.addItem('staticPage', 'staticPage.js');

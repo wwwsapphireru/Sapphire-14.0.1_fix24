@@ -155,7 +155,9 @@
     <Content Include="Content\Scripts\radShowNotificationForm\controllers\radShowNFController.js" />
     <Content Include="Content\Scripts\radShowNotificationForm\templates\radShowNotificationFormModal.html" />
     <Content Include="Content\Scripts\radShowNotificationForm\templates\radShowNotificationForm.html" />
+    <Content Include="Content\Scripts\showNotificationForm\controllers\productViewController.js" />
     <Content Include="Content\Scripts\showNotificationForm\controllers\showNFController.js" />
+    <Content Include="Content\Scripts\showNotificationForm\templates\productViewForm.html" />
     <Content Include="Content\Scripts\showNotificationForm\templates\showNotificationFormModal.html" />
     <Content Include="Content\Scripts\showNotificationForm\templates\showNotificationForm.html" />
     <Content Include="Content\Styles\admin-style.css" />
@@ -199,6 +201,7 @@
     <Content Include="Views\Web.config">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Views\Client\_ProductView.cshtml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -116,6 +116,12 @@ namespace AdvantShop.Web.Admin.Models.Customers
         }
 
         public Customer ReferralCustomer { get; set; }
+
+        //GlorySoft_020
+        public bool Enabled { get; set; }
+        public string RegConfirmUrl { get; set; }
+        public bool PhoneConfirmed { get; set; }
+        public string AccountUrl { get; set; }
     }
 
     public class PartnerInfoModel

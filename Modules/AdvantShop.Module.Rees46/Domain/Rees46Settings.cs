@@ -79,5 +79,18 @@ namespace AdvantShop.Module.Rees46.Domain
             get { return ModuleSettingsProvider.GetSettingValue<string>("Url", ModuleStringId)?.TrimEnd('/'); }
             set { ModuleSettingsProvider.SetSettingValue("Url", value, ModuleStringId); }
         }
+
+        public static int FeedId//GlorySoft_021
+        {
+            get { return ModuleSettingsProvider.GetSettingValue<int>("FeedId", ModuleStringId); }
+            set { ModuleSettingsProvider.SetSettingValue("FeedId", value, ModuleStringId); }
+        }
+
+        public static bool Shedule//GlorySoft_021
+        {
+            get { return ModuleSettingsProvider.GetSettingValue<bool>("Shedule", ModuleStringId); }
+            set { ModuleSettingsProvider.SetSettingValue("Shedule", value, ModuleStringId); }
+        }
+
     }
 }

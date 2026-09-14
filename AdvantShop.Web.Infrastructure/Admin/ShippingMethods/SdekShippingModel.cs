@@ -281,5 +281,18 @@ namespace AdvantShop.Web.Infrastructure.Admin.ShippingMethods
         {
             return new List<ValidationResult>();
         }
+
+        //GlorySoft_001
+        public string AdditionalAccounts
+        {
+            get { return Params.ElementOrDefault("AdditionalAccounts"); }
+            set { Params.TryAddValue("AdditionalAccounts", value.DefaultOrEmpty()); }
+        }
+        public int MaxWeight
+        {
+            get { return Params.ElementOrDefault(SdekTemplate.MaxWeight).TryParseInt(0); }
+            set { Params.TryAddValue(SdekTemplate.MaxWeight, (value).ToString()); }
+        }
+
     }
 }

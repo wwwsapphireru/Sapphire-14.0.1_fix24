@@ -29,5 +29,7 @@
         
         public bool IsShowName { get; set; }
         public bool IsMain { get; set; }
+
+        public bool? IsRequiredAddress { get; set; }//GlorySoft_027
     }
 }

@@ -28,6 +28,8 @@ using AdvantShop.SEO;
 using AdvantShop.Core.Services.Localization;
 using AdvantShop.Orders;
 using AdvantShop.ViewCommon;
+using AdvantShop.Core.Services.InplaceEditor;
+using AdvantShop.Handlers.Inplace;
 
 namespace AdvantShop.Controllers
 {
@@ -357,5 +359,15 @@ namespace AdvantShop.Controllers
         [HttpGet]
         public ActionResult GetProductViewButtons(int productId, int offerId) =>
             PartialView("_ProductViewButtons", new GetProductViewButtonsHandler(productId, offerId).Execute());
+
+        [HttpPost, ValidateJsonAntiForgeryToken]
+        [InPlace(RoleKey = RoleAction.Catalog)]
+        public JsonResult InplaceEditorProduct(int id, string content, ProductInplaceField field)//GlorySoft_034
+        {
+            Diagnostics.Debug.Log.Info("InplaceEditorProduct");
+            var model = new InplaceProductHandler().Execute(id, content, field);
+            return Json(model);
+        }
+
     }
 }

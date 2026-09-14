@@ -1,57 +1,47 @@
 <div class="order-history-details">
     <div class="m-b-md">
-        <a
-            href="javascript:void(0)"
-            class="order-history-details__return-order-list-link"
-            data-ng-click="parentScope.changeModeAll();parentScope.resetMode();parentScope.resetOrderNumber()"
-            >{{ ::'Js.Order.ReturnToOrderList' | translate }}</a
-        >
+        <a href="javascript:void(0)"
+           class="order-history-details__return-order-list-link"
+           data-ng-click="parentScope.changeModeAll();parentScope.resetMode();parentScope.resetOrderNumber()">{{ ::'Js.Order.ReturnToOrderList' | translate }}</a>
     </div>
     <div class="row middle-xs">
         <div class="col-xs-7 order-history-details-header">
             <span class="order-history-details-header-selected" data-ng-bind="::('№' + parentScope.orderDetails.Number )"></span>
             <span data-ng-bind="parentScope.orderDetails.StatusName"></span>
             <span data-ng-if="parentScope.orderDetails.Payed">({{ ::'Js.Order.Paied' | translate }})</span>
-            <a
-                href="printorder/{{::parentScope.orderDetails.Code}}"
-                target="_blank"
-                class="icon-print-before link-text-decoration-none order-history-details-print"
-                title="{{ ::'Js.Order.PrintOrder' | translate }}"></a>
+            <a href="printorder/{{::parentScope.orderDetails.Code}}"
+               target="_blank"
+               class="icon-print-before link-text-decoration-none order-history-details-print"
+               title="{{ ::'Js.Order.PrintOrder' | translate }}"></a>
         </div>
         <div class="col-xs-5 text-align-right">
-            <a
-                href="javascript:void(0)"
-                class="cs-l-5"
-                data-ng-if="!parentScope.orderDetails.StatusCancelForbidden"
-                data-ng-click="parentScope.cancelOrder(parentScope.orderDetails.Number)"
-                >{{ ::'Js.Order.CancelOrder' | translate }}</a
-            >
+            <a href="javascript:void(0)"
+               class="cs-l-5"
+               data-ng-if="!parentScope.orderDetails.StatusCancelForbidden"
+               data-ng-click="parentScope.cancelOrder(parentScope.orderDetails.Number)">{{ ::'Js.Order.CancelOrder' | translate }}</a>
         </div>
     </div>
     <span data-ng-bind="parentScope.orderDetails.OrderDate" class="order-history-details-orderdate cs-t-3"></span>
     <div class="row middle-xs" ng-if="parentScope.orderDetails.AllowAddOrderReview">
         <div class="col-xs text-align-left">
-            <input
-                data-order-review
-                order-number="::parentScope.orderDetails.Number"
-                type="button"
-                value="{{ ::(parentScope.orderDetails.OrderReview != null && parentScope.orderDetails.OrderReview.Readonly ? ('Js.Order.MyOrderReview' | translate) : ('Js.Order.OrderReview' | translate)) }}"
-                class="btn btn-small btn-confirm" />
+            <input data-order-review
+                   order-number="::parentScope.orderDetails.Number"
+                   type="button"
+                   value="{{ ::(parentScope.orderDetails.OrderReview != null && parentScope.orderDetails.OrderReview.Readonly ? ('Js.Order.MyOrderReview' | translate) : ('Js.Order.OrderReview' | translate)) }}"
+                   class="btn btn-small btn-confirm" />
         </div>
     </div>
 
-    <div
-        class="order-history-details-info-block"
-        style="margin: 15px 0 0 0"
-        ng-if="parentScope.orderDetails.TrackNumber != null && parentScope.orderDetails.TrackNumber.length > 0">
+    <div class="order-history-details-info-block"
+         style="margin: 15px 0 0 0"
+         ng-if="parentScope.orderDetails.TrackNumber != null && parentScope.orderDetails.TrackNumber.length > 0">
         <span class="order-history-details-info-title">{{ ::'Js.Order.TrackNumber' | translate }}:</span>
         <span data-ng-bind="::parentScope.orderDetails.TrackNumber"></span>
     </div>
 
-    <div
-        class="order-history-details-info"
-        style="margin: 15px 0 0 0"
-        ng-if="parentScope.orderDetails.ShippingHistory && parentScope.orderDetails.ShippingHistory.HistoryOfMovement && parentScope.orderDetails.ShippingHistory.HistoryOfMovement.length">
+    <div class="order-history-details-info"
+         style="margin: 15px 0 0 0"
+         ng-if="parentScope.orderDetails.ShippingHistory && parentScope.orderDetails.ShippingHistory.HistoryOfMovement && parentScope.orderDetails.ShippingHistory.HistoryOfMovement.length">
         <div class="row between-xs">
             <div class="col-xs-12">
                 <div class="order-history-details-info-block">
@@ -61,10 +51,9 @@
                         </div>
                     </div>
 
-                    <div
-                        class="row between-xs"
-                        ng-repeat="item in ::parentScope.orderDetails.ShippingHistory.HistoryOfMovement | orderBy:predicate:reverse track by $index"
-                        ng-show="!$index || parentScope.orderDetails.ShippingHistory.ShowAll">
+                    <div class="row between-xs"
+                         ng-repeat="item in ::parentScope.orderDetails.ShippingHistory.HistoryOfMovement | orderBy:predicate:reverse track by $index"
+                         ng-show="!$index || parentScope.orderDetails.ShippingHistory.ShowAll">
                         <div class="col-xs-6 p-t-xs p-b-xs cs-t-3" data-ng-bind="::item.Name"></div>
                         <div class="col-xs-6 p-t-xs p-b-xs">
                             {{ ::item.DateString }}
@@ -74,12 +63,9 @@
 
                     <div class="row between-xs">
                         <div class="col-xs-12">
-                            <a
-                                href
-                                ng-click="parentScope.orderDetails.ShippingHistory.ShowAll = !parentScope.orderDetails.ShippingHistory.ShowAll"
-                                ng-if="parentScope.orderDetails.ShippingHistory.HistoryOfMovement.length > 1"
-                                >{{ parentScope.orderDetails.ShippingHistory.ShowAll ? ('Js.Order.HideHistory' | translate) : ('Js.Order.ShowAll' | translate) }}</a
-                            >
+                            <a href
+                               ng-click="parentScope.orderDetails.ShippingHistory.ShowAll = !parentScope.orderDetails.ShippingHistory.ShowAll"
+                               ng-if="parentScope.orderDetails.ShippingHistory.HistoryOfMovement.length > 1">{{ parentScope.orderDetails.ShippingHistory.ShowAll ? ('Js.Order.HideHistory' | translate) : ('Js.Order.ShowAll' | translate) }}</a>
                         </div>
                     </div>
                 </div>
@@ -119,9 +105,8 @@
                         </li>
                     </ul>
                 </div>
-                <div
-                    class="order-history-details-info-block"
-                    ng-if="parentScope.orderDetails.OrderRecipient != null && (parentScope.orderDetails.OrderRecipient.FullName || parentScope.orderDetails.OrderRecipient.Phone)">
+                <div class="order-history-details-info-block"
+                     ng-if="parentScope.orderDetails.OrderRecipient != null && (parentScope.orderDetails.OrderRecipient.FullName || parentScope.orderDetails.OrderRecipient.Phone)">
                     <div class="order-history-details-info-title">{{ ::'Js.Order.Recipient' | translate }}:</div>
                     <ul class="order-history-details-info-list">
                         <li class="order-history-details-info-row" ng-if="parentScope.orderDetails.OrderRecipient.FullName">
@@ -135,9 +120,8 @@
                     </ul>
                 </div>
             </div>
-            <div
-                class="col-xs-12 col-sm-6 col-lg"
-                ng-if="::parentScope.orderDetails.ShippingAddress || parentScope.orderDetails.ArchivedShippingName">
+            <div class="col-xs-12 col-sm-6 col-lg"
+                 ng-if="::parentScope.orderDetails.ShippingAddress || parentScope.orderDetails.ArchivedShippingName">
                 <div class="order-history-details-info-block">
                     <div class="order-history-details-info-title">{{ ::'Js.Order.ShippingMethod' | translate }}:</div>
                     <ul class="order-history-details-info-list">
@@ -150,36 +134,27 @@
                         <div class="order-history-details-info-row">
                             {{::parentScope.orderDetails.ShippingAddress}}
                             <div ng-if="parentScope.orderDetails.ShippingHistory && parentScope.orderDetails.ShippingHistory.PointInfo">
-                                <a
-                                    ng-if="parentScope.orderDetails.ShippingHistory.PointInfo.Latitude && parentScope.orderDetails.ShippingHistory.PointInfo.Longitude"
-                                    ng-href="{{ ::'//maps.yandex.ru/?text=' + parentScope.orderDetails.ShippingHistory.PointInfo.Latitude + ', ' + parentScope.orderDetails.ShippingHistory.PointInfo.Longitude}}"
-                                    target="_blank"
-                                    >{{ ::'Js.Order.ShowOnMap' | translate }}</a
-                                >
-                                <a
-                                    ng-if="parentScope.orderDetails.ShippingHistory.PointInfo.Address && !(parentScope.orderDetails.ShippingHistory.PointInfo.Latitude && parentScope.orderDetails.ShippingHistory.PointInfo.Longitude)"
-                                    ng-href="{{ ::'//maps.yandex.ru/?text=' + parentScope.orderDetails.ShippingHistory.PointInfo.Address}}"
-                                    target="_blank"
-                                    >{{ ::'Js.Order.ShowOnMap' | translate }}</a
-                                >
+                                <a ng-if="parentScope.orderDetails.ShippingHistory.PointInfo.Latitude && parentScope.orderDetails.ShippingHistory.PointInfo.Longitude"
+                                   ng-href="{{ ::'//maps.yandex.ru/?text=' + parentScope.orderDetails.ShippingHistory.PointInfo.Latitude + ', ' + parentScope.orderDetails.ShippingHistory.PointInfo.Longitude}}"
+                                   target="_blank">{{ ::'Js.Order.ShowOnMap' | translate }}</a>
+                                <a ng-if="parentScope.orderDetails.ShippingHistory.PointInfo.Address && !(parentScope.orderDetails.ShippingHistory.PointInfo.Latitude && parentScope.orderDetails.ShippingHistory.PointInfo.Longitude)"
+                                   ng-href="{{ ::'//maps.yandex.ru/?text=' + parentScope.orderDetails.ShippingHistory.PointInfo.Address}}"
+                                   target="_blank">{{ ::'Js.Order.ShowOnMap' | translate }}</a>
                                 <ul class="order-history-details-info-list">
                                     <li class="order-history-details-info-row" ng-if="parentScope.orderDetails.ShippingHistory.PointInfo.TimeWork">
                                         <div class="order-history-details-info-name cs-t-3">{{'Js.Order.OpeningHours' | translate}}:</div>
-                                        <div
-                                            class="order-history-details-info-value"
-                                            data-ng-bind-html="::parentScope.orderDetails.ShippingHistory.PointInfo.TimeWork"></div>
+                                        <div class="order-history-details-info-value"
+                                             data-ng-bind-html="::parentScope.orderDetails.ShippingHistory.PointInfo.TimeWork"></div>
                                     </li>
                                     <li class="order-history-details-info-row" ng-if="parentScope.orderDetails.ShippingHistory.PointInfo.Phone">
                                         <div class="order-history-details-info-name cs-t-3">{{'Js.Order.Phone' | translate}}:</div>
-                                        <div
-                                            class="order-history-details-info-value"
-                                            data-ng-bind-html="::parentScope.orderDetails.ShippingHistory.PointInfo.Phone"></div>
+                                        <div class="order-history-details-info-value"
+                                             data-ng-bind-html="::parentScope.orderDetails.ShippingHistory.PointInfo.Phone"></div>
                                     </li>
                                 </ul>
-                                <read-more
-                                    data-max-height="20"
-                                    data-ng-if="parentScope.orderDetails.ShippingHistory.PointInfo.Description"
-                                    data-content="parentScope.orderDetails.ShippingHistory.PointInfo.Description | sanitize"></read-more>
+                                <read-more data-max-height="20"
+                                           data-ng-if="parentScope.orderDetails.ShippingHistory.PointInfo.Description"
+                                           data-content="parentScope.orderDetails.ShippingHistory.PointInfo.Description | sanitize"></read-more>
                             </div>
                         </div>
                     </div>
@@ -190,11 +165,12 @@
                     <div class="order-history-details-info-title">{{ ::'Js.Order.PaymentMethod' | translate }}:</div>
                     <ul class="order-history-details-info-list">
                         <li class="order-history-details-info-row">
-                            <div data-ng-switch="!parentScope.orderDetails.Payed && !parentScope.orderDetails.Canceled">
+                            <div data-ng-switch="!parentScope.orderDetails.Payed && !parentScope.orderDetails.Canceled && parentScope.orderDetails.PaymentMethodIsOnline">
+                                <!--GlorySoft_005-->
                                 <div data-ng-switch-when="true">
                                     <div data-ng-switch="parentScope.orderDetails.Payments.length > 0">
                                         <div data-ng-switch-when="true">
-                                            <div class="vertical-interval-xsmall">
+                                            <!--<div class="vertical-interval-xsmall">
                                                 <span class="select-custom cs-t-4 icon-down-open-after-abs">
                                                     <select
                                                         class="cs-bg-2"
@@ -204,14 +180,14 @@
                                                         data-ng-model="parentScope.orderDetails.paymentSelected"
                                                         data-ng-options="payment.Name for payment in parentScope.orderDetails.Payments"></select>
                                                 </span>
-                                            </div>
-                                            <div
-                                                class="m-t-sm"
-                                                order-pay
-                                                order-code="parentScope.orderDetails.Code"
-                                                payment-method-id="parentScope.orderDetails.paymentSelected.Id"
-                                                page-with-payment-button="myaccount"
-                                                validation-disabled="true"></div>
+                                            </div>GlorySoft_005-->
+                                            {{::parentScope.orderDetails.PaymentMethodName}}<!--GlorySoft_005-->
+                                            <div class="m-t-sm"
+                                                 order-pay
+                                                 order-code="parentScope.orderDetails.Code"
+                                                 payment-method-id="parentScope.orderDetails.paymentSelected.Id"
+                                                 page-with-payment-button="myaccount"
+                                                 validation-disabled="true"></div>
                                         </div>
                                         <div data-ng-switch-default="">
                                             <span data-ng-bind="::'Js.Payment.NoPaymentMethods'|translate"></span>
@@ -249,18 +225,16 @@
                                 <div class="col-xs-9">
                                     <div class="cart-mini-info">
                                         <div class="cart-mini-name" data-ng-switch="parentScope.linkAsQuickview === true">
-                                            <a
-                                                data-ng-switch-default
-                                                href="{{::item.Url}}"
-                                                class="cart-mini-name-link"
-                                                data-ng-bind="::item.Name"
-                                                data-ng-if="item.Url != '' && item.Url != null "></a>
+                                            <a data-ng-switch-default
+                                               href="{{::item.Url}}"
+                                               class="cart-mini-name-link"
+                                               data-ng-bind="::item.Name"
+                                               data-ng-if="item.Url != '' && item.Url != null "></a>
                                             <span data-ng-switch-when="true" class="cart-mini-name-link" data-ng-bind="::item.Name"></span>
                                         </div>
 
-                                        <div
-                                            class="cart-mini-properties"
-                                            data-ng-if="item.ColorName || item.SizeName || (item.CustomOptions != null && item.CustomOptions.length > 0)">
+                                        <div class="cart-mini-properties"
+                                             data-ng-if="item.ColorName || item.SizeName || (item.CustomOptions != null && item.CustomOptions.length > 0)">
                                             <div data-ng-if="item.ColorName">
                                                 <span class="cart-mini-properties-name cs-t-3" data-ng-bind="::(item.ColorHeader + ':')"></span>
                                                 <span class="cart-mini-properties-value" data-ng-bind="::item.ColorName"></span>
@@ -271,9 +245,8 @@
                                             </div>
 
                                             <div data-ng-repeat="option in item.CustomOptions track by $index">
-                                                <span
-                                                    class="cart-mini-properties-name cs-t-3"
-                                                    data-ng-bind="::(option.CustomOptionTitle + (option.OptionTitle ? ':':''))"></span>
+                                                <span class="cart-mini-properties-name cs-t-3"
+                                                      data-ng-bind="::(option.CustomOptionTitle + (option.OptionTitle ? ':':''))"></span>
                                                 <span class="cart-mini-properties-value" data-ng-bind="::(option.OptionTitle)"></span>
                                             </div>
                                         </div>
@@ -298,9 +271,8 @@
                 <div class="cart-mini-result-row" data-ng-if="parentScope.orderDetails.CertificatePrice != '' ">
                     <span class="cart-mini-result-name">{{ ::'Js.Order.Certificate' | translate }}:</span>
                     <b>
-                        <span
-                            class="cart-mini-result-value cart-mini-result-certificate"
-                            data-ng-bind="::parentScope.orderDetails.CertificatePrice"></span>
+                        <span class="cart-mini-result-value cart-mini-result-certificate"
+                              data-ng-bind="::parentScope.orderDetails.CertificatePrice"></span>
                     </b>
                 </div>
                 <div class="cart-mini-result-row" data-ng-if="parentScope.orderDetails.Coupon !='' ">
@@ -348,18 +320,15 @@
 
                 <div class="cart-mini-result-row" data-ng-if="parentScope.orderDetails.AccrueBonuses != null">
                     <span class="cart-mini-result-name" ng-if="parentScope.orderDetails.AccrueBonuses.IsAccrued === true">{{ ::'Js.Order.BonusesToCard' | translate }}</span>
-                    <span
-                        class="cart-mini-result-name"
-                        ng-if="parentScope.orderDetails.AccrueBonuses.IsAccrued === false && parentScope.orderDetails.BonusCardPurchase != null"
-                        ng-bind-html="'Js.Order.BonusesToCardAfterPayment'|translate"></span>
-                    <span
-                        class="cart-mini-result-name"
-                        ng-if="parentScope.orderDetails.AccrueBonuses.IsAccrued === false && parentScope.orderDetails.BonusCardPurchase == null"
-                        ng-bind-html="'Js.Order.BonusesToCardAfter'|translate"></span>
-                    <span
-                        class="cart-mini-result-name"
-                        ng-if="parentScope.orderDetails.AccrueBonuses.IsAccrued === null"
-                        ng-bind-html="'Js.Order.BonusesToCardNeed'|translate"></span>
+                    <span class="cart-mini-result-name"
+                          ng-if="parentScope.orderDetails.AccrueBonuses.IsAccrued === false && parentScope.orderDetails.BonusCardPurchase != null"
+                          ng-bind-html="'Js.Order.BonusesToCardAfterPayment'|translate"></span>
+                    <span class="cart-mini-result-name"
+                          ng-if="parentScope.orderDetails.AccrueBonuses.IsAccrued === false && parentScope.orderDetails.BonusCardPurchase == null"
+                          ng-bind-html="'Js.Order.BonusesToCardAfter'|translate"></span>
+                    <span class="cart-mini-result-name"
+                          ng-if="parentScope.orderDetails.AccrueBonuses.IsAccrued === null"
+                          ng-bind-html="'Js.Order.BonusesToCardNeed'|translate"></span>
                     <span class="cart-mini-result-value" data-ng-bind="parentScope.orderDetails.AccrueBonuses.Bonuses.toFixed(2)"></span>
                 </div>
             </div>
@@ -373,11 +342,11 @@
                 </span>
                 <span class="col-xs-12 col-sm-8">
                     <span class="form-field-input vertical-interval-small">
-                        <textarea class="textarea-small" data-ng-model="parentScope.orderDetails.CustomerComment"></textarea>
+                        <textarea class="textarea-small" data-ng-model="parentScope.orderDetails.CustomerComment" data-ng-readonly="true"></textarea><!--GlorySoft_005-->
                     </span>
                 </span>
             </label>
-            <div class="row">
+            <!--<div class="row">
                 <span class="col-xs-12 col-sm-8 col-sm-offset-4">
                     <span class="form-field-input">
                         <input
@@ -387,7 +356,7 @@
                             data-ng-click="parentScope.changeOrderComment(parentScope.orderDetails.Number, parentScope.orderDetails.CustomerComment)" />
                     </span>
                 </span>
-            </div>
+            </div>GlorySoft_005-->
         </form>
     </div>
     <div class="row p-t-sm" ng-if="parentScope.orderDetails.CustomerOrderAttachments.length > 0 || parentScope.orderDetails.AllowUploadFiles">
@@ -401,18 +370,17 @@
         </div>
         <div class="col-xs-12 col-md-8" ng-if="parentScope.orderDetails.AllowUploadFiles">
             <figure>
-                <button
-                    class="btn btn-xsmall btn-action"
-                    ngf-change="parentScope.selectedFiles($files, $file, $newFiles, $duplicateFiles, $invalidFiles, $event)"
-                    type="button"
-                    ngf-drop
-                    ngf-max-size="15MB"
-                    ngf-select=""
-                    ngf-keep="true"
-                    ngf-pattern="parentScope.orderDetails.AllowedFileExtensions"
-                    ngf-accept="parentScope.orderDetails.AllowedFileExtensions"
-                    ngf-multiple="true"
-                    ladda="parentScope.loadingFiles">
+                <button class="btn btn-xsmall btn-action"
+                        ngf-change="parentScope.selectedFiles($files, $file, $newFiles, $duplicateFiles, $invalidFiles, $event)"
+                        type="button"
+                        ngf-drop
+                        ngf-max-size="15MB"
+                        ngf-select=""
+                        ngf-keep="true"
+                        ngf-pattern="parentScope.orderDetails.AllowedFileExtensions"
+                        ngf-accept="parentScope.orderDetails.AllowedFileExtensions"
+                        ngf-multiple="true"
+                        ladda="parentScope.loadingFiles">
                     <i class="fa fa-upload"></i>&nbsp;&nbsp;<span class="bold">{{ ::'Js.Order.SelectFile' | translate }}</span>
                 </button>
                 <help-trigger class="ng-cloak m-l-xs" use-template="true">

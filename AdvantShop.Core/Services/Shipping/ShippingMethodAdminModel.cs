@@ -246,5 +246,8 @@ namespace AdvantShop.Core.Services.Shipping
             get => Params.ElementOrDefault(ShippingWithIntervalTemplate.OrderProcessingDeadline).TryParseTimeSpan(true);
             set => Params.TryAddValue(ShippingWithIntervalTemplate.OrderProcessingDeadline, value.ToString());
         }
+
+        public string TrackingUrl { get; set; } //GlorySoft_027
+        //public bool ShippingForTK { get; set; } //GlorySoft_030
     }
 }

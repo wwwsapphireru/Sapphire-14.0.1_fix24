@@ -61,5 +61,7 @@ namespace AdvantShop.Models.Catalog
         public string Prop { get; set; }
         
         public List<CatalogFilterPropertyRange> PropertyRanges { get; set; }
+
+        public string/*List<int>*/ ProductIds { get; set; }//GlorySoft_024
     }
 }

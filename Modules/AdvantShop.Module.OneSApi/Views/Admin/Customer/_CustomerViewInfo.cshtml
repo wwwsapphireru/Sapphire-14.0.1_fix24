@@ -1,0 +1,68 @@
+﻿@model AdvantShop.Module.OneSApi.Models.Admin.CustomerViewModel
+
+@{
+    var isMobile = SettingsDesign.IsMobileTemplate;
+}
+
+@if (!Model.Enabled)
+{ 
+    <div class="ibox-content category-content block-additional-parameters-content@(!isMobile ? " p-r-lg" : " m-b-md") border_none block-additional-border-top">
+        <div class="clear">
+            <div class="order__subblock-title view-info__title pull-left">Регистрация не подтверждена</div>
+        </div>
+
+        @*<div class="m-b-xs ng-cloak">
+            <div class="row">
+                <div class="col-lg-5 col-xs-6">Активен</div>
+                <div class="col-lg-7 col-xs-6">
+                    @(Model.Enabled ? "Да" : "Нет")
+                </div>
+            </div>
+        </div>*@
+
+        <div class="block-additional-parameters-row">
+            <div class="block-additional-parameters-name">
+                Ссылка для подтверждения регистрации
+            </div>
+            <div class="block-additional-parameters-value">
+                @Html.TextAreaFor(x => x.RegConfirmUrl, new
+                {
+                    @class = "form-control",
+                    ng_model = "customer.regConfirmUrl",
+                    ng_init = "customer.regConfirmUrl=" + Model.RegConfirmUrl,
+                    @readonly = "readonly",
+                    rows = 4
+                })
+            </div>
+        </div>
+
+    </div>
+}
+else if (!Model.PhoneConfirmed)
+{
+    <div class="ibox-content category-content block-additional-parameters-content@(!isMobile ? " p-r-lg" : " m-b-md") border_none block-additional-border-top">
+        <div class="clear">
+            <div class="order__subblock-title view-info__title pull-left">Телефон не подтвержден</div>
+        </div>
+    </div>
+}
+@if (Model.AccountUrl != null)//GlorySoft_050
+{
+    <div class="ibox-content category-content block-additional-parameters-content@(!isMobile ? " p-r-lg" : " m-b-md") border_none block-additional-border-top">
+        <div class="block-additional-parameters-row">
+            <div class="block-additional-parameters-name">
+                ЛК
+            </div>
+            <div class="block-additional-parameters-value">
+                @Html.TextAreaFor(x => x.AccountUrl, new
+                {
+                    @class = "form-control",
+                    ng_model = "customer.accountUrl",
+                    ng_init = "customer.accountUrl=" + Model.AccountUrl,
+                    @readonly = "readonly",
+                    rows = 4
+                })
+            </div>
+        </div>
+    </div>
+}

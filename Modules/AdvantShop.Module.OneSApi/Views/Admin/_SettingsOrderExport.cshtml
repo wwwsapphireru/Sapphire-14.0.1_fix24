@@ -1,0 +1,156 @@
+﻿
+<h3 class="m-b">&nbsp;</h3>
+<div class="container-fluid">
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Общее</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Api key
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <input type="text" ng-model="oneSettings.apiKey" readonly="readonly" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Выгружать заказы
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.useIn1C" ng-options="s.label for s in oneSettings.useIn1CList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Размер блока выгрузки заказов
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.itemsPerPage" ng-options="s.label for s in oneSettings.itemsPerPageList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Выгрузка изменений</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Выгружать изменения статусов
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ExportOrder.ExportChangeStatus" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Выгружать изменения заказов
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ExportOrder.ExportUpdated" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Выгружать признак оплаты
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ExportOrder.ExportPayed" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Статусы</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Cтатус "Оформление под заказ"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.StatusLead" ng-options="s.label for s in oneSettings.settings.ExportOrder.OrderStatusList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Начальная выгрузка</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <button type="button" class="btn btn-sm btn-success" ng-click="oneSettings.sendOrders()" ng-disabled="oneSettings.sendOrdersFromDate == null || oneSettings.sendOrdersFromDate == ''">
+                Выгрузить заказы за период
+            </button>
+        </div>
+        <div class="col-xs-2 relative">
+            <div class="input-group" ng-flatpickr fp-opts="{dateFormat: 'd.m.Y H:i', startDateFormat:'Y-m-d', wrap: true, enableTime: true}">
+                <span class="flatpickr-custom-wrap">
+                    <input type="text" class="form-control"
+                           ng-flatpickr-input
+                           ng-model="oneSettings.sendOrdersFromDate">
+                    <span class="flatpickr-custom-clear" data-close data-clear><i class="fas fa-times"></i></span>
+                </span>
+                <span class="input-group-addon" data-toggle><i class="fas fa-calendar-alt"></i></span>
+            </div>
+        </div>
+        <div class="col-xs-1 relative" style="text-align:center;">
+            -
+        </div>
+        <div class="col-xs-2 relative">
+            <div class="input-group" ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat:'Y-m-d', wrap: true}">
+                <span class="flatpickr-custom-wrap">
+                    <input type="text" class="form-control"
+                           ng-flatpickr-input
+                           ng-model="oneSettings.sendOrdersToDate">
+                    <span class="flatpickr-custom-clear" data-close data-clear><i class="fas fa-times"></i></span>
+                </span>
+                <span class="input-group-addon" data-toggle><i class="fas fa-calendar-alt"></i></span>
+            </div>
+        </div>
+    </div>
+
+</div>

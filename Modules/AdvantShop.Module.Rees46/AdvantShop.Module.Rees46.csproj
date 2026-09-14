@@ -31,6 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
+    </Reference>
     <Reference Include="log4net, Version=3.2.0.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\log4net.3.2.0\lib\net462\log4net.dll</HintPath>
     </Reference>
@@ -40,6 +46,9 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Quartz, Version=2.6.2.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Quartz.2.6.2\lib\net40\Quartz.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -74,22 +83,35 @@
   <ItemGroup>
     <Compile Include="Controllers\Rees46AdminController.cs" />
     <Compile Include="Controllers\Rees46Controller.cs" />
+    <Compile Include="Domain\ExportXmlJob.cs" />
     <Compile Include="Domain\PartnersApi\Rees46ApiKeys.cs" />
     <Compile Include="Domain\PartnersApi\Rees46Category.cs" />
     <Compile Include="Domain\PartnersApi\Rees46Currency.cs" />
     <Compile Include="Domain\PartnersApi\Rees46PartnerService.cs" />
     <Compile Include="Domain\PartnersApi\Rees46Customer.cs" />
+    <Compile Include="Domain\PartnersApi\Rees46Search.cs" />
     <Compile Include="Domain\PartnersApi\Rees46Shop.cs" />
     <Compile Include="Domain\PartnersApi\ResponsesApi.cs" />
     <Compile Include="Domain\Recomender.cs" />
     <Compile Include="Domain\Rees46Repository.cs" />
     <Compile Include="Domain\TrackItem.cs" />
+    <Compile Include="Handlers\GetExportFeedAdvancedSettingsModel.cs" />
+    <Compile Include="Handlers\GetExportFeedHandler.cs" />
+    <Compile Include="Handlers\GetExportFeedSettings.cs" />
+    <Compile Include="Handlers\StartingExportHandler.cs" />
+    <Compile Include="Models\ExportCategoryModel.cs" />
+    <Compile Include="Models\ExportFeedModel.cs" />
+    <Compile Include="Models\ExportFeedSettingsModel.cs" />
+    <Compile Include="Models\ExportFeedSettingsYandexModel.cs" />
     <Compile Include="Models\RegisterModel.cs" />
     <Compile Include="Models\SettingsModel.cs" />
     <Compile Include="Rees46.cs" />
     <Compile Include="Domain\Rees46Service.cs" />
     <Compile Include="Domain\Rees46Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service\ExportCategoriesService.cs" />
+    <Compile Include="Service\ExportFeedRees46.cs" />
+    <Compile Include="Service\ExportFeedService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="js\lib.js" />
@@ -97,6 +119,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="job_scheduling_data_2_0.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <Content Include="scripts\Admin\Rees46Settings\Rees46Settings.html" />
     <Content Include="scripts\Admin\Rees46Settings\Rees46Settings.js" />

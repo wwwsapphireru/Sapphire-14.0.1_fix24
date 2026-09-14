@@ -92,13 +92,14 @@ namespace AdvantShop.Areas.Mobile.Controllers
         }
 
         [ChildActionOnly]
-        public ActionResult MainPageProducts(ProductViewModel products)
+        public ActionResult MainPageProducts(ProductViewModel products,/*GlorySoft_031*/ int? salesType)
         {
             var model = new MainPageProductsMobileViewModel()
             {
                 Products = products,
-                MainPageCatalogView = SettingsMobile.MainPageCatalogView
-        };
+                MainPageCatalogView = SettingsMobile.MainPageCatalogView,
+                SalesType = salesType//GlorySoft_031
+            };
 
             return PartialView("_MainPageProducts", model);
         }

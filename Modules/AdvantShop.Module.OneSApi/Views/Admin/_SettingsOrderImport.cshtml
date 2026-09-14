@@ -1,0 +1,387 @@
+﻿
+<h3 class="m-b">&nbsp;</h3>
+<div class="container-fluid">
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Общее</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Api key
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <input type="text" ng-model="oneSettings.apiKey" readonly="readonly" class="form-control" />
+        </div>
+    </div>
+
+    @*<div class="form-group row middle-xs">
+            <div class="col-xs-3">
+                <div class="setting-label-wrap">
+                    Создавать новых покупателей из 1С
+                </div>
+            </div>
+            <div class="col-xs-6 relative">
+                <label class="adv-checkbox-label">
+                    <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportOrder.CreateCustomers" />
+                    <span class="adv-checkbox-emul"></span>
+                </label>
+            </div>
+        </div>*@
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Обновление</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять статус
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportOrder.UpdateStatus" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять признак оплаты
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportOrder.UpdatePayed" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    @*<div class="form-group row middle-xs">
+            <div class="col-xs-3">
+                <div class="setting-label-wrap">
+                    Обновлять валюту
+                </div>
+            </div>
+            <div class="col-xs-6 relative">
+                <label class="adv-checkbox-label">
+                    <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportOrder.UpdateCurrency" />
+                    <span class="adv-checkbox-emul"></span>
+                </label>
+            </div>
+        </div>*@
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять комментарий
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportOrder.UpdateAdminComment" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять трек-номер
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportOrder.UpdateTracking" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    @*<div class="form-group row middle-xs">
+            <div class="col-xs-3">
+                <div class="setting-label-wrap">
+                    Обновлять контакты
+                </div>
+            </div>
+            <div class="col-xs-1 relative">
+                <label class="adv-checkbox-label">
+                    <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportOrder.UpdateOrderCustomer" ng-change="oneSettings.updateOrderCustomer_change()" />
+                    <span class="adv-checkbox-emul"></span>
+                </label>
+            </div>
+            <div class="col-xs-2 relative">
+                <div class="setting-label-wrap">
+                    Оюбновлять покупателя
+                </div>
+            </div>
+            <div class="col-xs-3 relative">
+                <label class="adv-checkbox-label">
+                    <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportOrder.UpdateCustomer" ng-disabled="oneSettings.settings.ImportOrder.UpdateOrderCustomer != true" />
+                    <span class="adv-checkbox-emul"></span>
+                </label>
+            </div>
+        </div>*@
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять состав заказа
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportOrder.UpdateItems" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Статусы</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Cтатус "Подтвержден"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.StatusConfirmed" ng-options="s.label for s in oneSettings.settings.ImportOrder.OrderStatusList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Cтатус "Комплектуется"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.StatusBuilding" ng-options="s.label for s in oneSettings.settings.ImportOrder.OrderStatusList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Cтатус "Передан в доставку"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.StatusShipped" ng-options="s.label for s in oneSettings.settings.ImportOrder.OrderStatusList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Cтатус "Готов к выдаче"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.StatusReady" ng-options="s.label for s in oneSettings.settings.ImportOrder.OrderStatusList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Cтатус "Получите на складе"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.StatusReadyAtStore" ng-options="s.label for s in oneSettings.settings.ImportOrder.OrderStatusList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Cтатус "Получен"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.StatusDone" ng-options="s.label for s in oneSettings.settings.ImportOrder.OrderStatusList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Cтатус "Требуется уточнение"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.StatusWaiting" ng-options="s.label for s in oneSettings.settings.ImportOrder.OrderStatusList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Cтатус "Отменен"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.StatusCancelled" ng-options="s.label for s in oneSettings.settings.ImportOrder.OrderStatusList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Дополнительно</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Метод доставки по умолчанию из 1С
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.ShippingUnknown" ng-options="s.label for s in oneSettings.settings.ImportOrder.ShippingList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                <div class="setting-label-wrap">
+                    Метод доставки "Доставка до ТК"
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.ShippingForTK" ng-options="s.label for s in oneSettings.settings.ImportOrder.ShippingList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Категория триггеров для подписи менеджера
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.triggerCategoryId" ng-options="s.label for s in oneSettings.triggerCategoryList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Минимальные габариты, мм (ДхШхВ)
+            </div>
+        </div>
+        <div class="col-xs-1 relative">
+            <input type="text" ng-model="oneSettings.settings.ImportOrder.MinLength" class="form-control" />
+        </div>
+        <div class="col-xs-1 relative" style="text-align:center;">
+            X
+        </div>
+        <div class="col-xs-1 relative">
+            <input type="text" ng-model="oneSettings.settings.ImportOrder.MinWidth" class="form-control" />
+        </div>
+        <div class="col-xs-1 relative" style="text-align:center;">
+            X
+        </div>
+        <div class="col-xs-1 relative">
+            <input type="text" ng-model="oneSettings.settings.ImportOrder.MinHeight" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Загрузка из файла</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <button type="button" class="btn btn-sm btn-success" ng-click="oneSettings.importFromFile('ImportOrdersFromFile')" ng-disabled="oneSettings.file == null">
+                Загрузить данные
+            </button>
+        </div>
+        <div class="col-xs-6 relative">
+            <a for="file" class="m-b-md" ngf-select="" ngf-change="oneSettings.selectFile($file)" ngf-accept="'.json'" style="vertical-align: initial; font-style:italic;">
+                {{oneSettings.selectFileCaption}}
+            </a>
+        </div>
+    </div>
+
+    <div class="row m-b-md">
+        <div class="col-xs-12">
+            <div class="ibox" ng-if="oneSettings.IsRun">
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <uib-progressbar max="oneSettings.ProgressTotal" value="oneSettings.ProgressValue">
+                                <span style="color:white; white-space:nowrap;"><span ng-bind="oneSettings.ProgressValue"></span> / <span ng-bind="oneSettings.ProgressTotal"></span></span>
+                            </uib-progressbar>
+                        </div>
+                    </div>
+                    <div class="container-fluid">
+                        <div class="form-group row">
+                            <div class="col-xs-10">
+                                Текущий процесс
+                                <a class="link-decoration-none" ng-href="{{oneSettings.Process}}" ng-bind="oneSettings.ProcessName"></a>
+                            </div>
+                            <div class="col-xs-2" ng-show="true">
+                                <input type="button" ng-click="oneSettings.breakProcess()" class="btn btn-sm btn-success" value="Прервать" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-fluid" ng-if="!oneSettings.IsRun">
+                        <div class="form-group row">
+                            <div class="col-sm-12">
+                                <div class="setting-label-wrap">
+                                    Процесс завершен
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

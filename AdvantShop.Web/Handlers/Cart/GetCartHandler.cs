@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Web;
@@ -55,49 +56,55 @@ namespace AdvantShop.Handlers.Cart
         {
             var cartProducts =
                 (from item in _cart
-                    let product = item.Offer.Product
-                    select new CartItemModel()
-                    {
-                        OfferId = item.OfferId,
-                        ProductId = product.ProductId,
-                        Sku = item.Offer.ArtNo,
-                        Name = product.Name,
-                        Link = _urlHelper.AbsoluteRouteUrl("Product", new {url = product.UrlPath}),
-                        Amount = item.Amount,
-                        Price = item.Price.FormatPrice(),
-                        PriceWithDiscount = item.PriceWithDiscount.FormatPrice(),
-                        Discount = item.Discount,
-                        DiscountText = item.Discount.GetText(),
-                        Cost = PriceService.SimpleRoundPrice(item.PriceWithDiscount * item.Amount).FormatPrice(),
-                        CostWithoutDiscount = PriceService.SimpleRoundPrice(item.Price * item.Amount).FormatPrice(),
-                        PhotoPath = item.Offer.PhotoByColour.ImageSrcXSmall(),
-                        PhotoSmallPath = item.Offer.PhotoByColour.ImageSrcSmall(),
-                        PhotoMiddlePath = item.Offer.PhotoByColour.ImageSrcMiddle(),
-                        PhotoAlt = product.Name,
-                        ShoppingCartItemId = item.ShoppingCartItemId,
-                        SelectedOptions =
-                            CustomOptionsService.DeserializeFromXml(item.AttributesXml, product.Currency.Rate),
-                        AttributesXml = item.AttributesXml,
-                        ColorName = item.Offer.Color?.ColorName,
-                        SizeName = item.Offer.SizeForCategory?.GetFullName(),
-                        Avalible = ShoppingCartService.GetAvailableState(item, _cart),
-                        AvailableAmount = item.Offer.Amount,
-                        MinAmount = product.GetMinAmount(),
-                        MaxAmount = item.Offer.GetMaxAvailableAmount(),
-                        Multiplicity = product.Multiplicity > 0 ? product.Multiplicity : 1,
-                        FrozenAmount = item.FrozenAmount,
-                        IsGift = item.IsGift,
-                        Unit = product.Unit?.DisplayName,
-                        PriceRuleName = item.Offer.PriceRule?.Name,
-                        BriefDescription = item.Offer.Product.GetProductBriefDescriptionFormatted(),
-                        InWishlist = ShoppingCartService.CurrentWishlist.Any(x => x.OfferId == item.OfferId)
-                    }).ToList();
+                 let product = item.Offer.Product
+                 let tax = Taxes.TaxService.GetTax(product.TaxId ?? 0)//GlorySoft_006
+                 select new CartItemModel()
+                 {
+                     OfferId = item.OfferId,
+                     ProductId = product.ProductId,
+                     Sku = item.Offer.ArtNo,
+                     Name = product.Name,
+                     Link = _urlHelper.AbsoluteRouteUrl("Product", new { url = product.UrlPath }),
+                     Amount = item.Amount,
+                     Price = item.Price.FormatPrice(),
+                     PriceWithDiscount = item.PriceWithDiscount.FormatPrice(),
+                     Discount = item.Discount,
+                     DiscountText = item.Discount.GetText(),
+                     Cost = PriceService.SimpleRoundPrice(item.PriceWithDiscount * item.Amount).FormatPrice(),
+                     CostWithoutDiscount = PriceService.SimpleRoundPrice(item.Price * item.Amount).FormatPrice(),
+                     PhotoPath = item.Offer.PhotoByColour.ImageSrcXSmall(),
+                     PhotoSmallPath = item.Offer.PhotoByColour.ImageSrcSmall(),
+                     PhotoMiddlePath = item.Offer.PhotoByColour.ImageSrcMiddle(),
+                     PhotoAlt = product.Name,
+                     ShoppingCartItemId = item.ShoppingCartItemId,
+                     SelectedOptions =
+                         CustomOptionsService.DeserializeFromXml(item.AttributesXml, product.Currency.Rate),
+                     AttributesXml = item.AttributesXml,
+                     ColorName = item.Offer.Color?.ColorName,
+                     SizeName = item.Offer.SizeForCategory?.GetFullName(),
+                     Avalible = ShoppingCartService.GetAvailableState(item, _cart),
+                     AvailableAmount = item.Offer.Amount,
+                     MinAmount = product.GetMinAmount(),
+                     MaxAmount = item.Offer.GetMaxAvailableAmount(),
+                     Multiplicity = product.Multiplicity > 0 ? product.Multiplicity : 1,
+                     FrozenAmount = item.FrozenAmount,
+                     IsGift = item.IsGift,
+                     Unit = product.Unit?.DisplayName,
+                     PriceRuleName = item.Offer.PriceRule?.Name,
+                     BriefDescription = item.Offer.Product.GetProductBriefDescriptionFormatted(),
+                     InWishlist = ShoppingCartService.CurrentWishlist.Any(x => x.OfferId == item.OfferId),
 
-            var totalPrice = _cart.TotalPrice;
-            var totalDiscount = _cart.TotalDiscount;
+                     //GlorySoft_006
+                     PriceValue = item.PriceWithDiscount,
+                     Tax = tax != null ? new Taxes.OrderTax { TaxId = tax.TaxId, Name = tax.Name, Rate = tax.Rate, Sum = (float)Math.Round(item.PriceWithDiscount * item.Amount * tax.Rate / (100 + tax.Rate), 2) } : null
+                 }).ToList();
+
+            var totalPrice = _cart.Sum(x => x.Price * x.Amount);/*GlorySoft_006 _cart.TotalPrice;*/
+            var totalDiscount = _cart.Sum(x => (x.Price - x.PriceWithDiscount) * x.Amount);/*GlorySoft_006 _cart.TotalDiscount;*/
             var priceWithDiscount = totalPrice - totalDiscount;
             var totalItems = _cart.TotalItems;
             var discountOnTotalPrice = _cart.DiscountPercentOnTotalPrice;
+            var discountOnTotalPriceAmount = (discountOnTotalPrice * priceWithDiscount / 100).RoundPrice(null);//GlorySoft_006
 
             var count = string.Format("{0} {1}",
                 totalItems == 0 ? "" : totalItems.ToString(CultureInfo.InvariantCulture),
@@ -128,6 +135,19 @@ namespace AdvantShop.Handlers.Cart
             string isValidCart = ShoppingCartService.IsValidCart(_cart, totalItems, totalPrice);
             var isDefaultCustomerGroup = CustomerContext.CurrentCustomer.CustomerGroup.CustomerGroupId == CustomerGroupService.DefaultCustomerGroup;
 
+            //GlorySoft_006
+            var taxes = new List<Taxes.OrderTax>();
+            foreach (var item in cartProducts.Where(x => x.Tax != null))
+            {
+                var tax = taxes.FirstOrDefault(x => x.TaxId == item.Tax.TaxId);
+                if (tax == null)
+                {
+                    tax = new Taxes.OrderTax { TaxId = item.Tax.TaxId, Name = item.Tax.Name, Rate = item.Tax.Rate, Sum = 0 };
+                    taxes.Add(tax);
+                }
+                tax.Sum += item.Tax.Sum;
+            }
+
             var model = new CartModel
             {
                 CartProducts = cartProducts,
@@ -148,18 +168,29 @@ namespace AdvantShop.Handlers.Cart
                 EnablePhoneMask = SettingsMain.EnablePhoneMask,
 
                 TotalProductPrice = totalPrice.FormatPrice(),
-                TotalPrice = priceWithDiscount > 0 ? priceWithDiscount.FormatPrice() : 0F.FormatPrice(),
+                TotalPrice = (priceWithDiscount - discountOnTotalPriceAmount) > 0 ? (priceWithDiscount - discountOnTotalPriceAmount).FormatPrice() : 0F.FormatPrice(),/*GlorySoft_006 priceWithDiscount > 0 ? priceWithDiscount.FormatPrice() : 0F.FormatPrice(),*/
 
                 DiscountPrice =
-                    discountOnTotalPrice > 0 && totalPrice - _cart.TotalPriceIgnoreDiscount > 0
-                        ? PriceFormatService.FormatDiscountPercent(totalPrice - _cart.TotalPriceIgnoreDiscount, discountOnTotalPrice, 0, true)
+                    totalDiscount/*GlorySoft_006 discountOnTotalPrice > 0 && totalPrice - _cart.TotalPriceIgnoreDiscount*/ > 0
+                        ? PriceFormatService.FormatDiscountPercent(totalPrice, 0, totalDiscount, true)/*GlorySoft_006 PriceFormatService.FormatDiscountPercent(totalPrice - _cart.TotalPriceIgnoreDiscount, discountOnTotalPrice, 0, true)*/
                         : null,
+
+                //GlorySoft_006
+                DiscountOnTotalPrice = discountOnTotalPrice > 0 ? discountOnTotalPrice.ToString() : null,
+                DiscountOnTotalPriceAmount = discountOnTotalPrice > 0
+                    ? PriceFormatService.FormatDiscountPercent(priceWithDiscount, discountOnTotalPrice, 0, true)
+                    : null,
 
                 Certificate = _cart.Certificate?.Sum.FormatPrice(),
                 CertificateCode = _cart.Certificate?.CertificateCode,
                 MobileIsFullCheckout = SettingsMobile.IsFullCheckout && showConfirmButtons,
                 IsShowUnits = SettingsCatalog.ShowUnitsInCatalog,
-                IsWishListVisibility = SettingsDesign.WishListVisibility
+                IsWishListVisibility = SettingsDesign.WishListVisibility,
+
+                //GlorySoft_006
+                TotalWeight = string.Format("{0} {1}", _cart.Where(x => x.Offer != null).Sum(x => x.Offer.GetWeight() * x.Amount).ToString("F3"), LocalizationService.GetResource("Product.ProductInfo.Kg")),
+                TaxesNames = taxes.Select(tax => tax.Name).AggregateString(','),
+                TaxesPrice = taxes.Any(x => x.Sum.HasValue) ? taxes.Sum(x => x.Sum).Value.FormatPrice(SettingsCatalog.DefaultCurrency) : "-",
             };
 
             if (_cart.Coupon != null)

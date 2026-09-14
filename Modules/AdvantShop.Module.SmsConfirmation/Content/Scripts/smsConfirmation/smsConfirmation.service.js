@@ -16,8 +16,8 @@
             });
         };
 
-        service.getFormSettings = function (pageToRedirect) {
-            return $http.get('smsConfirmationClient/getFormSettings', {params:{pageToRedirect: pageToRedirect}}).then(function (response) {
+        service.getFormSettings = function (pageToRedirect,/*GlorySoft_018*/ pageType) {
+            return $http.get('smsConfirmationClient/getFormSettings', { params: { pageToRedirect: pageToRedirect,/*GlorySoft_018*/ pageType: pageType}}).then(function (response) {
                 return response.data;
             });
         };

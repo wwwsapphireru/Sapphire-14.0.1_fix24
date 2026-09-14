@@ -9,17 +9,22 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using AdvantShop.Catalog;
+using AdvantShop.Core.Common.Extensions;
 using AdvantShop.Core.Modules;
 using AdvantShop.Core.Modules.Interfaces;
 using AdvantShop.Core.Services.Catalog;
+using AdvantShop.Core.Services.FullSearch;
 using AdvantShop.Helpers;
 using AdvantShop.Module.Rees46.Domain;
+using AdvantShop.Module.Rees46.Domain.PartnersApi;
 using AdvantShop.Configuration;
 using AdvantShop.Diagnostics;
+using AdvantShop.Core.Scheduler;
+using AdvantShop.ExportImport;
 
 namespace AdvantShop.Module.Rees46
 {
-    public class Rees46 : IModuleRelatedProducts, ISearch, IRenderModuleByKey, IModuleBundles, IAdminModuleSettings
+    public class Rees46 : IModuleRelatedProducts, ISearch, IRenderModuleByKey, IModuleBundles, IAdminModuleSettings, IModuleTask
     {
         #region Module methods
 
@@ -208,5 +213,72 @@ namespace AdvantShop.Module.Rees46
         }
 
         #endregion
+
+        #region IModuleProductSearchProvaider GlorySoft_010
+
+        public SearchResult Find(string term)
+        {
+            var result = Rees46PartnerService.GetSearch(term);
+            SearchResult found = null;
+            if (result?.products != null && result?.products_total > 0)
+            {
+                var offers = result.products.Select(x => OfferService.GetOffer(x.id.TryParseInt())).Where(x => x != null).ToList();
+                found = new SearchResult
+                {
+                    SearchTerm = term,
+                    SearchResultItems = offers.Select(x => new SearchResultItem { Id = x.ProductId }).ToList(),
+                    Hits = result.products_total
+                };
+            }
+            //if (found.Hits > 0 || found.SearchResultItems.Count > 0)
+            //    return found;
+            var defaultSearch = new FullSearch.LuceneProductSearch();
+            var f = defaultSearch.Find(term);
+            //SearchResult f = null;
+            if (found == null)
+            {
+                found = f;// defaultSearch.Find(term);
+            }
+            else
+            {
+                var ff = found.SearchResultItems;
+                //var oids = ProductService.GetProductIdsByOfferIds(ff.Select(x => x.Id).ToList());
+                found = f;
+                var ids = found.SearchResultItems.Select(x => x.Id);
+                found.SearchResultItems.AddRange(ff.Where(x => !ids.Contains(x.Id)));
+                found.Hits = found.SearchResultItems.Count;
+            }
+            return found;
+        }
+
+        #endregion
+
+        #region IModuleTask GlorySoft_021
+
+        public List<TaskSetting> GetTasks()
+        {
+            var tasks = new List<TaskSetting>();
+
+            //var exportFeed = ExportFeedService.GetExportFeed(Rees46Settings.FeedId);
+            var settings = ExportFeedSettingsProvider.GetSettings(Rees46Settings.FeedId);
+            if (settings != null)
+            {
+                var task = new TaskSetting
+                {
+                    Enabled = Rees46Settings.Shedule,
+                    JobType = typeof(ExportXmlJob).FullName + "," + typeof(ExportXmlJob).Assembly.FullName,
+                    TimeType = settings.IntervalType,
+                    TimeInterval = settings.Interval,
+                    TimeHours = settings.JobStartTime.Hour,
+                    TimeMinutes = settings.JobStartTime.Minute
+                };
+                tasks.Add(task);
+            }
+
+            return tasks;
+        }
+
+        #endregion
+
     }
 }

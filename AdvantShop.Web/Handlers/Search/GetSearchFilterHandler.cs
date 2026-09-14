@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AdvantShop.Configuration;
+using AdvantShop.Core.Common.Extensions;
 using AdvantShop.Handlers.Catalog;
 using AdvantShop.Models.Catalog;
 
@@ -31,7 +32,7 @@ namespace AdvantShop.Handlers.Search
             var tasks = new List<Task<List<FilterItemModel>>>
             {
                 new FilterInputHandler(filter.CategoryId, false, _searchModel.Q).GetAsync(),
-                new FilterSelectCategoryHandler(filter.CategoryId).GetAsync()
+                new FilterSelectCategoryHandler(filter.CategoryId,/*GlorySoft_024*/ (_searchModel.ProductIds ?? "").Split(',').Select(x => x.TryParseInt()).ToList()).GetAsync()
             };
 
             if (productIds != null && productIds.Count > 0)
@@ -52,7 +53,7 @@ namespace AdvantShop.Handlers.Search
                             .GetAsync());
                 }
 
-                if (SettingsCatalog.ShowColorFilter)
+                if (SettingsCatalog.ShowColorFilter &&/*GlorySoft_024*/ filter.CategoryId != 0)
                 {
                     tasks.Add(
                         new FilterColorHandler(productIds,
@@ -80,11 +81,14 @@ namespace AdvantShop.Handlers.Search
                             .GetAsync());
                 }
 
-                tasks.Add(
+                if (filter.CategoryId != 0)//GlorySoft_024
+                {
+                    tasks.Add(
                     new FilterPropertyHandler(filter.CategoryId, filter.Indepth, filter.PropertyIds,
                             filter.AvailablePropertyIds, filter.RangePropertyIds,
                             productIds)
                         .GetAsync());
+                }
             }
 
             var result = tasks.Select(x => x.Result)

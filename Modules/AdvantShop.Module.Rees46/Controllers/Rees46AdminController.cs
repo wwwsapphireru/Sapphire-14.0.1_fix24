@@ -13,6 +13,8 @@ using AdvantShop.Module.Rees46.Domain.PartnersApi;
 using AdvantShop.Core.UrlRewriter;
 using System.Linq;
 using System.Web.UI.WebControls;
+using AdvantShop.ExportImport;
+using System.Collections.Generic;
 
 namespace AdvantShop.Module.Rees46.Controllers
 {
@@ -27,20 +29,36 @@ namespace AdvantShop.Module.Rees46.Controllers
         [HttpGet]
         public JsonResult GetSettings()
         {
-            return JsonOk(new SettingsModel()
+            //GlorySoft_021
+            var allFeeds = ExportFeedService.GetExportFeeds().Where(x => x.FeedType == EExportFeedType.YandexMarket);
+            var feeds = new List<ExportFeed>() { new ExportFeed() { Id = 0, Name = "не выбран" } };
+            feeds.AddRange(allFeeds);
+
+            return JsonOk(new
             {
-                // general settings
-                ShopKey = Rees46Settings.ShopKey,
-                Limit = Rees46Settings.Limit,
-                UseSuggestionsInSearch = Rees46Settings.UseSuggestionsInSearch,
-                SettingsUrl = UrlService.GetUrl("adminv3/settingstemplate#?settingsTab=product"),
-                // api
-                RelatedProductCode = Rees46Settings.RelatedProductCode,
-                AlternativeProductCode = Rees46Settings.AlternativeProductCode,
-                MainPageCode = Rees46Settings.MainPageCode,
-                CatalogTopCode = Rees46Settings.CatalogTopCode,
-                CatalogBottomCode = Rees46Settings.CatalogBottomCode,
-                CartCode = Rees46Settings.CartCode,               
+                /*GlorySoft_021*/Settings = new SettingsModel()
+                {
+                    // general settings
+                    ShopKey = Rees46Settings.ShopKey,
+                    Limit = Rees46Settings.Limit,
+                    UseSuggestionsInSearch = Rees46Settings.UseSuggestionsInSearch,
+                    SettingsUrl = UrlService.GetUrl("adminv3/settingstemplate#?settingsTab=product"),
+                    // api
+                    RelatedProductCode = Rees46Settings.RelatedProductCode,
+                    AlternativeProductCode = Rees46Settings.AlternativeProductCode,
+                    MainPageCode = Rees46Settings.MainPageCode,
+                    CatalogTopCode = Rees46Settings.CatalogTopCode,
+                    CatalogBottomCode = Rees46Settings.CatalogBottomCode,
+                    CartCode = Rees46Settings.CartCode,
+
+                    //GlorySoft_021
+                    FeedId = Rees46Settings.FeedId,
+                    Shedule = Rees46Settings.Shedule,
+                },
+
+                //GlorySoft_021
+                Feeds = feeds,
+                FeedIndex = feeds.FindIndex(x => x.Id == Rees46Settings.FeedId)
             }) ;
 
         }
@@ -62,6 +80,10 @@ namespace AdvantShop.Module.Rees46.Controllers
             Rees46Settings.CatalogTopCode = model.CatalogTopCode ?? "";
             Rees46Settings.CatalogBottomCode = model.CatalogBottomCode ?? "";
             Rees46Settings.CartCode = model.CartCode ?? "";
+
+            //GlorySoft_021
+            Rees46Settings.FeedId = model.FeedId;
+            Rees46Settings.Shedule = model.Shedule;
 
             Rees46Repository.WriteManifestJson();
             return JsonOk();
@@ -85,6 +107,20 @@ namespace AdvantShop.Module.Rees46.Controllers
                 return JsonError(registrationResult.message);
          
             return JsonOk();
-        }     
+        }
+
+        [HttpPost, ValidateJsonAntiForgeryToken]
+        public ActionResult Export()//GlorySoft_021
+        {
+            var job = new ExportXmlJob();
+            var id = Rees46Settings.FeedId;
+            var exportFeed = ExportFeedService.GetExportFeed(id);
+            var check = job.Check(exportFeed);
+            if (check != string.Empty)
+                return JsonError(check);
+            job.Execute(null);
+            return JsonOk();
+        }
+
     }
 }

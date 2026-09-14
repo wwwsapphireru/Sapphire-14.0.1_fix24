@@ -13,7 +13,7 @@
 }
 
 <div data-oc-lazy-load="[@String.Join(" ,", scripts.Select(x=>"'" + x + "?" + version + "'" ))]" style="width: 100%;">
-    <div id="RemindModuleShowNotificationFormBlock" ng-show="!product.offerSelected.IsAvailableForPurchase" class="remind-about-receipt-button-wrapper remind-about-receipt-button-notification">
+    <div id="RemindModuleShowNotificationFormBlock" ng-show="!product.offerSelected.IsAvailableForPurchase && !product.offerSelected.IsAvailable && !product.allowPreOrder" class="remind-about-receipt-button-wrapper remind-about-receipt-button-notification">@*GlorySoft_012*@
         <div class="modal-content">
             <rar-show-n-f data-product-offer-id="product.offerSelected.ArtNo" data-product-id="product.productId"></rar-show-n-f>
         </div>

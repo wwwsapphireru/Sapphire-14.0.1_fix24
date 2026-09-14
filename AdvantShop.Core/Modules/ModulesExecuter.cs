@@ -152,6 +152,17 @@ namespace AdvantShop.Core.Modules
             LoggingManager.GetCustomerActionLogger()?.Vote();
         }
 
+        public static int GetDefaultCustomerGroup()//GlorySoft_003
+        {
+            var defaultCustomerGroup = CustomerGroupService.DefaultCustomerGroup;
+            foreach (var cls in AttachedModules.GetModules<ICustomerAction>().Union(AttachedModules.GetCore<ICustomerAction>()))
+            {
+                var classInstance = (ICustomerAction)Activator.CreateInstance(cls, null);
+                defaultCustomerGroup = classInstance.GetDefaultCustomerGroup();
+            }
+            return defaultCustomerGroup;
+        }
+
         #endregion
 
         #region ISendOrderNotifications

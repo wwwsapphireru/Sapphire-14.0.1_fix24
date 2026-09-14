@@ -1,0 +1,41 @@
+﻿@model AdvantShop.Module.OneSApi.Models.Admin.OrderViewModel
+
+@if (!string.IsNullOrEmpty(Model.ManagerName))
+{
+    <div class="block-additional-parameters-row">
+        <div class="block-additional-parameters-name">Менеджер:</div>
+        <div class="block-additional-parameters-name"><strong>@Model.ManagerName</strong></div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.INN) || !string.IsNullOrEmpty(Model.CompanyName))
+{
+    <div class="block-additional-parameters-row">
+        <div class="block-additional-parameters-name">Информация для счета:</div>
+        <div class="block-additional-parameters-name">ИНН: <strong>@Model.INN</strong></div>
+        <div class="block-additional-parameters-name"><strong>@Model.CompanyName</strong></div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.KeepFreeUntil))
+{
+    <div class="block-additional-parameters-row">
+        <div class="block-additional-parameters-name">Срок бесплатного хранения:</div>
+        <div class="block-additional-parameters-name"><strong>@Model.KeepFreeUntil</strong></div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.ChequeUrl))
+{
+    <div class="block-additional-parameters-row">
+        <div class="block-additional-parameters-name"><a target="_blank" href="@Model.ChequeUrl">Электронный чек по заказу</a></div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.CardHolder))
+{
+    <div class="block-additional-parameters-row">
+        <div class="block-additional-parameters-name">Держатель карты:</div>
+        <div class="block-additional-parameters-name"><strong>@Model.CardHolder</strong></div>
+    </div>
+}

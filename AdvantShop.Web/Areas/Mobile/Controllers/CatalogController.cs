@@ -205,7 +205,7 @@ namespace AdvantShop.Areas.Mobile.Controllers
                     return Error404();
             }
 
-            var paging = new ProductListHandler(type, true, categoryModel, list, true).Get();
+            var paging = new ProductListHandler(type, true, categoryModel, list, true,/*GlorySoft_016*/ null).Get();
 
             if ((paging.Pager.TotalPages < paging.Pager.CurrentPage && paging.Pager.CurrentPage > 1) ||
                 paging.Pager.CurrentPage < 0)
@@ -285,11 +285,11 @@ namespace AdvantShop.Areas.Mobile.Controllers
 
         #region Product list
 
-        public ActionResult ProductList(EProductOnMain? type, CategoryModel categoryModel, string list)
+        public ActionResult ProductList(EProductOnMain? type, CategoryModel categoryModel, string list,/*GlorySoft_016*/ int? salesType)
         {
             try
             {
-                var (model, meta) = new GetProductListMobileHandler(type, categoryModel, list).Execute();
+                var (model, meta) = new GetProductListMobileHandler(type, categoryModel, list,/*GlorySoft_016*/ salesType).Execute();
 
                 SetMetaInformation(meta, model.Title, page: categoryModel.Page ?? 1, totalPages: model.Pager != null
                     ? model.Pager.TotalPages

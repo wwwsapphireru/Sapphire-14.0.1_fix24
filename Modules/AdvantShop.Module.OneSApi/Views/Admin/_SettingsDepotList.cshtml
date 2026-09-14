@@ -1,0 +1,45 @@
+﻿
+@*<div data-oc-lazy-load="[@(String.Join(", ", scripts.Select(x => "'" + x + "'")))]">
+    <aad-list-of-depots></aad-list-of-depots>
+</div>*@
+<div>
+    <div class="sticky-page-name m-b-md">
+        <div class="page-name-block sticky-page-name-inner">
+            <div class="page-name-block-item-main">
+                <h1 class="page-name-block-text sticky-page-name-text">
+                    Список складов
+                </h1>
+            </div>
+            <div class="page-name-block-item-additional">
+                <ui-modal-trigger data-controller="'ModalAddEditDepotCtrl'" controller-as="ctrl"
+                                  on-close="oneSettings.gridDepots.fetchData()"
+                                  template-url="../modules/OneSApi/content/scripts/admin/settings/modals/ModalAddEditDepot.html">
+                    <button class="btn btn-sm btn-success btn--margin-left" type="button">
+                        <span class="fa fa-plus"></span> Добавить склад
+                    </button>
+                </ui-modal-trigger>
+            </div>
+        </div>
+    </div>
+    <ui-grid-custom grid-unique-id="gridDepots"
+                    grid-extend-ctrl="oneSettings"
+                    grid-filter-enabled="false"
+                    grid-selection-enabled="false"
+                    grid-pagination-enabled="false"
+                    grid-on-init="oneSettings.gridDepotsOnInit(gridDepots)"
+                    grid-options="oneSettings.gridDepotsOptions"
+                    grid-inplace-url="'../OneSAdmin/inplaceDepot'"
+                    grid-url="'../OneSAdmin/getDepots'">
+        <ui-grid-custom-footer class="ui-grid-custom-footer" ng-bind="oneSettings.gridDepots.gridOptions.TotalString">
+        </ui-grid-custom-footer>
+    </ui-grid-custom>
+    <!--<div class="form-group row">
+        <label class="col-xs-4 control-label">
+            <span class="text-required">Главный склад</span>
+        </label>
+        <div class="col-xs-8">
+            <select ng-model="ctrl.mainDepotId" ng-options="s.label for s in ctrl.depots track by s.value" class="form-control" required validation-input-text="Главный склад">
+            </select>
+        </div>
+    </div>-->
+</div>

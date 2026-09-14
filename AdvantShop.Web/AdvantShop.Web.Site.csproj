@@ -137,6 +137,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Permission.dll</HintPath>
     </Reference>
+    <Reference Include="Pyrus.ApiClient, Version=5.2.1.0, Culture=neutral, PublicKeyToken=70186976b15df897, processorArchitecture=MSIL">
+      <HintPath>..\packages\Pyrus.ApiClient.5.2.1\lib\net45\Pyrus.ApiClient.dll</HintPath>
+    </Reference>
     <Reference Include="Quartz, Version=2.6.2.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
       <HintPath>..\packages\Quartz.2.6.2\lib\net40\Quartz.dll</HintPath>
     </Reference>
@@ -218,13 +221,16 @@
     <Content Include="Areas\Mobile\bundle_config\brandItem.js" />
     <Content Include="Areas\Mobile\bundle_config\checkoutModern.js" />
     <Content Include="Areas\Mobile\bundle_config\newsItem.js" />
+    <Content Include="Areas\Mobile\bundle_config\preorder.js" />
     <Content Include="Areas\Mobile\bundle_config\user.js" />
     <Content Include="Areas\Mobile\styles\views\checkoutModern\checkout-modern.scss" />
+    <None Include="Areas\Mobile\styles\views\preorder.scss" />
     <Content Include="Areas\Mobile\styles\views\user.scss" />
     <Content Include="Areas\Mobile\Views\Shared\_UserLayout.cshtml" />
     <Content Include="bundle_config\brandItem.js" />
     <Content Include="bundle_config\checkoutModern.js" />
     <Content Include="bundle_config\newsItem.js" />
+    <Content Include="bundle_config\preorder.js" />
     <Content Include="bundle_config\user.js" />
     <Content Include="fonts\AlegreyaSans\AlegreyaSans-Black.woff2" />
     <Content Include="fonts\AlegreyaSans\AlegreyaSans-BlackItalic.woff2" />
@@ -852,6 +858,8 @@
     <Content Include="scripts\myaccount\modal-bring-friend\modalBringFriendTrigger.ctrl.js" />
     <Content Include="scripts\myaccount\modal-bring-friend\modalBringFriend.module.js" />
     <Content Include="scripts\myaccount\modal-bring-friend\modalBringFriend.template.html" />
+    <Content Include="scripts\preorder\controllers\preorderController.js" />
+    <Content Include="scripts\preorder\preorder.module.js" />
     <Content Include="scripts\recoveryPassword\recoveryPassword.controller.ts" />
     <Content Include="scripts\myaccount\types.ts" />
     <Content Include="scripts\product\components\productAvailabilityMap\productAvailabilityMap.ctrl.js" />
@@ -1108,6 +1116,7 @@
     <Content Include="scripts\_partials\shipping\extendTemplate\DeliveryByZonesOption.html" />
     <Content Include="scripts\_partials\shipping\extendTemplate\extendTemplate.js" />
     <Content Include="scripts\_partials\shipping\extendTemplate\FivePostPointOption.html" />
+    <Content Include="scripts\_partials\shipping\extendTemplate\FixedRateOption.html" />
     <Content Include="scripts\_partials\shipping\extendTemplate\LPostPointOption.html" />
     <Content Include="scripts\_partials\shipping\extendTemplate\FivePostWidgetOption.html" />
     <Content Include="scripts\_partials\shipping\extend\deliveryByZones\deliveryByZones.js" />
@@ -2412,6 +2421,7 @@
     <Content Include="scripts\_partials\shipping\extend\Yandex\yandexWidget\yandexWidget.tpl.html" />
     <Content Include="scripts\_common\carousel-ext\carousel-ext.scss" />
     <Content Include="scripts\_partials\theme-trigger\styles\themeTrigger.scss" />
+    <Content Include="styles\views\preorder.scss" />
     <None Include="vendors\ckeditor\plugins\fileman\index.html.bak" />
     <Content Include="vendors\ckeditor\plugins\fileman\js\custom.js" />
     <Content Include="vendors\ckeditor\plugins\fileman\js\directory.js" />
@@ -3165,6 +3175,7 @@
     <Compile Include="Extensions\HtmlExtensions.cs" />
     <Compile Include="Extensions\InplaceExtensions.cs" />
     <Compile Include="Extensions\ProfilerExt.cs" />
+    <Compile Include="Extensions\PyrusApiService.cs" />
     <Compile Include="Handlers\Brands\BrandProductPagingHandler.cs" />
     <Compile Include="Handlers\Brands\BrandHandler.cs" />
     <Compile Include="Handlers\Cart\AddToCart.cs" />
@@ -3182,6 +3193,8 @@
     <Compile Include="Handlers\Checkout\GeoMode\GetGeoModeDeliveries.cs" />
     <Compile Include="Handlers\Checkout\GetBillingPayment.cs" />
     <Compile Include="Handlers\Checkout\OrderPayHandler.cs" />
+    <Compile Include="Handlers\Checkout\PrintCartHandler.cs" />
+    <Compile Include="ViewModel\Checkout\PrintCartViewModel.cs" />
     <Compile Include="Handlers\Checkout\ThankYouPageHandler.cs" />
     <Compile Include="Handlers\Checkout\GetCheckoutPage.cs" />
     <Compile Include="Handlers\Checkout\PrintOrderHandler.cs" />
@@ -3529,6 +3542,7 @@
     <Compile Include="ViewModel\PaymentReceipt\BillKzViewModel.cs" />
     <Compile Include="ViewModel\PaymentReceipt\BillByViewModel.cs" />
     <Compile Include="ViewModel\PaymentStatus\PaymentStatusViewModel.cs" />
+    <Compile Include="ViewModel\PreOrder\PreOrderViewModel.cs" />
     <Compile Include="ViewModel\ProductDetails\BaseProductViewModel.cs" />
     <Compile Include="ViewModel\Brand\BrandItemViewModel.cs" />
     <Compile Include="ViewModel\Brand\BrandViewModel.cs" />
@@ -3803,7 +3817,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>8821</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:8825/</IISUrl>
+          <IISUrl>http://localhost:8848</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>http://localhost:81/</CustomServerUrl>

@@ -1,0 +1,201 @@
+﻿@using AdvantShop.Customers;
+@model AdvantShop.Module.OneSApi.Models.Client.CustomerFieldsViewModel
+
+@if (Model != null)
+{
+    var prefix = Model.GetPrefix();
+    var useSuggest = Model.Suggestions != null;
+    var verticalIntervalSize = Model.VerticalIntervalCss != null ? Model.VerticalIntervalCss : "vertical-interval-xsmall";
+    
+    <div hidden data-ng-init="@Model.GetName() = @Model.CustomerFieldsSerialized"></div>
+    for (int i = 0; i < Model.CustomerFields.Count; i++)
+    {
+        var field = Model.CustomerFields[i];
+        var suggestAttributes = String.Empty;
+        var nameAttr = Model.GetName(i, "Value");
+        if (useSuggest && (field.FieldAssignment == CustomerFieldAssignment.CompanyName || field.FieldAssignment == CustomerFieldAssignment.INN))
+        {
+            suggestAttributes = String.Format("class=\"autocompleter-block form-field-input {4}\" data-field=\"CompanyData.{0}\" data-autocompleter data-request-url=\"{1}\" data-template-path=\"scripts/_common/autocompleter/templates/common.html\" data-params=\"{2}\" data-apply-fn=\"{3}\"",
+                field.FieldAssignment.ToString(), Model.Suggestions.SuggestCompanyNameUrl, "{q: "+nameAttr+"}", prefix + ".processCompanyName(obj)", verticalIntervalSize);
+        }
+        else if (useSuggest && field.FieldAssignment == CustomerFieldAssignment.BIK)
+        {
+            suggestAttributes = String.Format("class=\"autocompleter-block form-field-input {4}\" data-field=\"BankData.{0}\" data-autocompleter data-request-url=\"{1}\" data-template-path=\"scripts/_common/autocompleter/templates/common.html\" data-params=\"{2}\" data-apply-fn=\"{3}\"",
+                field.FieldAssignment.ToString(), Model.Suggestions.SuggestBankNameUrl, "{q: " + nameAttr + "}", prefix + ".processCompanyName(obj)", verticalIntervalSize);
+        }
+        var idAttr = nameAttr.RemoveSymvolsExt("_");
+        var disabled = /*Model.ShowMode == CustomerFieldShowMode.MyAccount &&*/ field.DisableCustomerEditing /*&& !string.IsNullOrEmpty(field.Value)*/;
+        var ngShow = String.Empty;
+        var placeholder = "";
+        if (field.Name == "ИНН")
+        { 
+            placeholder = "Введите, пожалуйста, ИНН для заполнения всех реквизитов компании";
+        }
+
+        if (Model.NgVariableVisible.IsNotEmpty() && field.CustomerType != CustomerType.All)
+        {
+            ngShow = String.Format("data-ng-if=\"{0}=={1}\"", Model.NgVariableVisible, "'" + field.CustomerType + "'");
+        }
+
+        <label class="row middle-xs custom-field form-field-control" @Html.Raw(ngShow)>
+            <span class="custom-field__name @Model.CssParamName">
+                <span class="form-field-name @(verticalIntervalSize)@(field.Required ? " input-required" : string.Empty)">@field.Name</span>
+            </span>
+            <span class="custom-field__value @Model.CssParamValue">
+                <span class="form-field-input @(verticalIntervalSize)">
+
+                    @if (field.FieldType == CustomerFieldType.Text)
+                    {
+                        <span @Html.Raw(suggestAttributes)>
+                            <input type="text" class="input-small" data-ng-model="@nameAttr"
+                                   data-ng-required="@field.Required.ToLowerString()" id="@idAttr" name="@nameAttr" data-ng-blur="@Model.NgChangeFunc"
+                                   placeholder = "@placeholder"
+                                   @Html.Raw(disabled ? "data-ng-disabled=\"true\"" : "")
+                                   @Html.Raw(field.Value.IsNotEmpty() ? string.Format("value=\"{0}\"", field.Value.HtmlEncode()) : string.Empty)
+                                   @Html.Raw(!suggestAttributes.IsNullOrEmpty() ? "autocomplete=organization data-autocompleter-input data-autocomplete-debounce=400" : string.Empty)
+                                   >
+                        </span>
+                    }
+                    else if (field.FieldType == CustomerFieldType.Number)
+                    {
+                        <span @Html.Raw(suggestAttributes)>    
+                            <input type="text" class="input-small" data-ng-model="@nameAttr" 
+                                   data-ng-required="@field.Required.ToLowerString()" id="@idAttr" name="@nameAttr" data-ng-blur="@Model.NgChangeFunc" pattern="^[\d,\.]*$"
+                                   placeholder = "@placeholder"
+                                   @Html.Raw(disabled ? "data-ng-disabled=\"true\"" : "")
+                                   @Html.Raw(field.Value.IsNotEmpty() ? string.Format("value=\"{0}\"", field.Value.HtmlEncode()) : string.Empty)
+                                   @Html.Raw(!suggestAttributes.IsNullOrEmpty() ? "autocomplete=organization data-autocompleter-input data-autocomplete-debounce=400" : string.Empty)
+                                   >
+                        </span>
+                    }
+                    else if (field.FieldType == CustomerFieldType.TextArea)
+                    {
+                        <span @Html.Raw(suggestAttributes)>
+                            <textarea class="input-small" data-ng-model="@nameAttr" 
+                                   data-ng-required="@field.Required.ToLowerString()" id="@idAttr" name="@nameAttr" data-ng-blur="@Model.NgChangeFunc"
+                                   placeholder = "@placeholder"
+                                   @Html.Raw(disabled ? "data-ng-disabled=\"true\"" : "")
+                                   @Html.Raw(field.Value.IsNotEmpty() ? string.Format("value=\"{0}\"", field.Value.HtmlEncode()) : string.Empty)
+                                   @Html.Raw(!suggestAttributes.IsNullOrEmpty() ? "autocomplete=organization data-autocompleter-input data-autocomplete-debounce=400" : string.Empty)
+                                   ></textarea>
+                        </span>
+                    }
+                    else if (field.FieldType == CustomerFieldType.Date)
+                    {
+                        <span class="flatpickr-custom" ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat: 'Y-m-d', wrap: true, enableTime: false}">
+                            <input type="text" id="@idAttr" name="@nameAttr" value="@field.ValueDateFormat.HtmlEncode()" class="input-small flatpickr-custom__input"
+                                   data-ng-required="@field.Required.ToLowerString()"
+                                   @Html.Raw(disabled ? "data-ng-disabled=\"true\"" : "")
+                                   data-ng-flatpickr-input
+                                   data-ng-model="@nameAttr"
+                                   data-mask-control
+                                   data-mask-control-preset="date">
+                            @*<span class="flatpickr-custom-clear" data-close data-clear>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+                                </span>*@
+                            <span class="flatpickr-custom__toggle" data-toggle>
+                                <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                    <path fill="currentColor" d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V192H0v272zm320-196c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM192 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM64 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM400 64h-48V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H160V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H48C21.5 64 0 85.5 0 112v48h448v-48c0-26.5-21.5-48-48-48z"></path>
+                                </svg>
+                            </span>
+                        </span>
+                    }
+                    else if (field.FieldType == CustomerFieldType.Select)
+                    {
+                        var fieldValues = field.Values;
+                        var selectedValue = "";
+
+                        if (field.Required == false)
+                        {
+                            fieldValues.Insert(0, new SelectListItem()
+                            {
+                                Text = "––––",
+                                Value = ""
+                            });
+                        }
+
+                        if (field.Value != null && (field.Required == true || field.Value != ""))
+                        {
+                            selectedValue = field.Value;
+                            if (fieldValues.Find(x => x.Value == selectedValue) == null)
+                            {
+                                fieldValues.Insert(0, new SelectListItem() { Text = selectedValue, Value = selectedValue });
+                            }
+                        }
+                        else
+                        {
+                            var firstValue = fieldValues.FirstOrDefault();
+                            selectedValue = firstValue != null ? firstValue.Value : "";
+                        }
+
+                        <span class="select-custom cs-t-4 icon-down-open-after-abs">
+                            @Html.DropDownList(nameAttr, fieldValues, new
+                       {
+                           @class = "cs-bg-2",
+                           data_ng_model = nameAttr,
+                           ng_required = field.Required.ToLowerString(),
+                           ng_disabled = disabled.ToLowerString(),
+                           data_ng_init = nameAttr + "='" + selectedValue + "'",
+                           data_ng_change = Model.NgChangeFunc
+                       })
+                        </span>
+                    }
+                    else if (field.FieldType == CustomerFieldType.Tel)
+                    {
+                        <span class="">
+                            @Html.TextBox(nameAttr, field.Value, new
+                       {
+                           @class = "input-small",
+                           data_ng_model = nameAttr,
+                           data_ng_required = field.Required.ToLowerString(),
+                           data_ng_disabled = disabled.ToLowerString(),
+                           data_ng_blur = Model.NgChangeFunc,
+                           type = "tel",
+                           placeholder = "{{ :: 'Js.Phone.PhonePlaceholder' | translate }}",
+                           data_mask_control = SettingsMain.EnablePhoneMask.ToLowerString(),
+                           data_mask_control_preset = "phone",
+                       })
+                        </span>
+                    }
+                    else if (field.FieldType == CustomerFieldType.Checkbox)
+                    {
+                        var boolValue = field.Value.TryParseBool();
+
+                        <span data-ng-init="@nameAttr = @boolValue.ToLowerString()">
+                            @Html.CheckBox(nameAttr, boolValue, new
+                            {
+                                @class="custom-input-native",
+                                data_ng_model = nameAttr,
+                                data_ng_required = field.Required.ToLowerString(),
+                                data_ng_disabled = disabled.ToLowerString(),
+                                data_ng_blur = Model.NgChangeFunc,
+                            })
+                            <span class="custom-input-checkbox"></span>
+                            <span class="custom-input-text"></span>
+                        </span>
+                    }
+                    else if (field.FieldType == CustomerFieldType.Email)
+                    {
+                        <span class="">
+                            @Html.TextBox(nameAttr, field.Value, new
+                            {
+                                @class = "input-small",
+                                type="email",
+                                data_ng_model = nameAttr,
+                                ng_required = field.Required.ToLowerString(),
+                                ng_disabled = disabled.ToLowerString(),
+                                data_ng_blur = Model.NgChangeFunc,
+                                pattern = "^([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+)"
+                            })
+                        </span>
+                    }
+                    @Html.Hidden(Model.GetName(i, "Id"), field.Id)
+                    @Html.Hidden(Model.GetName(i, "Name"), field.Name)
+                    @Html.Hidden(Model.GetName(i, "FieldType"), field.FieldType)
+                    @Html.Hidden(Model.GetName(i, "SortOrder"), field.SortOrder)
+                    @Html.Hidden(Model.GetName(i, "Required"), field.Required)
+                </span>
+            </span>
+        </label>
+    }
+}

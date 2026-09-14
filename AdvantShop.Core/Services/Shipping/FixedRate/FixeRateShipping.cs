@@ -25,7 +25,7 @@ namespace AdvantShop.Shipping.FixedRate
 
         protected override IEnumerable<BaseShippingOption> CalcOptions(CalculationVariants calculationVariants)
         {
-            var option = new BaseShippingOption(_method, _totalPrice)
+            var option = new FixedRateOption/*GlorySoft_001 BaseShippingOption*/(_method, _totalPrice)
             {
                 Rate = _shippingPrice,
                 DeliveryTime = _method.Params.ElementOrDefault(FixeRateShippingTemplate.DeliveryTime)

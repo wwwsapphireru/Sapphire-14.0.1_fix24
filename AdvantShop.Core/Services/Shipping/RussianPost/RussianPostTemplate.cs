@@ -33,5 +33,11 @@ namespace AdvantShop.Shipping.RussianPost
         public const string StatusesReference = "StatusesReference";
         public const string TrackingLogin = "TrackingLogin";
         public const string TrackingPassword = "TrackingPassword";
+
+        //GlorySoft_001
+        public const string StatusForReady = "StatusForReady";
+        public const string CustomerType = "CustomerType";
+        public const string MaxWeight = "MaxWeight";
+        public const string KeyNameWrongTrackFormTaskAdditionalData = "WrongTrackFormTask";
     }
 }

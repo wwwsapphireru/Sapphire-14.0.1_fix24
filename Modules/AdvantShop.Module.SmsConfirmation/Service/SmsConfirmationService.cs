@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Web.Security;
 using AdvantShop.Configuration;
+using AdvantShop.Core.Common.Extensions;
 using AdvantShop.Core.Modules;
 using AdvantShop.Core.Services.MyAccount;
 using AdvantShop.Core.Services.Smses;
@@ -283,7 +284,7 @@ namespace AdvantShop.Module.SmsConfirmation.Service
                     AddSmsConfirmationCode(smsConfirmationCode);
                 }
 
-                SmsNotifier.SendSms(standardPhone, "Code: " + smsCode);
+                SmsNotifier.SendSms(standardPhone, /*GlorySoft_004 "Code: " +*/ smsCode);
 
                 return smsCode;
             }
@@ -414,5 +415,62 @@ namespace AdvantShop.Module.SmsConfirmation.Service
                 SettingsCheckout.IsRequiredEmail = requiredEmailOnCheckout.Value;
         }
         #endregion
+
+        public static List<Customer> GetCustomersByPhone(string phone, bool? enabled, bool? confirmed)//GlorySoft_012
+        {
+            var phoneLong = Helpers.StringHelper.ConvertToStandardPhone(phone);
+            return ModulesRepository.ModuleExecuteReadList<Customer>(
+                "Select * from Customers.Customer where (Phone=@phone " + (phoneLong.HasValue ? "or StandardPhone=@phoneLong" : string.Empty) + ") And [CustomerType]=0" +
+                (enabled.HasValue ? " And IsNull([Enabled], 0)=@enabled" : string.Empty) +
+                (confirmed.HasValue ? " And IsNull(PhoneConfirmed, 0)=@confirmed" : string.Empty),
+                CommandType.Text,
+                CustomerService.GetFromSqlDataReader,
+                new SqlParameter("@phone", phone),
+                new SqlParameter("@phoneLong", phoneLong ?? (object)DBNull.Value),
+                new SqlParameter("@enabled", enabled ?? (object)DBNull.Value),
+                new SqlParameter("@confirmed", confirmed ?? (object)DBNull.Value)
+                );
+        }
+
+        public static long? ConvertToStandardPhone(string phone, bool force = false, bool forceTrimEight = false, int? dcode = null)//GlorySoft_012
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return null;
+
+            var str = System.Text.RegularExpressions.Regex.Replace(phone, @"[^\d]", "");
+
+            if (string.IsNullOrWhiteSpace(str))
+                return null;
+            if (str.Substring(0, 2) != "79")
+                return null;
+
+            // <dialCode, length>
+            var presets = new Dictionary<string, int>
+            {
+                { "7", 11 },    // Россия
+                //{ "380", 12 },  // Украина
+                //{ "375", 12 },  // Беларусь
+                //{ "996", 12},   // Киргизия
+            };
+
+            if (presets.Keys.Any(dialCode => str.StartsWith(dialCode) && str.Length == presets[dialCode]))
+                return str.TryParseLong(true);
+
+            if (str.StartsWith("8") && (str.Length == 11 || forceTrimEight))
+            {
+                str = "7" + str.Remove(0, 1);
+            }
+            else
+            {
+                var dialCode = dcode ?? Repository.IpZoneContext.CurrentZone.DialCode;
+
+                if (dialCode.HasValue && !str.StartsWith(dialCode.Value.ToString()) && !force)
+                    str = dialCode.Value.ToString() + str;
+            }
+
+
+            return str.TryParseLong(true);
+        }
+
     }
 }

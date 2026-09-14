@@ -353,65 +353,65 @@ namespace AdvantShop.Orders
                 if (string.IsNullOrEmpty(user.Email))
                     user.Email = customer.EMail;
 
-                var needUpdateCustomer = false;
+                //var needUpdateCustomer = false;GlorySoft_030
                 
-                if (customer.EMail.IsNullOrEmpty()
-                    && user.Email.IsNotEmpty()
-                    && ValidationHelper.IsValidEmail(user.Email)
-                    && CustomerService.GetCustomerByEmail(user.Email) == null)
-                {
-                    customer.EMail = user.Email;
-                    needUpdateCustomer = true;
-                }
+                //if (customer.EMail.IsNullOrEmpty()
+                //    && user.Email.IsNotEmpty()
+                //    && ValidationHelper.IsValidEmail(user.Email)
+                //    && CustomerService.GetCustomerByEmail(user.Email) == null)
+                //{
+                //    customer.EMail = user.Email;
+                //    needUpdateCustomer = true;
+                //}
 
-                if (!string.IsNullOrWhiteSpace(user.FirstName) && customer.FirstName != user.FirstName)
-                {
-                    customer.FirstName = user.FirstName;
-                    needUpdateCustomer = true;
-                }
+                //if (!string.IsNullOrWhiteSpace(user.FirstName) && customer.FirstName != user.FirstName)
+                //{
+                //    customer.FirstName = user.FirstName;
+                //    needUpdateCustomer = true;
+                //}
 
-                if (!string.IsNullOrWhiteSpace(user.LastName) && customer.LastName != user.LastName)
-                {
-                    customer.LastName = user.LastName;
-                    needUpdateCustomer = true;
-                }
+                //if (!string.IsNullOrWhiteSpace(user.LastName) && customer.LastName != user.LastName)
+                //{
+                //    customer.LastName = user.LastName;
+                //    needUpdateCustomer = true;
+                //}
 
-                if (!string.IsNullOrWhiteSpace(user.Patronymic) && customer.Patronymic != user.Patronymic)
-                {
-                    customer.Patronymic = user.Patronymic;
-                    needUpdateCustomer = true;
-                }
+                //if (!string.IsNullOrWhiteSpace(user.Patronymic) && customer.Patronymic != user.Patronymic)
+                //{
+                //    customer.Patronymic = user.Patronymic;
+                //    needUpdateCustomer = true;
+                //}
 
-                if (!string.IsNullOrWhiteSpace(user.Phone) && customer.Phone != user.Phone)
-                {
-                    var standardPhone = !string.IsNullOrEmpty(user.Phone)
-                        ? StringHelper.ConvertToStandardPhone(user.Phone)
-                        : null;
+                //if (!string.IsNullOrWhiteSpace(user.Phone) && customer.Phone != user.Phone)
+                //{
+                //    var standardPhone = !string.IsNullOrEmpty(user.Phone)
+                //        ? StringHelper.ConvertToStandardPhone(user.Phone)
+                //        : null;
                     
-                    if (!CustomerService.IsPhoneExist(user.Phone, standardPhone))
-                    {
-                        customer.Phone = user.Phone;
-                        customer.StandardPhone = standardPhone;
+                //    if (!CustomerService.IsPhoneExist(user.Phone, standardPhone))
+                //    {
+                //        customer.Phone = user.Phone;
+                //        customer.StandardPhone = standardPhone;
 
-                        needUpdateCustomer = true;
-                    }
-                }
+                //        needUpdateCustomer = true;
+                //    }
+                //}
 
-                if (user.IsAgreeForPromotionalNewsletter != null && user.IsAgreeForPromotionalNewsletter.Value &&
-                    !customer.IsAgreeForPromotionalNewsletter)
-                {
-                    customer.IsAgreeForPromotionalNewsletter = true;
-                    needUpdateCustomer = true;
-                }
+                //if (user.IsAgreeForPromotionalNewsletter != null && user.IsAgreeForPromotionalNewsletter.Value &&
+                //    !customer.IsAgreeForPromotionalNewsletter)
+                //{
+                //    customer.IsAgreeForPromotionalNewsletter = true;
+                //    needUpdateCustomer = true;
+                //}
 
-                if (SettingsCheckout.IsShowBirthDay && user.BirthDay != null && user.BirthDay != customer.BirthDay)
-                {
-                    customer.BirthDay = user.BirthDay;
-                    needUpdateCustomer = true;
-                }
+                //if (SettingsCheckout.IsShowBirthDay && user.BirthDay != null && user.BirthDay != customer.BirthDay)
+                //{
+                //    customer.BirthDay = user.BirthDay;
+                //    needUpdateCustomer = true;
+                //}
 
-                if (needUpdateCustomer)
-                    CustomerService.UpdateCustomer(customer);
+                //if (needUpdateCustomer)
+                //    CustomerService.UpdateCustomer(customer);
 
                 if (customer.Contacts.Count == 0)
                 {
@@ -474,7 +474,7 @@ namespace AdvantShop.Orders
                 if (!Data.User.WantRegist)
                     Data.User.Password = StringHelper.GeneratePassword(8);
 
-                var customer = new Customer(CustomerGroupService.DefaultCustomerGroup)
+                var customer = new Customer(ModulesExecuter.GetDefaultCustomerGroup()/*GlorySoft_030 CustomerGroupService.DefaultCustomerGroup*/)
                 {
                     Id = CustomerContext.CustomerId,
                     Password = Data.User.Password,
@@ -494,6 +494,8 @@ namespace AdvantShop.Orders
                 CustomerService.InsertNewCustomer(customer, Data.User.CustomerFields);
                 if (customer.Id == Guid.Empty)
                     return;
+
+                ModulesExecuter.Registration(customer);//GlorySoft_030
 
                 if (Data.User.WantRegist && BonusSystem.IsActive)
                 {
@@ -605,6 +607,7 @@ namespace AdvantShop.Orders
                 orderSource = OrderSourceService.GetOrderSource(OrderType.Mobile);
 
             var customer = CustomerContext.CurrentCustomer;
+            var c = CustomerService.GetCustomer(CustomerContext.CustomerId);//GlorySoft_030
 
             var order = new Order
             {
@@ -647,8 +650,8 @@ namespace AdvantShop.Orders
                 CustomerComment = Data.CustomerComment,
                 ManagerId = customer.ManagerId,
 
-                GroupName = customer.CustomerGroup.GroupName,
-                GroupDiscount = customer.CustomerGroup.GroupDiscount,
+                GroupName = (c/*GlorySoft_030*/ ?? customer).CustomerGroup.GroupName,
+                GroupDiscount = (c/*GlorySoft_030*/ ?? customer).CustomerGroup.GroupDiscount,
                 OrderDiscount = cart.DiscountPercentOnTotalPrice,
                 OrderSourceId = orderSource.Id,
                 CustomData = customData,

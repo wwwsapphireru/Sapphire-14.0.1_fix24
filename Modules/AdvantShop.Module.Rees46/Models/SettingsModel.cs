@@ -35,6 +35,10 @@ namespace AdvantShop.Module.Rees46.Models
 
         #endregion
 
+        //GlorySoft_021
+        public int FeedId { get; set; }
+        public bool Shedule { get; set; }
+
         #region IValidatableObject
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

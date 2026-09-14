@@ -27,6 +27,7 @@ namespace AdvantShop.Handlers.Catalog
         private readonly bool _isMobile;
         private readonly EProductOnMain _type;
         private readonly int _productListId;
+        private readonly int? _salesType;//GlorySoft_016
 
         private SqlPaging _paging;
         private ProductListPagingModel _model;
@@ -34,7 +35,7 @@ namespace AdvantShop.Handlers.Catalog
 
         #endregion
 
-        public ProductListHandler(EProductOnMain type, bool inDepth, CategoryModel filter, int? productListId, bool isMobile)
+        public ProductListHandler(EProductOnMain type, bool inDepth, CategoryModel filter, int? productListId, bool isMobile,/*GlorySoft_016*/ int? salesType)
         {
             _type = type;
             _inDepth = inDepth;
@@ -42,7 +43,8 @@ namespace AdvantShop.Handlers.Catalog
             _isMobile = isMobile;
             _currentPageIndex = filter.Page ?? 1;
             _productListId = productListId ?? 0;
-            
+            _salesType = salesType;//GlorySoft_016
+
             _currentWarehouseIds = WarehouseContext.GetAvailableWarehouseIds();
         }
 
@@ -250,6 +252,9 @@ namespace AdvantShop.Handlers.Catalog
                             _paging.OrderBy("SortDiscount".AsSqlField("Sorting"))
                                    .OrderByDesc("Product.ProductID".AsSqlField("ProductIDSorting"));
                             break;
+                        case EProductOnMain.Recomended://GlorySoft_023
+                            _paging.OrderByDesc("Product.ProductID".AsSqlField("ProductIDSorting"));
+                            break;
                         case EProductOnMain.List:
                             _paging.OrderBy("[Product_ProductList].[SortOrder]".AsSqlField("Sorting"));
                             break;
@@ -262,6 +267,11 @@ namespace AdvantShop.Handlers.Catalog
         {
             _paging.Where("Product.Enabled={0}", true)
                    .Where("AND CategoryEnabled={0}", true);
+
+            if (_salesType == 1)//GlorySoft_016
+                _paging.Where("AND Product.Discount=25");
+            else if (_salesType == 2)
+                _paging.Where("AND Product.Discount<>25");
 
             bool hasFilter = false;
 
@@ -288,6 +298,10 @@ namespace AdvantShop.Handlers.Catalog
             {
                 _paging.Left_Join("[Catalog].[Product_ProductList] ON [Product_ProductList].[ProductId] = [Product].[ProductId]");
                 _paging.Where("AND [Product_ProductList].[ListId] = {0}", _productListId);
+            }
+            else if (_type == EProductOnMain.Recomended)//GlorySoft_023
+            {
+                _paging.Where("AND Recomended=1");
             }
 
             var currency = CurrencyService.CurrentCurrency;
@@ -485,6 +499,19 @@ namespace AdvantShop.Handlers.Catalog
             
             var tasks = new List<Task>();
 
+            if (_filter.CategoryId != 0 && SettingsCatalog.ShowPropertiesFilterInProductList)//GlorySoft_023
+            {
+                var task = Task.Run(() =>
+                {
+                    _model.Filter.AvailablePropertyIds =
+                        _paging.GetCustomData("PropertyValueID",
+                            " AND PropertyValueID is not null",
+                            reader => SQLDataHelper.GetInt(reader, "PropertyValueID"), true,
+                            "Left JOIN [Catalog].[ProductPropertyValue] ON [Product].[ProductID] = [ProductPropertyValue].[ProductID]");
+                });
+                tasks.Add(task);
+            }
+
             if (SettingsCatalog.ShowProducerFilter)
             {
                var task = Task.Run(() =>
@@ -544,6 +571,7 @@ namespace AdvantShop.Handlers.Catalog
             _model = new ProductListPagingModel(_inDepth);
 
             BuildPaging();
+            _model.ProductIds = _paging.ItemsIds<int>("Product.ProductID");//GlorySoft_023
             BuildExcludingFilters();
 
             return _model;

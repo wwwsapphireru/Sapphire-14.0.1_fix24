@@ -66,5 +66,31 @@ namespace AdvantShop.Web.Infrastructure.Admin.PaymentMethods
                 yield return new ValidationResult("Заполните обязательные поля");
             }
         }
+
+        //GlorySoft_001
+        public string ShowForNewUsers
+        {
+            get { return Parameters.ElementOrDefault(PayOnlineTemplate.ShowForNewUsers); }
+            set { Parameters.TryAddValue(PayOnlineTemplate.ShowForNewUsers, value.DefaultOrEmpty()); }
+        }
+        public List<SelectListItem> ShowForNewUsersTypes
+        {
+            get
+            {
+                var types = new List<SelectListItem>()
+                {
+                    new SelectListItem() {Text = "Всем", Value = ""},
+                    new SelectListItem() {Text = "Только старым", Value = "reg"},
+                    new SelectListItem() {Text = "Только новым", Value = "new"},
+                };
+
+                var type = types.Find(x => x.Value == ShowForNewUsers);
+                if (type != null)
+                    type.Selected = true;
+
+                return types;
+            }
+        }
+
     }
 }

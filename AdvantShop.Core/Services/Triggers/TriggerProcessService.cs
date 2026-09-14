@@ -240,7 +240,7 @@ namespace AdvantShop.Core.Services.Triggers
         /// </summary>
         private static bool CheckTrigger(TriggerRule trigger, int eventObjId, ITriggerObject triggerObject)
         {
-            return trigger.Enabled && (trigger.EventObjId == null || trigger.EventObjId == eventObjId);
+            return /*GlorySoft_003 trigger.Enabled &&*/ (trigger.EventObjId == null || trigger.EventObjId == eventObjId);
         }
 
         /// <summary>

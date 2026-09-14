@@ -2,7 +2,7 @@
 
 namespace AdvantShop.Core.Services.Webhook.Models.Api
 {
-    public sealed class OrderStatusModel
+    public /*GlorySoft_002 sealed*/ class OrderStatusModel
     {
         public int Id { get; set; }
         public string Name { get; set; }

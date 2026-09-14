@@ -6,7 +6,7 @@
 
         var ctrl = this;
 
-        const waitingSeconds = 10;
+        const waitingSeconds = 30/*GlorySoft_004 10*/;
 
         ctrl.$onInit = function () {
             ctrl.returnToFirstStep();
@@ -27,17 +27,18 @@
             ctrl.errorCaptcha = false;
             ctrl.errorCode = false;
             ctrl.errorReset = '';
+            ctrl.errorMessage = '';//GlorySoft_004
         };
 
         ctrl.validate = function (noCheckSmsCode) {
-            if (ctrl.pageType !== 'login') {
-                if (!noCheckSmsCode && (ctrl.smsCode === undefined || ctrl.smsCode === null || ctrl.smsCode === '' || ctrl.smsCode.length < 4)) {
-                    return false;
-                }
+            //if (ctrl.pageType !== 'login') {GlorySoft_018
+            //    if (!noCheckSmsCode && (ctrl.smsCode === undefined || ctrl.smsCode === null || ctrl.smsCode === '' || ctrl.smsCode.length < 4)) {
+            //        return false;
+            //    }
 				
-                return true;
-            }
-            else if (!noCheckSmsCode && ctrl.currentForm === 'second') {
+            //    return true;
+            //}
+            /*else*/ if (!noCheckSmsCode && ctrl.currentForm === 'second') {
                 if (!ctrl.isMobile) {
                     ctrl.smsCode = ctrl.smsCodeModel.join('');
                 }
@@ -90,7 +91,7 @@
             moduleSmsConfirmationService.sendSmsCode(ctrl.phone, ctrl.pageType, ctrl.captchaCode, captchaInstanceId).then(function (data) {
                 if (data.result != true) {
                     if (data.errors != null && data.errors.length > 0) {
-                        //toaster.pop('error', null, data.errors[0]);
+                        toaster.pop('error', null, data.errors[0]);//GlorySoft_004
                     }
 
                     if (ctrl.settings.useCaptcha && data.captchaError) {
@@ -128,11 +129,13 @@
                     if (data.errors != null && data.errors.length > 0) {
                         //toaster.pop('error', null, data.errors[0]);
                         ctrl.errorCode = true;
+                        ctrl.errorMessage = data.errors[0];//GlorySoft_004
                     }
                 }
                 else {
                     if (ctrl.pageType === 'login') {
                         ctrl.errorCode = false;
+                        ctrl.errorMessage = '';//GlorySoft_004
                         $window.location.href = $window.location.origin + '/myaccount';
                     }
                     else {
@@ -143,12 +146,21 @@
                         //toaster.pop('success', '', 'Код подтвержден');
                         ctrl.smsCodeConfirmed = true;
 
-                        if (ctrl.pageType == 'registration' && ctrl.registrationButton != null) {
-                            ctrl.registrationButton.removeAttribute("disabled");
+                        if (ctrl.pageType == 'registration' /*GlorySoft_018 && ctrl.registrationButton != null*/) {
+                            //ctrl.registrationButton.removeAttribute("disabled");GlorySoft_018
+
+                            //GlorySoft_018
+                            smsConfirmationService.dialogClose();
+                            ctrl.applyFn();
                         }
 
-                        if (ctrl.pageType == 'checkout')
-                            ctrl.setOrderAllowedAttribute();
+                        if (ctrl.pageType == 'checkout') {
+                            //ctrl.setOrderAllowedAttribute();GlorySoft_018
+
+                            //GlorySoft_018
+                            smsConfirmationService.dialogClose();
+                            ctrl.applyFn();
+                        }
 
                         ctrl.smsCodeEnabled = false;
                     }
@@ -201,7 +213,19 @@
             ctrl.phone = "";
             ctrl.code = "";
 
-            moduleSmsConfirmationService.getFormSettings(ctrl.pageToRedirect).then(function (result) {
+            if (ctrl.pageType !== 'login') {//GlorySoft_018
+                var phoneBlockId = ctrl.pageType === 'registration' ? 'Phone' : 'Data_User_Phone';
+                var phoneBlock = document.getElementById(phoneBlockId);
+
+                if (ctrl.pageType === 'checkout' && phoneBlock == null) {
+                    phoneBlock = document.querySelector('[name="Phone"]'); // Блок с номером тел в моб. версии
+                }
+
+                var phone = phoneBlock !== null ? phoneBlock.value : '';
+                ctrl.phone = phone;
+            }
+
+            moduleSmsConfirmationService.getFormSettings(ctrl.pageToRedirect,/*GlorySoft_018*/ ctrl.pageType).then(function (result) {
                 ctrl.settings.FormTitle = $sce.trustAsHtml(result.settings.FormTitle);
                 ctrl.settings.FormContent = $sce.trustAsHtml(result.settings.FormContent);
                 ctrl.settings.SocialLinks = $sce.trustAsHtml(result.socialLinks);
