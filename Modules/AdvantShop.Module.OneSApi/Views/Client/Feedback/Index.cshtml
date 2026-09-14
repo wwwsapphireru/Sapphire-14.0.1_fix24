@@ -1,0 +1,255 @@
+﻿@using AdvantShop.Customers
+@using AdvantShop.Module.OneSApi.Models.Client 
+@model AdvantShop.Module.OneSApi.Models.Client.FeedbackViewModel
+@{
+    Html.AddAsset("feedback");
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    //GlorySoft_047
+    var suggestAttributes = String.Format("class=\"autocompleter-block form-field-input {4}\" data-field=\"CompanyData.{0}\" data-autocompleter data-request-url=\"{1}\" data-template-path=\"scripts/_common/autocompleter/templates/common.html\" data-params=\"{2}\" data-apply-fn=\"{3}\"",
+        "INN", Model.Suggestions.SuggestCompanyNameUrl, "{q: feedback.inn}", "feedback.processCompany(obj)", "vertical-interval-xsmall");
+
+    //GlorySoft_037
+    var isGuest = (CustomerContext.CurrentCustomer == null || CustomerContext.CurrentCustomer.CustomerRole == Role.Guest);
+}
+    <div class="site-body-cell feedback-page">
+        @Html.SingleBreadCrumb(T("Feedback.Index.FeedbackHeader").ToString())
+        <div class="page-title-row brands-title-row page-title cs-bg-4--mobile">
+            <div class="contacts-title page-title">
+                <h1 class="main-title">@T("Feedback.Index.FeedbackHeader")</h1>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            <div class="row" ng-if="feedback.view != 'success'">
+                <div class="col-p-v mobile-content-padding" style="width: 100%;">
+                    @Html.StaticBlock("feedback", "feedback-text")
+                    <div data-ng-init="feedback.curTheme='@Model.MessageType'">
+                        <form name="feedbackForm" novalidate="novalidate">
+                            <div class="feedback-theme-changer">
+                                @foreach (var item in (FeedbackType[])Enum.GetValues(typeof(FeedbackType)))
+                                {
+                                    <a href="" class="feedback-theme-item @(item == Model.MessageType ? "active" : "")" data-ng-class="{active:feedback.isSelectedTheme('@item')}" data-ng-click="feedback.switchTheme('@item')">@item.Localize()</a>
+                                }
+                                <input type="hidden" id="MessageType" name="MessageType" data-ng-value="feedback.curTheme" />
+                            </div>
+                            <div class="feedback-input-area" ng-if="feedback.curTheme == '@FeedbackType.Thanks'">@*GlorySoft_047*@
+                                <label class="vertical-interval-xsmall p-r-sm feedback-input">
+                                    @Html.RadioButtonFor(x => x.ThanksType, 0, new
+                                    {
+                                        @class = "custom-input-native",
+                                        data_ng_model = "feedback.thanksType"
+                                    })
+                                    <span class="custom-input-radio"></span>
+                                    <span class="feedback-input-title">
+                                        Гарантийный ремонт
+                                    </span>
+                                </label>
+                                <label class="vertical-interval-xsmall feedback-input">
+                                    @Html.RadioButtonFor(x => x.ThanksType, 1, new
+                                    {
+                                        @class = "custom-input-native",
+                                        data_ng_model = "feedback.thanksType"
+                                    })
+                                    <span class="custom-input-radio"></span>
+                                    <span class="feedback-input-title">
+                                        Платный ремонт
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="feedback-input-area" ng-if="feedback.curTheme == '@FeedbackType.Thanks' && feedback.thanksType == 0">@*GlorySoft_047*@
+                                <div class="feedback-input vertical-interval-xsmall">
+                                    <div class="feedback-input-title"><span class="input-required">@T("Feedback.Index.OrderDate")</span></div>
+                                    <span class="flatpickr-custom" ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat: 'Y-m-d', wrap: true, enableTime: false}">
+                                        <input type="text"
+                                                class="input-small flatpickr-custom__input"
+                                                data-ng-required="true"
+                                                data-ng-flatpickr-input
+                                                data-ng-model="feedback.orderDate"
+                                                data-mask-control data-mask-control-preset="date"
+                                                @Html.Raw(Model.OrderDate != null ? "value=\"" + Model.OrderDate.Value.ToString("dd.MM.yyyy") + "\"" : "")>
+                                        @*<span class="flatpickr-custom__toggle" data-toggle>
+                                            <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V192H0v272zm320-196c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM192 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM64 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM400 64h-48V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H160V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H48C21.5 64 0 85.5 0 112v48h448v-48c0-26.5-21.5-48-48-48z"></path></svg>
+                                        </span>*@
+                                    </span>
+                                </div>
+                                <div class="feedback-input vertical-interval-xsmall">
+                                    <div class="feedback-input-title">@T("Feedback.Index.OrderNumberThanks")</div>
+                                    @Html.TextBoxFor(m => m.OrderNumber, new { @class = "input-small", data_ng_model = "feedback.orderNumber" })
+                                </div>
+                            </div>
+                            <div class="feedback-textarea">
+                                <div class="feedback-textarea-title">
+                                    <span class="input-required">@T("Feedback.Index.Message")</span>
+                                </div>
+                                @Html.TextAreaFor(m => m.Message, new { @class = "textarea-middle", required = "true", data_ng_model = "feedback.message" })
+                            </div>
+                            <div class="feedback-textarea" ng-show="feedback.curTheme == '@FeedbackType.KP'">@*GlorySoft_047*@
+                                <div class="feedback-textarea-title">
+                                    <span>@T("Feedback.Index.Items")</span>
+                                </div>
+                                @Html.TextAreaFor(m => m.Items, new { @class = "textarea-middle", data_ng_model = "feedback.items" })
+                                <div>
+                                    <a href="" class="btn-action" data-ng-click="feedback.fillItemsFromBasket()">
+                                        <span>Заполнить из корзины</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="feedback-input-area" ng-if="feedback.curTheme == '@FeedbackType.Thanks'">@*GlorySoft_047*@
+                                <label class="vertical-interval-xsmall p-r-sm feedback-input">
+                                    @Html.RadioButtonFor(x => x.CustomerType, (int)CustomerType.PhysicalEntity, new
+                                    {
+                                        @class = "custom-input-native",
+                                        data_ng_model = "feedback.customerType"
+                                    })
+                                    <span class="custom-input-radio"></span>
+                                    <span class="feedback-input-title">
+                                        Физическое лицо
+                                    </span>
+                                </label>
+                                <label class="vertical-interval-xsmall feedback-input">
+                                    @Html.RadioButtonFor(x => x.CustomerType, (int)CustomerType.LegalEntity, new
+                                    {
+                                        @class = "custom-input-native",
+                                        data_ng_model = "feedback.customerType"
+                                    })
+                                    <span class="custom-input-radio"></span>
+                                    <span class="feedback-input-title">
+                                        Юридическое лицо
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="feedback-input-area">
+                                <div class="feedback-input vertical-interval-xsmall" ng-show="feedback.curTheme != '@FeedbackType.KP' && feedback.curTheme != '@FeedbackType.Thanks'">@*GlorySoft_047*@
+                                    @*<div class="feedback-input-title" ng-show="feedback.curTheme == '@FeedbackType.Thanks'">@T("Feedback.Index.OrderNumberThanks")</div>@*GlorySoft_047*@
+                                    <div class="feedback-input-title" ng-show="feedback.curTheme != '@FeedbackType.Thanks'">@T("Feedback.Index.OrderNumber")</div>@*GlorySoft_047*@
+                                    @Html.TextBoxFor(m => m.OrderNumber, new { @class = "input-small", data_ng_model = "feedback.orderNumber" })
+                                </div>
+                                <div class="feedback-input vertical-interval-xsmall" ng-if="feedback.curTheme == '@FeedbackType.KP' || (feedback.curTheme == '@FeedbackType.Thanks' && feedback.customerType == @((int)CustomerType.LegalEntity))">@*GlorySoft_047*@
+                                    <div class="feedback-input-title ">
+                                        <span class="input-required">@T("Feedback.Index.INN")</span>
+                                    </div>
+                                    <span @Html.Raw(suggestAttributes)>
+                                        @Html.TextBoxFor(m => m.INN, new { @class = "input-small", data_ng_model = "feedback.inn", required = "true", autocomplete = "organization", data_autocompleter_input = "", data_autocomplete_debounce = "400" })
+                                    </span>
+                                </div>
+                                <div class="feedback-input vertical-interval-xsmall">
+                                    <div class="feedback-input-title">
+                                        <span class="input-required">@T("Feedback.Index.Name")</span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.Name, new { @class = "input-small", required = "true", data_ng_model = "feedback.name" })
+                                </div>
+                            </div>
+                            <div class="feedback-input-area" ng-if="feedback.curTheme == '@FeedbackType.KP'">@*GlorySoft_047*@
+                                <div class="feedback-input vertical-interval-xsmall" style="width:600px;">
+                                    <div class="feedback-input-title">
+                                        <span class="input-required">@T("Feedback.Index.CompanyName")</span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.CompanyName, new { @class = "input-small", data_ng_model = "feedback.companyName", data_ng_disabled="true", required = "true" })
+                                    @Html.HiddenFor(m => m.CompanyKPP, new { data_ng_model = "feedback.companyKpp" })
+                                    @Html.HiddenFor(m => m.CompanyAddress, new { data_ng_model = "feedback.companyAddress" })
+                                </div>
+                            </div>
+
+                            <div class="feedback-input-area">
+                                <div class="feedback-input vertical-interval-xsmall">
+                                    <div class="feedback-input-title">
+                                        <span class="input-required">@T("Feedback.Index.Email")</span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.Email, new { @class = "input-small", required = "true", data_ng_model = "feedback.email", type = "email", pattern = "^([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+)$" })
+                                </div>
+                                <div class="feedback-input vertical-interval-xsmall">
+                                    <div class="feedback-input-title">
+                                        <span class="input-required">@T("Feedback.Index.Phone")</span>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.Phone, new
+                                    {
+                                           @class = "input-small",
+                                           type = "tel",
+                                           required = "true",
+                                           placeholder = "{{ :: 'Js.Phone.PhonePlaceholder' | translate }}",
+                                           data_ng_model = "feedback.phone",
+                                           data_mask_control = SettingsMain.EnablePhoneMask.ToLowerString(),
+                                           data_mask_control_preset = "phone"
+                                    })
+                                </div>
+                            </div>
+
+                            <div class="feedback-input-area">
+                                <div class="feedback-input vertical-interval-xsmall">
+                                    <div class="feedback-input-title">
+                                        <span style="vertical-align:text-top;">Прикрепления</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-xsmall btn-action" ngf-select="feedback.selectedImage($files)" ngf-drop ngf-max-size="2MB" 
+                                        ngf-accept="'image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword'" 
+                                        type="button" data-ng-bind="::'Js.Reviews.SelectFile' | translate"></button>
+                            </div>
+                            <div class="feedback-input-area">
+                                <div class="review-photos" style="width:100%;">
+                                    <div class="review-photos__item" ng-repeat="image in feedback.images track by $index">
+                                        <div class="review-photos__wrap-thumbs cs-br-1">
+                                            <img class="review-photos__thumbs" ngf-src="image">
+                                        </div>
+                                        <button class="review-photos__delete icon-cancel-before icon-no-margin" data-ng-click="feedback.deleteImage($index)"></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (SettingsMain.EnableCaptchaInFeedback &&/*GlorySoft_037*/ isGuest)
+                            {
+                                <label class="row feedback-input-area">
+                                    <span class="col-xs-12 feedback-input">
+                                        <span class="form-field-name vertical-interval-middle input-required feedback-input-title">
+                                            @T("Captcha.Code")
+                                        </span>
+                                    </span>
+                                    <span class="col-xs-12">
+                                        <span class="form-field-input vertical-interval-middle feedback-input">
+                                            @Html.Captcha("feedback.captchaCode")
+                                        </span>
+                                    </span>
+                                </label>}
+                            @if ((SettingsCheckout.IsShowUserAgreementText ||/*GlorySoft_037*/ true) &&/*GlorySoft_037*/ isGuest)
+                            {
+                                <label class="row middle-xs vertical-interval-big">
+                                    <span class="col-xs-8">
+                                        <span class="form-field-input vertical-interval-xsmall">
+                                            @Html.CheckBoxFor(m => m.Agree, new { required = "required", data_ng_model = "feedback.agreement", @class = "custom-input-native", data_ng_init = "feedback.agreement=" + SettingsCheckout.AgreementDefaultChecked.ToLowerString() })
+                                            <span class="custom-input-checkbox"></span>
+                                            @*@Html.Raw(SettingsCheckout.UserAgreementText)*@
+                                            @Html.Raw(T("Feedback.UserAgreementText"))
+                                       </span>
+                                    </span>
+                                </label>
+                            }
+                            <div class="ng-cloak hidden" data-ng-init="feedback.secret='secret'">
+                                @Html.TextBoxFor(m => m.Secret, new { @class = "input-small", data_ng_model = "feedback.secret" })
+                            </div>
+                            <div>
+                                <input type="submit" data-button-validation data-button-validation-success="feedback.submit()" data-ng-disabled="feedback.agreement != true && @(isGuest.ToString().ToLower())" class="btn btn-submit btn-middle" value="@T("Feedback.Index.Submit")">
+                            </div>
+                        </form>
+                    </div>
+
+                    @Html.StaticBlock("feedback_before")
+                </div>
+            </div>
+
+            <div class="row" ng-if="feedback.view == 'success'">
+                <div class="col-xs col-p-v">
+                    <div class="site-body-cell-no-left">
+                        <div class="feedbackSuccess-block">
+                            @Html.StaticBlock("feedback_success")
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-3 col-p-v">
+                    <div class="site-body-cell-no-right">
+                        <div data-check-order></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>

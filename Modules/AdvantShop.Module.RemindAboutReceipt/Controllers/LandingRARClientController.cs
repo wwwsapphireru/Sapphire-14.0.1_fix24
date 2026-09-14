@@ -52,7 +52,19 @@ namespace AdvantShop.Module.RemindAboutReceipt.Controllers
                 Phone = customer.Phone ?? "",
                 IsShowUserAgreementText = SettingsCheckout.IsShowUserAgreementText,
                 UserAgreementText = SettingsCheckout.UserAgreementText,
+<<<<<<< Updated upstream
             };
+=======
+                FormRequest = new NotificationModelRequest()//GlorySoft_012
+            };
+            if (Customers.CustomerContext.CurrentCustomer?.RegistredUser == true)//GlorySoft_012
+            {
+                form.FormRequest.Email = Customers.CustomerContext.CurrentCustomer.EMail;
+                form.FormRequest.Name = Customers.CustomerContext.CurrentCustomer.FirstName;
+                form.FormRequest.Surname = Customers.CustomerContext.CurrentCustomer.LastName;
+                form.FormRequest.PhoneNumber = Customers.CustomerContext.CurrentCustomer.Phone;
+            }
+>>>>>>> Stashed changes
             return Json(new { Form = form });
         }
 
@@ -66,7 +78,14 @@ namespace AdvantShop.Module.RemindAboutReceipt.Controllers
 
                 if(string.IsNullOrEmpty(formRequest.Email))
                     return Json(false);
+<<<<<<< Updated upstream
                 
+=======
+
+                if (formRequest.ProductId == 0)//GlorySoft_012
+                    formRequest.ProductId = OfferService.GetOffer(formRequest.ProductOfferId)?.ProductId ?? 0;
+
+>>>>>>> Stashed changes
                 var client = Service.RarService.GetRarClient(formRequest.Email, formRequest.ProductId, formRequest.ProductOfferId);
 
                 var leadId = 0;
@@ -113,6 +132,20 @@ namespace AdvantShop.Module.RemindAboutReceipt.Controllers
             }
         }
 
+<<<<<<< Updated upstream
+=======
+        public ActionResult ProductView(int offerId)//GlorySoft_012
+        {
+            if (!Service.ModuleSettings.RarActive)
+                return new EmptyResult();
+            var offer = OfferService.GetOffer(offerId);
+            if (offer == null)
+                return new EmptyResult();
+
+            return PartialView("~/modules/" + ModuleID + "/Views/Client/_ProductView.cshtml", offer);
+        }
+
+>>>>>>> Stashed changes
         #endregion
 
         #region discount

@@ -1511,6 +1511,9 @@ namespace AdvantShop.Shipping.Sdek.Api
         /// Признак того, что по заказу была получена информация о переводе наложенного платежа интернет-магазину
         /// </summary>
         public bool TransactedPayment { get; set; }
+
+        [JsonConverter(typeof(CustomDateTimeConverter), "yyyy-MM-dd")]
+        public DateTime? KeepFreeUntil { get; set; }//GlorySoft_001
     }
 
     public class SenderSdekOrder : Sender

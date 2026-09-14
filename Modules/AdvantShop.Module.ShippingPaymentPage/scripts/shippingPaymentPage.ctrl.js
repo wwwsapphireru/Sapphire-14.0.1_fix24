@@ -31,7 +31,11 @@ export default function ShippingPaymentPageCtrl($http, zoneService, shippingPaym
     ctrl.fetchShipping = function () {
         var preorder = ctrl.useCart === false ? preorderList : null;
 
+<<<<<<< Updated upstream
         return shippingPaymentPageService.getShipping(preorder, ctrl.typeCalculationVariants)
+=======
+        return shippingPaymentPageService.getShipping(/*GlorySoft_008*/ctrl.contact, preorder, ctrl.typeCalculationVariants)
+>>>>>>> Stashed changes
             .then(function (response) {
                 return fetchTypeCalculationVariants(preorder, response);
             })
@@ -149,7 +153,18 @@ export default function ShippingPaymentPageCtrl($http, zoneService, shippingPaym
     };
 
     ctrl.setZone = function (city, region, zip) {
+<<<<<<< Updated upstream
         zoneService.setCurrentZone(city, null, null, ctrl.showRegion ? region : null, null, ctrl.showZip ? zip : null); // city, obj, countryId, region, country, zip
+=======
+        //zoneService.setCurrentZone(city, null, null, ctrl.showRegion ? region : null, null, ctrl.showZip ? zip : null);GlorySoft_008 // city, obj, countryId, region, country, zip
+
+        //GlorySoft_008
+        var zone = {};
+        zone.City = city;
+        zone.Region = ctrl.showRegion ? region : null;
+        zone.Zip = ctrl.showZip ? zip : null;
+        ctrl.saveContact(zone);
+>>>>>>> Stashed changes
     };
 
     ctrl.reloadData = function () {
@@ -169,8 +184,14 @@ export default function ShippingPaymentPageCtrl($http, zoneService, shippingPaym
         if (!zone.Region)
             ctrl.showRegion = true;
 
+<<<<<<< Updated upstream
         shippingPaymentPageService.saveContact(ctrl.contact)
             .then(relationship['address']);
+=======
+        //shippingPaymentPageService.saveContact(ctrl.contact)
+        //    .then(relationship['address']);GlorySoft_008
+        relationship['address']();//GlorySoft_008
+>>>>>>> Stashed changes
     };
 
     $http.get('shipping-payment/getlistproduct').then(function (response) {

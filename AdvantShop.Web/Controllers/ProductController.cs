@@ -41,11 +41,22 @@ namespace AdvantShop.Controllers
             if (string.IsNullOrWhiteSpace(url))
                 return Error404();
 
+            var isManager = (CustomerContext.CurrentCustomer?.IsAdmin == true || CustomerContext.CurrentCustomer?.IsManager == true || CustomerContext.CurrentCustomer?.IsModerator == true);//GlorySoft_002
+
             var product = ProductService.GetProductByUrl(url);
-            if (product == null || !product.Enabled || !product.CategoryEnabled)
+            if (product == null || (!product.Enabled &&/*GlorySoft_002*/ !isManager) || !product.CategoryEnabled)
                 return Error404();
 
             var model = new GetProductHandler(product, color, size, v).Get();
+
+            if (isManager)//GlorySoft_002
+            {
+                var offer = OfferService.GetMainOffer(product.Offers, product.AllowPreOrder, color, size);
+                var amountByMultiplicity = offer.GetAmountByMultiplicity(product.Multiplicity);
+                var amount = amountByMultiplicity > 0 ? offer.Amount : 0;
+                var isAvailable = offer != null && amountByMultiplicity > 0;
+                model.IsAvailable = isAvailable || product.AllowBuyOutOfStockProducts();
+            }
 
             model.BreadCrumbs =
                 CategoryService.GetParentCategories(product.CategoryId)
@@ -99,7 +110,7 @@ namespace AdvantShop.Controllers
                                                             .OrderByDescending(x => color.HasValue ? x.ColorID == color : x.Main)
                                                             .ThenBy(x => x.PhotoSortOrder)
                                                             .FirstOrDefault().ImageSrcMiddle();
-            
+
             WriteLog(model.Product.Name, Url.AbsoluteRouteUrl("Product", new { url = product.UrlPath }), ePageType.product);
             return CustomView(model);
         }

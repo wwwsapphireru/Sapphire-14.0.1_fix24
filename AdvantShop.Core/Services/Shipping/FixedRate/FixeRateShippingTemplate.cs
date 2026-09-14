@@ -10,5 +10,6 @@ namespace AdvantShop.Shipping.FixedRate
         public const string ShippingPrice = "ShippingPrice";
         //public const string Extracharge = "Extracharge";
         public const string DeliveryTime = "DeliveryTime";
+        public const string ShippingForTK = "ShippingForTK";//GlorySoft_030
     }
 }

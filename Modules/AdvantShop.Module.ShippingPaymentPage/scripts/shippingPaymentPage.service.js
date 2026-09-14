@@ -3,13 +3,23 @@ export default function shippingPaymentPageService($http) {
     const service = this;
     let contact;
 
+<<<<<<< Updated upstream
     service.getShipping = function (preorderList, typeCalculationVariants, allowChangeSelectedShipping) {
         var params = { rnd: Math.random(), typeCalculationVariants: typeCalculationVariants, allowChangeSelectedShipping: allowChangeSelectedShipping };
+=======
+    service.getShipping = function (/*GlorySoft_008*/contact, preorderList, typeCalculationVariants, allowChangeSelectedShipping) {
+        var params = { rnd: Math.random(), typeCalculationVariants: typeCalculationVariants, allowChangeSelectedShipping: allowChangeSelectedShipping };
+        params.contact = contact;//GlorySoft_008
+>>>>>>> Stashed changes
         if (preorderList != null) {
             params.preorderList = preorderList;
         }
 
+<<<<<<< Updated upstream
         return $http.post('/checkout/CheckoutShippingJson', params).then(function (response) {
+=======
+        return $http.post('shipping-payment/CheckoutShippingJson'/*GlorySoft_008 '/checkout/CheckoutShippingJson'*/, params).then(function (response) {
+>>>>>>> Stashed changes
             return response.data;
         });
     };

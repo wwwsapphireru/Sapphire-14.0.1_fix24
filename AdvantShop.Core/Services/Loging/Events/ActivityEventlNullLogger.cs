@@ -103,5 +103,10 @@ namespace AdvantShop.Core.Services.Loging.Events
         public virtual void DoOrderItemDeleted(IOrderItem item)
         {
         }
+
+        public virtual int GetDefaultCustomerGroup()//GlorySoft_003
+        {
+            return 0;
+        }
     }
 }

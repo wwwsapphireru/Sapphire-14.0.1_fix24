@@ -1,0 +1,21 @@
+//GlorySoft_015
+
+.preorder-rating-wrap, .preorder-price-wrap, .preorder-avalable-wrap {
+    text-align: center;
+}
+
+.preorder-price-wrap {
+    .price-new, .price-current {
+        font-size: 16px;
+    }
+}
+
+.preorder-avalable-wrap {
+    .availability {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+.preorder-product{
+    margin-left: 0;
+}

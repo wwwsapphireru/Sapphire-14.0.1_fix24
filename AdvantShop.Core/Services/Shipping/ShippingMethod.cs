@@ -125,5 +125,8 @@ namespace AdvantShop.Shipping
         public bool UseDeliveryInterval => ShippingMethodService.ShippingMethodTypesUseDeliveryInterval.Contains(ShippingType);
 
         public bool OnlyForDigitalProduct => ShippingMethodService.ShippingMethodTypesOnlyForDigitalProducts.Contains(ShippingType);
+
+        public string TrackingUrl { get; set; }//GlorySoft_027_sql
+        //public bool ShippingForTK { get; set; }//GlorySoft_030_sql
     }
 }

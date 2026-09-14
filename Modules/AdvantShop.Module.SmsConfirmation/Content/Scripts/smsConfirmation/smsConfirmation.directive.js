@@ -17,7 +17,12 @@
                 scope: {
                     pageType: '@',
                     isMobile: '=',
+<<<<<<< Updated upstream
                     pageToRedirect: '@'
+=======
+                    pageToRedirect: '@',
+                    applyFn: '&'//GlorySoft_018
+>>>>>>> Stashed changes
                 },
                 controller: 'moduleSmsConfirmationCtrl',
                 controllerAs: 'moduleSmsConfirmation',

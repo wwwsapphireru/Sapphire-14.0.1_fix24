@@ -95,6 +95,17 @@ namespace AdvantShop.Models.MyAccount
         public string FilesHelpText { get; set; }
         public string AllowedFileExtensions { get; set; }
         public bool ShowProductArtNo { get; set; }
+
+        //GlorySoft_027
+        public string StatusColor { get; set; }
+        public Manager Manager { get; set; }
+        public string ManagerPhone { get; set; }
+        public string EmailForFeedback { get; set; }
+        public string ChequeUrl { get; set; }
+        public bool PaymentMethodIsOnline { get; set; }
+        public string TrackingUrl { get; set; }
+        public string KeepFreeUntil { get; set; }
+        public string AdminComment { get; set; }
     }
 
     public class AccrueBonusesModel

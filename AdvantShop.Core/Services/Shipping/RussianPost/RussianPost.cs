@@ -8,11 +8,13 @@ using AdvantShop.Core.Common.Attributes;
 using AdvantShop.Core.Common.Extensions;
 using AdvantShop.Core.Services.Shipping;
 using AdvantShop.Core.Services.Shipping.RussianPost.TrackingApi;
+using AdvantShop.Customers;
 using AdvantShop.Diagnostics;
 using AdvantShop.Orders;
 using AdvantShop.Repository;
 using AdvantShop.Shipping.RussianPost.Api;
 using AdvantShop.Shipping.RussianPost.PickPoints;
+using Newtonsoft.Json;
 
 namespace AdvantShop.Shipping.RussianPost
 {
@@ -49,6 +51,12 @@ namespace AdvantShop.Shipping.RussianPost
         public const string KeyNameOrderRussianPostIdInOrderAdditionalData = "OrderRussianPostId";
 
         public override string[] CurrencyIso3Available { get { return new[] { "RUB" }; } }
+
+        //GlorySoft_001
+        private readonly OrderStatus _statusForReady;
+        private const string _basis = "Синхронизация статусов для Почты России";
+        private readonly CustomerType _customerType;
+        private readonly int _maxWeight;
 
         public RussianPost(ShippingMethod method, ShippingCalculationParameters calculationParameters) : base(method, calculationParameters)
         {
@@ -250,6 +258,11 @@ namespace AdvantShop.Shipping.RussianPost
             }
             else
                 _statusesReference = new Dictionary<string, int?>();
+
+            //GlorySoft_001
+            _statusForReady = OrderStatusService.GetOrderStatus(_method.Params.ElementOrDefault(RussianPostTemplate.StatusForReady).TryParseInt(0));
+            _customerType = (CustomerType)_method.Params.ElementOrDefault(RussianPostTemplate.CustomerType).TryParseInt((int)CustomerType.All);
+            _maxWeight = _method.Params.ElementOrDefault(RussianPostTemplate.MaxWeight).TryParseInt(0);
         }
 
         public RussianPostApiService RussianPostApiService
@@ -306,27 +319,98 @@ namespace AdvantShop.Shipping.RussianPost
 
         #region Statuses
 
+        //public void SyncStatusOfOrder(Order order)GlorySoft_001
+        //{
+        //    if (!string.IsNullOrEmpty(order.TrackNumber))
+        //    {
+        //        var history = _russianPostTrackingApiService.GetBarcodeHistory(order.TrackNumber);
+        //        if (history.Body != null && history.Body.Response != null &&
+        //            history.Body.Response.OperationHistoryData != null &&
+        //            history.Body.Response.OperationHistoryData.HistoryRecords != null &&
+        //            history.Body.Response.OperationHistoryData.HistoryRecords.Count > 0)
+        //        {
+        //            var statusInfo = 
+        //                history.Body.Response.OperationHistoryData.HistoryRecords
+        //                    .Where(record =>
+        //                    {
+        //                        var tKey = "s" + record.OperationParameters.OperType.Id;
+        //                        var tAttrKey =
+        //                            record.OperationParameters.OperAttr != null
+        //                                ? $"{tKey}_{record.OperationParameters.OperAttr.Id}"
+        //                                : null;
+        //                        return
+        //                            (StatusesReference.ContainsKey(tKey) 
+        //                                && StatusesReference[tKey].HasValue)
+        //                            || (tAttrKey != null
+        //                                && StatusesReference.ContainsKey(tAttrKey)
+        //                                && StatusesReference[tAttrKey].HasValue);
+        //                    })
+        //                    .OrderByDescending(x => x.OperationParameters.OperDate)
+        //                    .FirstOrDefault();
+
+        //            if (statusInfo is null)
+        //                return;
+
+        //            var typeAndAttrKey = statusInfo.OperationParameters.OperAttr != null 
+        //                ? string.Format("s{0}_{1}", statusInfo.OperationParameters.OperType.Id, statusInfo.OperationParameters.OperAttr.Id) 
+        //                : null;
+        //            var typeKey = "s" + statusInfo.OperationParameters.OperType.Id;
+
+        //            var russianPostOrderStatus = typeAndAttrKey != null && StatusesReference.ContainsKey(typeAndAttrKey)
+        //                ? StatusesReference[typeAndAttrKey]
+        //                : StatusesReference.ContainsKey(typeKey) 
+        //                    ? StatusesReference[typeKey]
+        //                    : null;
+
+        //            if (russianPostOrderStatus.HasValue &&
+        //                order.OrderStatusId != russianPostOrderStatus.Value &&
+        //                OrderStatusService.GetOrderStatus(russianPostOrderStatus.Value) != null)
+        //            {
+        //                var lastOrderStatusHistory =
+        //                    OrderStatusService.GetOrderStatusHistory(order.OrderID)
+        //                        .OrderByDescending(item => item.Date)
+        //                        .FirstOrDefault();
+
+        //                if (lastOrderStatusHistory == null ||
+        //                    lastOrderStatusHistory.Date < statusInfo.OperationParameters.OperDate)
+        //                {
+        //                    OrderStatusService.ChangeOrderStatus(order.OrderID,
+        //                        russianPostOrderStatus.Value, "Синхронизация статусов для Почты России");
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+
         public void SyncStatusOfOrder(Order order)
         {
             if (!string.IsNullOrEmpty(order.TrackNumber))
             {
-                var history = _russianPostTrackingApiService.GetBarcodeHistory(order.TrackNumber);
+                var orderTrackNumber = order.TrackNumber;
+                var p = orderTrackNumber.IndexOf("/");
+                if (p >= 0)
+                    orderTrackNumber = orderTrackNumber.Substring(0, p);
+                var history = _russianPostTrackingApiService.GetBarcodeHistory(orderTrackNumber.Trim().ToUpper());
+
+                if (order.OrderStatus.IsCanceled)
+                    Debug.Log.Info("OneSApi CheckRefusing ShippingType RussianPost Entity = " + JsonConvert.SerializeObject(history));
+
                 if (history.Body != null && history.Body.Response != null &&
                     history.Body.Response.OperationHistoryData != null &&
                     history.Body.Response.OperationHistoryData.HistoryRecords != null &&
                     history.Body.Response.OperationHistoryData.HistoryRecords.Count > 0)
                 {
-                    var statusInfo = 
+                    var statusInfo =
                         history.Body.Response.OperationHistoryData.HistoryRecords
                             .Where(record =>
                             {
-                                var tKey = "s" + record.OperationParameters.OperType.Id;
+                                var tKey = "s" + record.OperationParameters.OperType.Id.ToString();
                                 var tAttrKey =
                                     record.OperationParameters.OperAttr != null
                                         ? $"{tKey}_{record.OperationParameters.OperAttr.Id}"
                                         : null;
                                 return
-                                    (StatusesReference.ContainsKey(tKey) 
+                                    (StatusesReference.ContainsKey(tKey)
                                         && StatusesReference[tKey].HasValue)
                                     || (tAttrKey != null
                                         && StatusesReference.ContainsKey(tAttrKey)
@@ -337,15 +421,15 @@ namespace AdvantShop.Shipping.RussianPost
 
                     if (statusInfo is null)
                         return;
-                    
-                    var typeAndAttrKey = statusInfo.OperationParameters.OperAttr != null 
-                        ? string.Format("s{0}_{1}", statusInfo.OperationParameters.OperType.Id, statusInfo.OperationParameters.OperAttr.Id) 
+
+                    var typeAndAttrKey = statusInfo.OperationParameters.OperAttr != null
+                        ? string.Format("s{0}_{1}", statusInfo.OperationParameters.OperType.Id, statusInfo.OperationParameters.OperAttr.Id)
                         : null;
-                    var typeKey = "s" + statusInfo.OperationParameters.OperType.Id;
+                    var typeKey = "s" + statusInfo.OperationParameters.OperType.Id.ToString();
 
                     var russianPostOrderStatus = typeAndAttrKey != null && StatusesReference.ContainsKey(typeAndAttrKey)
                         ? StatusesReference[typeAndAttrKey]
-                        : StatusesReference.ContainsKey(typeKey) 
+                        : StatusesReference.ContainsKey(typeKey)
                             ? StatusesReference[typeKey]
                             : null;
 
@@ -358,13 +442,45 @@ namespace AdvantShop.Shipping.RussianPost
                                 .OrderByDescending(item => item.Date)
                                 .FirstOrDefault();
 
-                        if (lastOrderStatusHistory == null ||
-                            lastOrderStatusHistory.Date < statusInfo.OperationParameters.OperDate)
+                        //if (lastOrderStatusHistory == null ||
+                        //    lastOrderStatusHistory.Date < statusInfo.OperationParameters.OperDate)
+                        if (order.OrderStatus == null ||
+                            (!order.OrderStatus.IsCanceled && !order.OrderStatus.IsCompleted))
                         {
                             OrderStatusService.ChangeOrderStatus(order.OrderID,
-                                russianPostOrderStatus.Value, "Синхронизация статусов для Почты России");
+                                russianPostOrderStatus.Value, _basis);
+
+                            if (_statusForReady != null && russianPostOrderStatus.Value == _statusForReady.StatusID)
+                            {
+                                var keepFreeUntilOld = OrderService.GetOrderAdditionalData(order.OrderID, "KeepFreeUntil");
+                                var keepFreeUntilNew = (DateTime.Today.AddDays(15).AddSeconds(-1)).ToString();
+                                if (keepFreeUntilNew != keepFreeUntilOld)
+                                {
+                                    OrderService.AddUpdateOrderAdditionalData(order.OrderID, "KeepFreeUntil", keepFreeUntilNew);
+                                    var comment = "Срок бесплатного хранения: " + keepFreeUntilNew;
+                                    var changedBy = new OrderChangedBy(_basis);
+                                    OrderService.UpdateAdminOrderComment(order.OrderID, order.AdminOrderComment + "\n" + comment, changedBy);
+                                    OrderService.UpdateStatusComment(order.OrderID, comment, changedBy);
+                                }
+                            }
                         }
                     }
+                }
+                else if (history.Body == null)
+                {
+                    Debug.Log.Warn(string.Format("RussianPostSync SyncStatusOfOrder Fault: OrderId={0} Track={1} Body == null", order.OrderID, order.TrackNumber));
+                    RussianPostService.CreateFormTaskWrongTrack(2304147, order.Number, order.TrackNumber, order.OrderID);
+                    //MailService.SendMailNow(Guid.Empty, SettingsMail.EmailForProductDiscuss, "Некорректный трек-номер", $"Некорректный трек-номер по заказу {order.Number} - <a href='https://www.pochta.ru/tracking?barcode={order.TrackNumber}'>{order.TrackNumber}</a>", true);
+                }
+                else if (history.Body.Fault != null)
+                {
+                    Debug.Log.Warn(string.Format("RussianPostSync SyncStatusOfOrder Fault: OrderId={0} Track={1} {2}: {3}", order.OrderID, order.TrackNumber, history.Body.Fault.Code.Value, history.Body.Fault.Reason.Text));
+                    if (!(history.Body.Fault.Code.Value == "S:Receiver" && history.Body.Fault.Reason.Text == "Внутренняя ошибка сервиса"))
+                        /*var pyrusResponse = */
+                        RussianPostService.CreateFormTaskWrongTrack(2304147, order.Number, order.TrackNumber, order.OrderID);
+                    //if (pyrusResponse.Key == null)
+                    //    errors.Add("Ошибка при отправке запроса");
+                    //MailService.SendMailNow(Guid.Empty, SettingsMail.EmailForProductDiscuss, "Некорректный трек-номер", $"Некорректный трек-номер по заказу {order.Number} - <a href='https://www.pochta.ru/tracking?barcode={order.TrackNumber}'>{order.TrackNumber}</a>", true);
                 }
             }
         }
@@ -785,6 +901,19 @@ namespace AdvantShop.Shipping.RussianPost
 
         protected override IEnumerable<BaseShippingOption> CalcOptions(CalculationVariants calculationVariants)
         {
+            //GlorySoft_001
+            if (_customerType != CustomerType.All && !_calculationParameters.IsFromAdminArea && CustomerContext.CurrentCustomer?.CustomerType != _customerType)
+                return null;
+            if (_maxWeight > 0)
+            {
+                int weight = (int)GetTotalWeight(1000);
+                if (weight > _maxWeight * 1000)
+                    return null;
+            }
+            var totalPrice = _calculationParameters.ItemsTotalPriceWithDiscounts;
+            if (totalPrice > 50000 && _customerType == CustomerType.LegalEntity)
+                return null;
+
             var cancellationTokenSource = new CancellationTokenSource();
 #if DEBUG
             cancellationTokenSource.CancelAfter(TimeSpan.FromMinutes(1));

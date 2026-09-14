@@ -35,5 +35,12 @@ namespace AdvantShop.Models.Cart
         public bool IsShowUnits { get; set; }
         public bool IsWishListVisibility { get; set; }
 
+        //GlorySoft_006
+        public string DiscountOnTotalPrice { get; set; }
+        public string DiscountOnTotalPriceAmount { get; set; }
+        public string TotalWeight { get; set; }
+        public string TaxesNames { get; set; }
+        public string TaxesPrice { get; set; }
+
     }
 }

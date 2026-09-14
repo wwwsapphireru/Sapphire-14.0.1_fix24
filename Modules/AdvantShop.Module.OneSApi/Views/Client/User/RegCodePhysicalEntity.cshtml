@@ -1,0 +1,38 @@
+﻿@model AdvantShop.Module.OneSApi.Models.Client.RegCodePhysicalEntityModel
+@using AdvantShop.Module.OneSApi
+
+@{ 
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div data-oc-lazy-load="['@("modules/" + OneSApi.ModuleStringId + "/content/scripts/client/regCodePhysicalEntity.js")']">
+    <div data-ng-controller="RegCodePhysicalEntityCtrl as regCodePhysicalEntity">
+        <div class="site-body-cell mobile-content-padding checkout-success checkout-success--layout-default">
+            <div class="checkout-success-content">
+                <div class="page-title-row checkout-success-title-row">
+                    <div class="checkout-success-title page-title">
+                        <h1>@T("User.Registration.RegCodePhysicalEntity")</h1>
+                    </div>
+                </div>
+                <div>
+                    <div class="checkout-success-content-top vertical-interval-small">
+                        @*<div>На элетронную почту @Model.Email отправлено письмо со ссылкой на завершение регистрации.</div>
+                        <div>После перехода по ссылке Ваша учетная запись будет активирована.</div>
+                        <div>Ссылка действительна в течение 24 часов.</div>*@
+                        @Html.Raw(Model.Content)
+                        <div>
+                            <span class="">
+                                <a ng-click="regCodePhysicalEntity.retrySendRegCode('@Model.CustomerId', '@Model.Email')" href="" class="btn btn-xsmall btn-submit">Отправить код повторно</a>
+                            </span>
+                            @*<span>&nbsp;</span>
+                            <span class="">
+                                <a ng-click="regCodePhysicalEntity.sendFeedback('@Model.CustomerId')" href="" class="btn btn-xsmall btn-submit" style="background-color: #f00;">Не могу подтвердить регистрацию</a>
+                            </span>*@
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -104,6 +104,17 @@ namespace AdvantShop.Controllers
             if (bill == null)
                 return Error404();
 
+            if (!CustomerContext.CurrentCustomer.IsAdmin &&
+                (CustomerContext.CurrentCustomer.CustomerRole != Role.Moderator ||
+                !CustomerContext.CurrentCustomer.HasRoleAction(RoleAction.Orders)))//GlorySoft_028
+            {
+                if (order.OrderDate.AddDays(3) < DateTime.Now &&
+                    (order.OrderCustomer == null || order.OrderCustomer.CustomerID != CustomerContext.CustomerId))
+                    return Error404();
+            }
+
+            return Redirect(string.Format("~/content/bill/{0}.pdf", order.OrderID));//GlorySoft_028
+
             if (!order.CanAccessToPaymentReceipt(Request["ch"], CustomerContext.CurrentCustomer))
                 return CustomerContext.CurrentCustomer.RegistredUser
                     ? Error404()

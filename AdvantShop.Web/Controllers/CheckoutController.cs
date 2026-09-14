@@ -57,6 +57,7 @@ using AdvantShop.Models.Attachments;
 using AdvantShop.Core.Services.Helpers;
 using AdvantShop.GeoModes;
 using AdvantShop.Handlers.Checkout.GeoMode;
+using AdvantShop.ViewModel.PreOrder;
 
 namespace AdvantShop.Controllers
 {
@@ -83,20 +84,24 @@ namespace AdvantShop.Controllers
             }
             else
             {
-                if (SettingsMain.CheckoutLoginDisplayMode == ECheckoutLoginDisplayMode.Page 
+                if (SettingsMain.CheckoutLoginDisplayMode == ECheckoutLoginDisplayMode.Page
                     && CustomerContext.CurrentCustomer.CustomerRole == Role.Guest)
                     return RedirectToAction(
-                        "Login", 
-                        "User", 
+                        "Login",
+                        "User",
                         new
                         {
                             from = Url.RouteUrl("Checkout"),
                         }
                     );
-                
+
                 cart = ShoppingCartService.CurrentShoppingCart;
                 if (!cart.CanOrder)
                     return RedirectToRoute("Cart");
+                if (cart.Any(x => x.Offer.Amount <= 0))//GlorySoft_013
+                    return RedirectToRoute("Cart");
+                if (CustomerContext.CurrentCustomer == null || !CustomerContext.CurrentCustomer.RegistredUser)//GlorySoft_018
+                    return RedirectToRoute("Registration");
 
                 var showConfirmButtons =
                     AttachedModules.GetModules<IShoppingCart>()
@@ -104,26 +109,26 @@ namespace AdvantShop.Controllers
                         .Aggregate(true, (current, module) => current & module.ShowConfirmButtons);
 
                 if (!showConfirmButtons)
-                    return RedirectToRoute("Cart");   
-                
+                    return RedirectToRoute("Cart");
+
                 if (MobileHelper.IsMobileEnabled() && !SettingsMobile.IsFullCheckout)
                     return Redirect("mobile/checkoutmobile/index");
-                
+
                 WriteLog("", Url.AbsoluteRouteUrl("Checkout"), ePageType.order);
             }
-            
+
             var model = new GetCheckoutPage().Execute(cart);
-            
+
             SetNgController(NgControllers.NgControllersTypes.CheckOutCtrl);
             SetMetaInformation(T("Checkout.Index.CheckoutTitle"));
             SetNoFollowNoIndex();
             HttpContext.HiddenBottomPanel();
-            
-            
+
+
             if (SettingsMain.CheckoutType == ECheckoutView.Modern || (checkoutType.HasValue && checkoutType.Value == ECheckoutView.Modern))
-                return View("Types/CheckoutModern/Index", model); 
-            
-            
+                return View("Types/CheckoutModern/Index", model);
+
+
             return View(model);
         }
 
@@ -309,6 +314,45 @@ namespace AdvantShop.Controllers
                 }
             }
 
+            //GlorySoft_030
+            if (!currentCustomer.RegistredUser && current.Data.User.WantRegist)
+            {
+                //if (SettingsCheckout.IsShowEmail)
+                //{
+                //    if (!ValidationHelper.IsValidEmail(current.Data.User.Email))
+                //    {
+                //        ShowMessage(NotifyType.Error, T("User.Registration.ErrorCustomerEmailIsWrong"));
+                //        return RedirectToReferrerOnPost("Index");
+                //    }
+                //    if (CustomerService.GetCustomerByEmail(current.Data.User.Email) != null)
+                //    {
+                //        ShowMessage(NotifyType.Error, string.Format(LocalizationService.GetResource("User.Registration.ErrorCustomerExist"), "forgotpassword"));
+                //        return RedirectToReferrerOnPost("Index");
+                //    }
+                //}
+                var validUser = IsValidUser(current.Data.User);
+                if (validUser.IsNotEmpty())
+                {
+                    ShowMessage(NotifyType.Error, validUser);
+                    return RedirectToReferrerOnPost("Index");
+                }
+            }
+            if (currentCustomer.RegistredUser)
+            {
+                var validFIO = true;
+                if (String.IsNullOrWhiteSpace(current.Data.User.FirstName))
+                    validFIO = false;
+                if (SettingsCheckout.IsShowLastName && SettingsCheckout.IsRequiredLastName && String.IsNullOrWhiteSpace(current.Data.User.LastName))
+                    validFIO = false;
+                if (SettingsCheckout.IsShowPatronymic && SettingsCheckout.IsRequiredPatronymic && String.IsNullOrWhiteSpace(current.Data.User.Patronymic))
+                    validFIO = false;
+                if (!validFIO)
+                {
+                    ShowMessage(NotifyType.Error, "Заполните все поля ФИО на странице <a href='myaccount#tab=commoninf' target='_blank'>Личные данные</a>");
+                    return RedirectToReferrerOnPost("Index");
+                }
+            }
+
             if (!currentCustomer.RegistredUser && SettingsMain.RegistrationIsProhibited)
             {
                 ShowMessage(NotifyType.Error, LocalizationService.GetResource("Checkout.BuyInOneClick.ErrorRegistrationIsProhibited"));
@@ -321,7 +365,33 @@ namespace AdvantShop.Controllers
                 ShowMessage(NotifyType.Error, valid.ErrorMessage);
                 return RedirectToReferrerOnPost("Index");
             }
-            
+
+            if (currentCustomer != null)//GlorySoft_030
+            {
+                //var settings = ModuleService.GetImportExportSettings();
+                //var method = ShippingMethodService.GetShippingMethod(current.Data.SelectShipping.MethodId);
+                var method = ShippingMethodService.GetShippingParams(current.Data.SelectShipping.MethodId);
+                var shippingForTK = method["ShippingForTK"] != null && method["ShippingForTK"].TryParseBool() == true;
+                if (currentCustomer.CustomerType != CustomerType.LegalEntity && shippingForTK)
+                {
+                    if (CustomerFieldService.GetCustomerFieldsWithValue(currentCustomer.Id).Where(x => x.CustomerType == CustomerType.PhysicalEntity && x.Value.IsNullOrEmpty()).Any())
+                    {
+                        ShowMessage(NotifyType.Error, "Для выбранного способа доставки необходимо заполнить паспортные данные на странице личных данных!");
+                        return RedirectToReferrerOnPost("Index");
+                    }
+                }
+                if ((currentCustomer.FirstName != null && current.Data.User.FirstName.ToLower() != currentCustomer.FirstName.ToLower())
+                 || (currentCustomer.LastName != null && current.Data.User.LastName.ToLower() != currentCustomer.LastName.ToLower())
+                 || (currentCustomer.StandardPhone != null && StringHelper.ConvertToStandardPhone(current.Data.User.Phone) != currentCustomer.StandardPhone))
+                {
+                    if (shippingForTK)
+                    {
+                        ShowMessage(NotifyType.Error, "Для выбранного способа доставки недоступна смена получателя!");
+                        return RedirectToReferrerOnPost("Index");
+                    }
+                }
+            }
+
             if (!current.Data.IsValid(out var error))
             {
                 ShowMessage(NotifyType.Error, error);
@@ -365,6 +435,10 @@ namespace AdvantShop.Controllers
 
             try
             {
+                // игнорируем базовый индекс населенного пункта из ipzone, если индекс не выводится в клиентке
+                if (!SettingsCheckout.IsShowZip && current.Data.Contact.Zip.IsNotEmpty())//GlorySoft_030
+                    current.Data.Contact.Zip = null;
+
                 var allow = 
                     ModulesExecuter.CheckInfo(System.Web.HttpContext.Current, ECheckType.Order,
                     current.Data.User.Email, 
@@ -512,6 +586,7 @@ namespace AdvantShop.Controllers
             current.Data.User.RecipientLastName = customer.RecipientLastName;
             current.Data.User.RecipientPatronymic = customer.RecipientPatronymic;
             current.Data.User.RecipientPhone = customer.RecipientPhone;
+            current.Data.User.Confirm = customer.Confirm;//GlorySoft_007
             current.Update();
 
             return Json(true);
@@ -696,10 +771,10 @@ namespace AdvantShop.Controllers
             var hasAddresses = customer.Contacts.Count > 0 && !string.IsNullOrEmpty(customer.Contacts[0].Street);
             var hasCustomShippingFields = SettingsCheckout.IsShowCustomShippingField1 ||
                                           SettingsCheckout.IsShowCustomShippingField2 ||
-                                          SettingsCheckout.IsShowCustomShippingField3;
+                                          SettingsCheckout.IsShowCustomShippingField3 ||/*GlorySoft_032*/ true;
 
-            if (hasAddresses && !hasCustomShippingFields)
-                return new EmptyResult();
+            //if (hasAddresses && !hasCustomShippingFields)GlorySoft_032
+            //    return new EmptyResult();
 
             if (!hasCustomShippingFields &&
                 (!SettingsCheckout.IsShowAddress || hasAddresses) &&
@@ -707,9 +782,26 @@ namespace AdvantShop.Controllers
                 return new EmptyResult();
 
             var current = MyCheckout.Factory(CustomerContext.CustomerId);
+
+            //GlorySoft_032
+            var contact = current.Data.Contact;
+            if (hasAddresses)
+            {
+                var c = customer.Contacts[0];
+                if (c.City == contact.City)
+                {
+                    contact.Street = c.Street;
+                    contact.House = c.House;
+                    contact.Structure = c.Structure;
+                    contact.Apartment = c.Apartment;
+                    contact.Entrance = c.Entrance;
+                    contact.Floor = c.Floor;
+                }
+            }
+
             var model = new CheckoutShippingAddressViewModel()
             {
-                AddressContact = current.Data.Contact,
+                AddressContact = contact/*GlorySoft_032 current.Data.Contact*/,
                 HasAddresses = hasAddresses,
                 HasCustomShippingFields = hasCustomShippingFields
             };
@@ -1160,6 +1252,13 @@ namespace AdvantShop.Controllers
             if (order == null || order.IsDraft)
                 return Error404();
 
+            //GlorySoft_026
+            var paymentUrl = OrderService.GetOrderPay(order, order.PaymentMethodId);
+            if (paymentUrl.IsNotEmpty())
+            {
+                return Redirect(paymentUrl);
+            }
+
             var model = new BillingViewModel
             {
                 Order = order,
@@ -1517,7 +1616,7 @@ namespace AdvantShop.Controllers
         #region Pre Order
 
         [HttpPost, ValidateJsonAntiForgeryToken]
-        public JsonResult CheckoutPreOrder(PreOrderModel requestModel)
+        public JsonResult CheckoutPreOrder(PreOrderViewModel/*GlorySoft_029 PreOrderModel*/ requestModel)
         {
             var isValid = requestModel.FirstName.IsNotEmpty() && requestModel.Email.IsNotEmpty() && requestModel.Phone.IsNotEmpty();
             isValid &= requestModel.Agreement == SettingsCheckout.IsShowUserAgreementText;
@@ -1582,5 +1681,72 @@ namespace AdvantShop.Controllers
         }
 
         #endregion
+
+        public ActionResult PrintCart()//GlorySoft_028
+        {
+            var model = new PrintCartHandler(/*printOrder*/).Execute();
+
+            SettingsDesign.IsMobileTemplate = false;
+
+            return View(model);
+        }
+
+        private string IsValidUser(CheckoutUser model)//GlorySoft_030
+        {
+            var isValid = ValidationHelper.IsValidEmail(model.Email);
+
+            if (!string.IsNullOrWhiteSpace(model.Email) && CustomerService.IsEmailExist(model.Email))
+            {
+                return string.Format(LocalizationService.GetResource("User.Registration.ErrorCustomerExist"), "forgotpassword");
+            }
+
+            isValid &= !String.IsNullOrWhiteSpace(model.Confirm) && !String.IsNullOrWhiteSpace(model.Password) &&
+                       model.Password == model.Confirm;
+
+            if (!isValid)
+                return LocalizationService.GetResource("User.Registration.ErrorPasswordNotMatch");
+
+            isValid &= model.Password.Length >= 6;
+            if (!isValid)
+                return LocalizationService.GetResource("User.Registration.PasswordLenght");
+
+            if (SettingsCheckout.IsShowPhone && SettingsCheckout.IsRequiredPhone && String.IsNullOrWhiteSpace(model.Phone))
+                isValid = false;
+
+            if (SettingsCheckout.IsShowPhone && SettingsCheckout.IsRequiredPhone && !String.IsNullOrWhiteSpace(model.Phone))
+            {
+                var standardPhone = StringHelper.ConvertToStandardPhone(HttpUtility.HtmlEncode(model.Phone));
+
+                if (model.CustomerType != CustomerType.LegalEntity && CustomerService.IsPhoneExist(model.Phone, standardPhone, CustomerType.PhysicalEntity))
+                    return LocalizationService.GetResource("User.Registration.ErrorCustomerPhoneExist");
+            }
+
+            if (SettingsCheckout.IsShowLastName && SettingsCheckout.IsRequiredLastName && String.IsNullOrWhiteSpace(model.LastName))
+                isValid = false;
+
+            if (SettingsCheckout.IsShowPatronymic && SettingsCheckout.IsRequiredPatronymic && String.IsNullOrWhiteSpace(model.Patronymic))
+                isValid = false;
+
+            if (SettingsCheckout.IsShowBirthDay && SettingsCheckout.IsRequiredBirthDay && model.BirthDay == null)
+                isValid = false;
+
+            isValid &= !String.IsNullOrWhiteSpace(model.FirstName);
+
+            //if (SettingsCheckout.IsShowUserAgreementText && !model.Agree)
+            //    return LocalizationService.GetResource("User.Registration.ErrorAgreement");
+
+            if (BonusSystem.IsActive && model.WantBonusCard)
+            {
+                var bonusCard = InternalBonusSystemService.GetCard(CustomerContext.CurrentCustomer.Id);
+                if (bonusCard != null)
+                    return "Бонусная карта уже используется";
+            }
+
+            if (!isValid)
+                return LocalizationService.GetResource("User.Registration.Error");
+
+            return null;
+        }
+
     }
 }

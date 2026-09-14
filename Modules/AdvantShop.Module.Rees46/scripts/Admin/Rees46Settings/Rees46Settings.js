@@ -37,6 +37,10 @@
         };
 
         ctrl.saveSettings = function () {
+<<<<<<< Updated upstream
+=======
+            ctrl.settings.FeedId = ctrl.currentFeed.Id;//GlorySoft_021
+>>>>>>> Stashed changes
             $http.post("../module/Rees46Admin/SaveSettings", ctrl.settings).then(function (response) {
                 var data = response.data;
                 if (data.result === true) {

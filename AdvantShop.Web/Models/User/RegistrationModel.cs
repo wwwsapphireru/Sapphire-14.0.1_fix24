@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AdvantShop.Customers;
+using AdvantShop.Repository;
 
 namespace AdvantShop.Models.User
 {
@@ -21,5 +22,9 @@ namespace AdvantShop.Models.User
         public bool UserAgreementForPromotionalNewsletter { get; set; }
         public string CustomerType { get; set; }
         public string Captcha { get; set; }
+
+        //GlorySoft_017
+        public LocationModel Location { get; set; }
+        public string City { get; set; }
     }
 }

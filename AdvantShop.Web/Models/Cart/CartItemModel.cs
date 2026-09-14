@@ -40,5 +40,9 @@ namespace AdvantShop.Models.Cart
         public string PriceRuleName { get; set; }
         public string BriefDescription { get; set; }
         public bool InWishlist { get; set; }
+
+        //GlorySoft_006
+        public float PriceValue { get; set; }
+        public Taxes.OrderTax Tax { get; set; }
     }
 }

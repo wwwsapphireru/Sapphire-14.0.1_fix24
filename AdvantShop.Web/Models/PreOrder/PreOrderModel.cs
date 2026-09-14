@@ -39,5 +39,9 @@ namespace AdvantShop.Models.PreOrder
         public bool IsLanding { get; set; }
 
         public float ProdMinAmount { get; set; }
+
+        //GlorySoft_009
+        public bool IsSuccess { get; set; }
+        public string SuccessText { get; set; }
     }
 }

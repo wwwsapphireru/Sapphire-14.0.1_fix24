@@ -1,0 +1,398 @@
+﻿
+<h3 class="m-b">&nbsp;</h3>
+<div class="container-fluid">
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Общее</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Api key
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <input type="text" ng-model="oneSettings.apiKey" readonly="readonly" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Создавать новые товары из 1С
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.CreateProducts" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Создавать новые свойства из 1С
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.CreateProperties" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Загружать в качестве артикула
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.importArtnoType" ng-options="s.label for s in oneSettings.importArtnoTypeList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Загружать в качестве наименование
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <select ng-model="oneSettings.importNameType" ng-options="s.label for s in oneSettings.importNameTypeList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Свойство "Распродажа"
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <ui-select validation-input-text="{{::'Admin.Js.ProductProperties.Name' | translate}}"
+                       reach-infinity="oneSettings.getMoreProperty(oneSettings.propSaleInd)"
+                       ng-model="oneSettings.selectedProperty[oneSettings.propSaleInd]"
+                       uis-open-close="oneSettings.closeSelectProperty(oneSettings.propSaleInd, isOpen)"
+                       on-select="oneSettings.selectProperty(oneSettings.propSaleInd, $item, $model)"
+                       ng-click="oneSettings.firstCallProperties(oneSettings.propSaleInd)"
+                       reset-search-input="true"
+                       class="input-alt">
+                <ui-select-match allow-clear="true" placeholder="{{'Admin.Js.ProductProperties.EnterPropertyName' | translate}}">
+                    {{$select.selected.Name}}
+                </ui-select-match>
+                <ui-select-choices refresh="oneSettings.findProperty(oneSettings.propSaleInd, $select.search, $select)"
+                                   refresh-delay="250"
+                                   repeat="item in oneSettings.propertiesList[oneSettings.propSaleInd] track by item.PropertyId"
+                                   minimum-input-length="1">
+                    <span ng-bind="item.Name"></span>
+                </ui-select-choices>
+            </ui-select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Категории</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Загружать иерархию категорий из 1С
+                <span class="help-triger">
+                    <help-trigger class="ng-cloak help-trigger-icon-abs">
+                        При выгрузке по расписанию будут обновляться только остатки, без обновления цен
+                    </help-trigger>
+                </span>
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.ImportHierarhy" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Помещать в категорию
+                <span class="help-triger">
+                    <help-trigger class="ng-cloak help-trigger-icon-abs">
+                        При выгрузке по расписанию будут обновляться только остатки, без обновления цен
+                    </help-trigger>
+                </span>
+            </div>
+        </div>
+        <div class="col-xs-1 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.ImportToDefaultCategory" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+        <div class="col-xs-5 relative">
+            <select ng-model="oneSettings.defaultCategoryId" ng-options="s.label for s in oneSettings.defaultCategoryList track by s.value" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Обновление</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять артикул
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateArtNo" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять наименование
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateName" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять активность
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateEnabled" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять краткое описание
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateBriefDescription" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять полное описание
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateDescription" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять ед. измерения
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateUnit" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять бренд
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateBrand" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять налог
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateTax" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять скидку
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateDiscount" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять свойства
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateProperties" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Обновлять изображения
+            </div>
+        </div>
+        <div class="col-xs-6 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdatePhotos" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <div class="setting-label-wrap">
+                Добавлять категорию
+            </div>
+        </div>
+        <div class="col-xs-1 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.AddCategory" ng-change="oneSettings.addCategory_change()" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+        <div class="col-xs-2 relative">
+            <div class="setting-label-wrap">
+                Заменять текущие
+            </div>
+        </div>
+        <div class="col-xs-3 relative">
+            <label class="adv-checkbox-label">
+                <input type="checkbox" class="adv-checkbox-input" ng-model="oneSettings.settings.ImportProduct.UpdateCategory" ng-disabled="oneSettings.settings.ImportProduct.AddCategory != true" />
+                <span class="adv-checkbox-emul"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-12">
+            <div class="setting-title">
+                <h3>Загрузка из файла</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <button type="button" class="btn btn-sm btn-success" ng-click="oneSettings.importFromFile('ImportProductsFromFile')" ng-disabled="oneSettings.file == null">
+                Загрузить данные
+            </button>
+            @*<button type="button" class="btn btn-sm btn-success" ng-click="oneSettings.importFromFile0('ImportProductsFromFile')">
+                    Загрузить данные
+                </button>*@
+        </div>
+        <div class="col-xs-6 relative">
+            <a for="file" class="m-b-md" ngf-select="" ngf-change="oneSettings.selectFile($file)" ngf-accept="'.json'" style="vertical-align: initial; font-style:italic;">
+                {{oneSettings.selectFileCaption}}
+            </a>
+        </div>
+    </div>
+
+    <div class="form-group row middle-xs">
+        <div class="col-xs-3">
+            <button type="button" class="btn btn-sm btn-success" ng-click="oneSettings.importRedirects('sitemap')">
+                Загрузить редиректы
+            </button>
+        </div>
+    </div>
+
+    <div class="row m-b-md">
+        <div class="col-xs-12">
+            <div class="ibox" ng-if="oneSettings.IsRun">
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <uib-progressbar max="oneSettings.ProgressTotal" value="oneSettings.ProgressValue">
+                                <span style="color:white; white-space:nowrap;"><span ng-bind="oneSettings.ProgressValue"></span> / <span ng-bind="oneSettings.ProgressTotal"></span></span>
+                            </uib-progressbar>
+                        </div>
+                    </div>
+                    <div class="container-fluid">
+                        <div class="form-group row">
+                            <div class="col-xs-10">
+                                Текущий процесс
+                                <a class="link-decoration-none" ng-href="{{oneSettings.Process}}" ng-bind="oneSettings.ProcessName"></a>
+                            </div>
+                            <div class="col-xs-2" ng-show="true">
+                                <input type="button" ng-click="oneSettings.breakProcess()" class="btn btn-sm btn-success" value="Прервать" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-fluid" ng-if="!oneSettings.IsRun">
+                        <div class="form-group row">
+                            <div class="col-sm-12">
+                                <div class="setting-label-wrap">
+                                    Процесс завершен
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*<div class="m-b-md" style="padding-top:20px;">
+            <button type="submit" class="btn btn-sm btn-success" data-button-validation data-button-validation-success="aliCatalog.saveCatalog()" ng-disabled="!aliCatalogForm.modified" disabled>
+                <i class="fa fa-check"></i> @T("Admin.Save")
+            </button>
+        </div>*@
+
+</div>

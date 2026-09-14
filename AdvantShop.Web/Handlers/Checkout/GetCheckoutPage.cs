@@ -118,7 +118,8 @@ namespace AdvantShop.Handlers.Checkout
                 CartType = SettingsMain.CartType.ToString(),
                 CheckoutType = SettingsMain.CheckoutType.ToString(),
                 PaymentDesignMode = SettingsCheckout.PaymentDesignMode.ToString(),
-                ShippingDesignMode = SettingsCheckout.ShippingDesignMode.ToString()
+                ShippingDesignMode = SettingsCheckout.ShippingDesignMode.ToString(),
+                PhoneConfirmed = customer.CustomerType == CustomerType.LegalEntity ? true : CustomerService.GetConfirmPhone(CustomerContext.CustomerId.ToString())//GlorySoft_026
             };
 
             return model;

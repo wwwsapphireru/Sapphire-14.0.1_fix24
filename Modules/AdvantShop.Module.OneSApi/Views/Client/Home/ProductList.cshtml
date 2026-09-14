@@ -1,0 +1,86 @@
+﻿@using AdvantShop.Catalog
+@{
+    Html.AddAsset("productList");
+
+    var layout = "~/Views/Shared/_Layout.cshtml";
+
+    if (SettingsDesign.Template != AdvantShop.Design.TemplateService.DefaultTemplateId)
+    {
+        var templateLayout = "~/Templates/" + SettingsDesign.Template + "/Views/Shared/_Layout.cshtml";
+        if (VirtualPathFactory.Exists(templateLayout))
+        {
+            layout = templateLayout;
+        }
+    }
+
+    Layout = layout;
+}
+@model AdvantShop.Module.OneSApi.Models.Client.ProductListViewModel
+
+<div class="row">
+    <div class="col-xs-3 col-p-v site-body-aside">
+        <nav class="menu-dropdown menu-dropdown-expanded menu-dropdown-classic">
+            <div class="menu-dropdown-list cs-br-1">
+                <div class="menu-dropdown-item cs-br-1">
+                    <div class="menu-dropdown-link-wrap cs-bg-i-7 "cs-selected"">
+                        <a href="@Url.RouteUrl("ProductList", new {type = "recomended"})" class="menu-dropdown-link">
+                            <span class="menu-dropdown-link-text">Рекомендуемые товары</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        @*@if (Model.Filter != null && SettingsDesign.FilterVisibility)
+        {
+            <div data-catalog-filter data-url="catalog/filterproductlist"
+                 data-url-count="catalog/filterproductlistCount"
+                 data-parameters="{type : '@(Model.Type)', list: @Model.ListId , tagUrl: '' }"></div>
+        }*@
+    </div>
+    <div class="col-xs-9 col-p-v site-body-main">
+        <div class="page-title-row catalog-title-row">
+            <div class="catalog-title page-title">
+                <h1>@Html.GetPageH1()</h1>
+            </div>
+        </div>
+        @Html.Action("BreadCrumbs", "Common", new { breadCrumbs = Model.BreadCrumbs })
+
+        @*Html.Partial("_TagView", Model.TagView)*@
+
+        @if (!string.IsNullOrWhiteSpace(Model.Description) && Model.Pager.CurrentPage == 1)
+        {
+            <div class="category-description">
+                @Html.Raw(Model.Description)
+            </div>
+        }
+
+        @if (Model.HasProducts)
+        {
+            <div class="row">
+                <div class="@(!Model.Filter.AllowChangeViewMode ? "col-xs-12" : "col-xs-10")">
+                    <div class="row between-xs middle-xs">
+                        @Html.Partial("~/Modules/OneSApi/Views/Client/Home/Sorting.cshtml", Model.Filter)
+                        <div class="products-view-sort-result">
+                            <span class="products-view-sort-result-text cs-t-3">@T("Catalog.Index.ItemsFound")</span>
+                            <span class="products-view-sort-result-number">@Model.Pager.TotalItemsCount</span>
+                        </div>
+                    </div>
+                </div>
+                @if (Model.Filter.AllowChangeViewMode)
+                {
+                    <div class="col-xs-2 flex middle-xs products-view-variants-wrap">
+                        @Html.Action("ChangeMode", "Catalog", new { name = "productViewCatalog", viewMode = Model.Filter.ViewMode })
+                    </div>
+                }
+            </div>
+            <div class="products-view products-view-@Model.Filter.ViewMode products-view-container" product-view-mode data-name="productViewCatalog" data-current="@Model.Filter.ViewMode">
+                @Html.Partial("_ProductView", Model.Products)
+            </div>
+            @Html.Paging(Model.Pager)
+        }
+        else if (Model.Filter != null && Model.Filter.IsApplied)
+        {
+            <div>@T("Search.Index.NothingFound")</div>
+        }
+    </div>
+</div>

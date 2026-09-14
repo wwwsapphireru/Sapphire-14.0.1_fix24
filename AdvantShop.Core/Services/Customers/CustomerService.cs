@@ -1057,15 +1057,17 @@ namespace AdvantShop.Customers
                 CommandType.Text, new SqlParameter("@Email", email)) != 0;
         }
 
-        public static bool IsPhoneExist(string phone, long? standardPhone)
+        public static bool IsPhoneExist(string phone, long? standardPhone,/*GlorySoft_030*/ CustomerType? type = null)
         {
             return
                 SQLDataAccess.ExecuteScalar<int>(
                     "Select Count(CustomerId) " +
                     "From Customers.Customer " +
-                    "Where Phone=@Phone " + (standardPhone != null && standardPhone != 0 ? "or StandardPhone=@StandardPhone" : string.Empty),
+                    "Where Phone=@Phone " + (standardPhone != null && standardPhone != 0 ? "or StandardPhone=@StandardPhone" : ")") +/*GlorySoft_030 string.Empty),*/
+                    (type.HasValue ? " And [CustomerType]=@type" : ""),//GlorySoft_030
                     CommandType.Text,
                     new SqlParameter("@Phone", phone),
+                    new SqlParameter("@type", type.HasValue ? (int)type.Value : (object)DBNull.Value),//GlorySoft_030
                     new SqlParameter("@StandardPhone", standardPhone ?? (object) DBNull.Value)) != 0;
         }
 
@@ -1468,5 +1470,115 @@ namespace AdvantShop.Customers
                && SettingsCustomers.IsRegistrationAsPhysicalEntity == false
                 ? CustomerType.LegalEntity
                 : CustomerType.PhysicalEntity;
+
+        public static string GetRegCode(Guid customerId)//GlorySoft_020
+        {
+            return SQLDataAccess.ExecuteScalar<string>(
+                "Select RegCodeHash From [Customers].[Customer] Where CustomerID=@customerId",
+                CommandType.Text, new SqlParameter("@customerId", customerId));
+        }
+
+        public static bool GetConfirmPhone(string customerId)//GlorySoft_020
+        {
+            return SQLDataAccess.ExecuteScalar<bool>(
+                "Select IsNull(PhoneConfirmed, 0) From [Customers].[Customer] Where CustomerID=@customerId",
+                CommandType.Text, new SqlParameter("@customerId", customerId));
+        }
+
+        public static Customer CheckRegCode(string hash)//GlorySoft_028
+        {
+            var c = SQLDataAccess.ExecuteReadOne(
+                "Select CustomerID, RegCodeExpired From [Customers].[Customer] Where RegCodeHash=@regCode", CommandType.Text,
+                reader => (SQLDataHelper.GetString(reader, "CustomerID"), SQLDataHelper.GetNullableDateTime(reader, "RegCodeExpired")),
+                new SqlParameter("@regCode", hash));
+            if (c.Item1.IsNotEmpty() && c.Item2.HasValue && c.Item2 >= DateTime.Now)
+            {
+                var customerId = Guid.Parse(c.Item1);
+                SQLDataAccess.ExecuteNonQuery(
+                    "Update [Customers].[Customer] Set [Enabled]=1, RegCodeHash=NULL, RegCodeExpired=NULL Where CustomerID=@customerId",
+                    CommandType.Text,
+                    new SqlParameter("@customerId", customerId));
+                return GetCustomer(customerId);
+            }
+            else
+                return null;
+        }
+
+        public static void SetCustomerEnabled(Guid id, bool enabled)//GlorySoft_028
+        {
+            SQLDataAccess.ExecuteNonQuery(
+                "Update Customers.Customer Set [Enabled] = @enabled Where CustomerID = @id",
+                CommandType.Text,
+                new SqlParameter("@id", id), new SqlParameter("@enabled", enabled));
+        }
+
+        public static Customer GetCustomerByPhone(string phone, long? standardPhone, CustomerType? type = null)//GlorySoft_031
+        {
+            return SQLDataAccess.ExecuteReadOne(
+                "Select top(1) * " +
+                "From Customers.Customer " +
+                "Where (Phone=@Phone" + (standardPhone != null && standardPhone != 0 ? " or StandardPhone=@StandardPhone)" : ")") +
+                (type.HasValue ? " And [CustomerType]=@type" : ""),
+                CommandType.Text,
+                CustomerService.GetFromSqlDataReader,
+                new SqlParameter("@Phone", phone),
+                new SqlParameter("@StandardPhone", standardPhone ?? (object)DBNull.Value),
+                new SqlParameter("@type", type.HasValue ? (int)type.Value : (object)DBNull.Value));
+        }
+
+        public static void InplaceSave(Customer customer, string field, string value, bool additional, bool subscribe)//GlorySoft_031
+        {
+            if (!additional)
+                SQLDataAccess.ExecuteNonQuery(
+                    string.Format("Update Customers.Customer Set [{0}] = @value Where CustomerID = @id", field),
+                    CommandType.Text,
+                    new SqlParameter("@id", customer.Id),
+                    new SqlParameter("@value", value));
+            else
+            {
+                var customerField = GetCustomerField(field, customer.CustomerType);
+                CustomerFieldService.AddUpdateMap(customer.Id, customerField.Id, value);
+            }
+            if (subscribe)
+            {
+                var s = SubscriptionService.GetSubscription(customer.EMail);
+                var v = Convert.ToBoolean(value.ToLower());
+                if ((s?.Subscribe ?? false) != v)
+                {
+                    if (v)
+                        SubscriptionService.Subscribe(customer.EMail);
+                    else
+                        SubscriptionService.Unsubscribe(customer.EMail);
+                }
+            }
+        }
+
+        private static CustomerField GetCustomerField(string name, CustomerType type)//GlorySoft_031
+        {
+            return SQLDataAccess.Query<CustomerField>("SELECT * FROM Customers.CustomerField WHERE [Name] = @name And [CustomerType] = @type", new { name, type }).FirstOrDefault();
+        }
+
+        public static void SetConfirmPhone(string customerId, string phone)//GlorySoft_031
+        {
+            var standartPhone = StringHelper.ConvertToStandardPhone(phone, true, true);
+            SQLDataAccess.ExecuteNonQuery(
+                "Update [Customers].[Customer] Set Phone=@phone, StandardPhone=@standartPhone, PhoneConfirmed=1 Where CustomerID=@customerId",
+                CommandType.Text,
+                new SqlParameter("@phone", phone),
+                new SqlParameter("@standartPhone", standartPhone),
+                new SqlParameter("@customerId", customerId));
+
+        }
+
+        public static void SetRegCode(Guid customerId, string regCode)//GlorySoft_031
+        {
+            ModulesRepository.ModuleExecuteNonQuery(
+                "Update [Customers].[Customer] Set RegCodeHash=@regCode, RegCodeExpired=@regCodeExpired Where CustomerID=@customerId",
+                CommandType.Text,
+                new SqlParameter("@regCode", regCode),
+                new SqlParameter("@regCodeExpired", DateTime.Now.AddDays(1)),
+                new SqlParameter("@customerId", customerId));
+        }
+
     }
 }

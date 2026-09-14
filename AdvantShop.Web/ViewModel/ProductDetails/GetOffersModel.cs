@@ -117,7 +117,7 @@ namespace AdvantShop.ViewModel.ProductDetails
                     ? string.Format(availableInWarehouseText, warehouseAmount)
                     : string.Empty);
 
-            if (product.AllowPreOrder && (RoundedPrice <= 0 || Amount <= 0))
+            if (product.AllowPreOrder && Amount > 0/*GlorySoft_022 (RoundedPrice <= 0 || Amount <= 0)*/)
             {
                 IsAvailable = true;
                 Available = LocalizationService.GetResource("Product.AvailablePreorder");

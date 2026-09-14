@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AdvantShop.Catalog;
+using AdvantShop.Configuration;
 using AdvantShop.Letters;
 using AdvantShop.Mails;
 using AdvantShop.Orders;
@@ -59,7 +60,8 @@ namespace AdvantShop.Core.Services.Triggers.Orders
                         OrderLetterTemplateKey.RecipientLastName,
                         OrderLetterTemplateKey.RecipientFirstName,
                         OrderLetterTemplateKey.RecipientPhone,
-                    })
+                        OrderLetterTemplateKey.GeneratedCouponCode//GlorySoft_003
+                   })
                 .Concat(LetterBuilderHelper.GetLetterFormatKeys<CommonLetterTemplateKey>())
                 .Concat(LetterBuilderHelper.GetLetterFormatKeys<TriggerLetterTemplateKey>())
                 .ToList();
@@ -70,7 +72,11 @@ namespace AdvantShop.Core.Services.Triggers.Orders
 
             _mail = NewOrderMailTemplate.Create(order);
 
-            return _mail.FormatValue(value, coupon, triggerCouponCode);
+            var text = _mail.FormatValue(value, coupon, triggerCouponCode);/*GlorySoft_003*/
+
+            //GlorySoft_003
+            text = text.Replace("#MANAGER_SIGN#", order.Manager != null ? order.Manager.Sign : "");
+            return text;
         }
 
         public override Dictionary<string, string> GetFormattedParameters(string value, ITriggerObject triggerObject, Coupon coupon, string triggerCouponCode)
@@ -141,6 +147,7 @@ namespace AdvantShop.Core.Services.Triggers.Orders
                         OrderLetterTemplateKey.RecipientLastName,
                         OrderLetterTemplateKey.RecipientFirstName,
                         OrderLetterTemplateKey.RecipientPhone,
+                        OrderLetterTemplateKey.GeneratedCouponCode//GlorySoft_003
                     })
                 .Concat(LetterBuilderHelper.GetLetterFormatKeys<CommonLetterTemplateKey>())
                 .Concat(LetterBuilderHelper.GetLetterFormatKeys<TriggerLetterTemplateKey>())
@@ -154,9 +161,14 @@ namespace AdvantShop.Core.Services.Triggers.Orders
 
             _mail = new OrderStatusMailTemplate(order);
 
-            return _mail.FormatValue(value, coupon, triggerCouponCode);
+            var text = _mail.FormatValue(value, coupon, triggerCouponCode);/*GlorySoft_003*/
+
+            //GlorySoft_003
+            text = text.Replace(Core.UrlRewriter.UrlService.GenerateBaseUrl().TrimEnd('/'), SettingsMain.SiteUrl.TrimEnd('/'));
+            text = text.Replace("#MANAGER_SIGN#", order.Manager != null ? order.Manager.Sign : "");
+            return text;
         }
-        
+
         public override Dictionary<string, string> GetFormattedParameters(string value, ITriggerObject triggerObject, 
                                                                             Coupon coupon, string triggerCouponCode)
         {
@@ -225,6 +237,7 @@ namespace AdvantShop.Core.Services.Triggers.Orders
                         OrderLetterTemplateKey.LastName,
                         OrderLetterTemplateKey.RecipientFirstName,
                         OrderLetterTemplateKey.RecipientPhone,
+                        OrderLetterTemplateKey.GeneratedCouponCode//GlorySoft_003
                     })
                 .Concat(LetterBuilderHelper.GetLetterFormatKeys<CommonLetterTemplateKey>())
                 .Concat(LetterBuilderHelper.GetLetterFormatKeys<TriggerLetterTemplateKey>())
@@ -237,7 +250,11 @@ namespace AdvantShop.Core.Services.Triggers.Orders
 
             _mail = new PayOrderTemplate(order);
 
-            return _mail.FormatValue(value, coupon, triggerCouponCode);
+            var text = _mail.FormatValue(value, coupon, triggerCouponCode);//GlorySoft_003
+
+            //GlorySoft_003
+            text = text.Replace("#MANAGER_SIGN#", order.Manager != null ? order.Manager.Sign : "");
+            return text;
         }
 
         public override Dictionary<string, string> GetFormattedParameters(string value, ITriggerObject triggerObject, Coupon coupon, string triggerCouponCode)

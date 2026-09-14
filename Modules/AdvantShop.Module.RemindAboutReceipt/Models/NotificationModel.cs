@@ -26,5 +26,21 @@
         public string Phone { get; set; }
         public bool IsShowUserAgreementText { get; set; }
         public string UserAgreementText { get; set; }
+<<<<<<< Updated upstream
     }
+=======
+
+        public NotificationModelRequest FormRequest { get; set; }//GlorySoft_012
+    }
+
+    //GlorySoft_012
+    public class NotificationModelRequest
+    {
+        public string Email { get; set; }
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public string PhoneNumber { get; set; }
+    }
+
+>>>>>>> Stashed changes
 }

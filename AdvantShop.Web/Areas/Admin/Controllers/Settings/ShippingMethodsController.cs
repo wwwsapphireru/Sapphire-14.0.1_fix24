@@ -280,6 +280,9 @@ namespace AdvantShop.Web.Admin.Controllers.Settings
                     method.CurrencyId = model.CurrencyId;
                     method.TypeOfDelivery = model.TypeOfDelivery;
 
+                    method.TrackingUrl = model.TrackingUrl;//GlorySoft_027
+                    //method.ShippingForTK = model.ShippingForTK;//GlorySoft_030
+
                     var shippingType =
                         ReflectionExt.GetTypeByAttributeValue<ShippingKeyAttribute>(
                             typeof(BaseShipping), atr => atr.Value, method.ShippingType);

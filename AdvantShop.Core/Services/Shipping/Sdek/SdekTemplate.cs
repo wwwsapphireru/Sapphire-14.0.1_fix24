@@ -66,7 +66,10 @@ namespace AdvantShop.Shipping.Sdek
         public const string SenderName = "SenderName";
         public const string SenderEmail = "SenderEmail";
         public const string SenderPhone = "SenderPhone";
-        
+
+        //GlorySoft_001
+        public const string MaxWeight = "MaxWeight";
+        public const string KeyNameWrongTrackFormTaskAdditionalData = "WrongTrackFormTask";
     }
 
     public class SdekParamsSendOrder

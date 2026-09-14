@@ -223,6 +223,9 @@ namespace AdvantShop.Shipping
                 CurrencyId = SQLDataHelper.GetNullableInt(reader, "CurrencyId"),
                 ModuleStringId = SQLDataHelper.GetString(reader, "ModuleStringId"),
                 TypeOfDelivery = (EnTypeOfDelivery?)SQLDataHelper.GetNullableInt(reader, "TypeOfDelivery"),
+
+                TrackingUrl = SQLDataHelper.GetString(reader, "TrackingUrl"),//GlorySoft_027
+                //ShippingForTK = SQLDataHelper.GetBoolean(reader, "ShippingForTK"),//GlorySoft_030
             };
             model.Params = GetShippingParams(model.ShippingMethodId);
             return model;
@@ -341,6 +344,9 @@ namespace AdvantShop.Shipping
             }
             model.CurrentCurrency = CurrencyService.CurrentCurrency;
 
+            model.TrackingUrl = method.TrackingUrl;//GlorySoft_027
+            //model.ShippingForTK = method.ShippingForTK;//GlorySoft_030
+
             return model;
         }
 
@@ -440,6 +446,15 @@ namespace AdvantShop.Shipping
                     new SqlParameter("@PaymentSubjectType", (int)item.PaymentSubjectType),
                     new SqlParameter("@TypeOfDelivery", ((int?)item.TypeOfDelivery) ?? (object)DBNull.Value));
 
+            SQLDataAccess.ExecuteNonQuery(//GlorySoft_027
+                "UPDATE [Order].[ShippingMethod] " +
+                "SET [TrackingUrl] = @TrackingUrl " +//, [ShippingForTK] = @ShippingForTK " +
+                "WHERE ShippingMethodID=@ShippingMethodID",
+                CommandType.Text,
+                new SqlParameter("@TrackingUrl", item.TrackingUrl),
+                //new SqlParameter("@ShippingForTK", item.ShippingForTK),//GlorySoft_030
+                new SqlParameter("@ShippingMethodID", item.ShippingMethodId));
+
             InsertShippingParams(item.ShippingMethodId, item.Params);
 
             RemoveCache(item.ShippingMethodId);
@@ -492,6 +507,15 @@ namespace AdvantShop.Shipping
                 new SqlParameter("@PaymentSubjectType", (int)item.PaymentSubjectType),
                 new SqlParameter("@TypeOfDelivery", ((int?)item.TypeOfDelivery) ?? (object)DBNull.Value)
             );
+
+            SQLDataAccess.ExecuteNonQuery(//GlorySoft_027
+                "UPDATE [Order].[ShippingMethod] " +
+                "SET [TrackingUrl] = @TrackingUrl " +//, [ShippingForTK] = @ShippingForTK " +
+                "WHERE ShippingMethodID=@ShippingMethodID",
+                CommandType.Text,
+                new SqlParameter("@TrackingUrl", item.TrackingUrl),
+                //new SqlParameter("@ShippingForTK", item.ShippingForTK),//GlorySoft_030
+                new SqlParameter("@ShippingMethodID", item.ShippingMethodId));
 
             if (updateParams)
                 UpdateShippingParams(item.ShippingMethodId, item.Params);

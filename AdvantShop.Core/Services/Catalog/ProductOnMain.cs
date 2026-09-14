@@ -24,7 +24,8 @@ namespace AdvantShop.Catalog
         New = 2,
         Sale = 3,
         List = 4,
-        NewArrivals = 5
+        NewArrivals = 5,
+        Recomended = 6//GlorySoft_023
     }
 
     public static class ProductOnMain
@@ -42,6 +43,9 @@ namespace AdvantShop.Catalog
                     break;
                 case EProductOnMain.Sale:
                     sqlCmd = "select ProductId from Catalog.Product where (Discount > 0 or DiscountAmount > 0)" + (withPositiveSortOrder ? " and SortDiscount>=0" : string.Empty);
+                    break;
+                case EProductOnMain.Recomended://GlorySoft_023
+                    sqlCmd = "select ProductId from Catalog.Product where Recomended=1";
                     break;
                 default:
                     throw new NotImplementedException();
@@ -77,6 +81,10 @@ namespace AdvantShop.Catalog
 
                 case EProductOnMain.Sale:
                     query = string.Format(query, "and (Discount>0 or DiscountAmount>0)", "SortDiscount, ProductId desc", moveNotAvailableToEnd);
+                    break;
+
+                case EProductOnMain.Recomended://GlorySoft_023
+                    query = string.Format(query, "and Recomended=1", "Product.ProductId desc", moveNotAvailableToEnd);
                     break;
 
                 default:
@@ -168,7 +176,11 @@ namespace AdvantShop.Catalog
                             query = string.Format(query, "and (Discount>0 or DiscountAmount>0)", "SortDiscount, ProductId desc", moveNotAvailableToEnd);
                             break;
 
-                        default:
+                        case EProductOnMain.Recomended://GlorySoft_023
+                            query = string.Format(query, "and Recomended=1", "Product.ProductId desc", moveNotAvailableToEnd);
+                            break;
+
+                    default:
                             throw new NotImplementedException();
                     }
 
@@ -205,6 +217,9 @@ namespace AdvantShop.Catalog
                 case EProductOnMain.Sale:
                     sqlCmd = "select Top(@count) Product.ProductId, Name from Catalog.Product where (Discount > 0 or DiscountAmount > 0) order by SortDiscount";
                     break;
+                case EProductOnMain.Recomended://GlorySoft_023
+                    sqlCmd = "select Top(@count) Product.ProductId, Name from Catalog.Product where Recomended=1";
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -232,6 +247,9 @@ namespace AdvantShop.Catalog
                     case EProductOnMain.Sale:
                         sql += " (Discount > 0 or DiscountAmount > 0)";
                         break;
+                    case EProductOnMain.Recomended://GlorySoft_023
+                        sql += " Recomended=1";
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
@@ -252,6 +270,9 @@ namespace AdvantShop.Catalog
                     break;
                 case EProductOnMain.Sale:
                     sqlCmd = string.Format(sqlCmd, "(Discount > 0 or DiscountAmount > 0)");
+                    break;
+                case EProductOnMain.Recomended://GlorySoft_023
+                    sqlCmd = string.Format(sqlCmd, "Recomended=1");
                     break;
                 default:
                     throw new NotImplementedException();
@@ -274,6 +295,9 @@ namespace AdvantShop.Catalog
                 case EProductOnMain.Sale:
                     sqlCmd = "Update Catalog.Product set SortDiscount=(Select min(SortDiscount)-10 from Catalog.Product) where ProductId=@productId";
                     break;
+                case EProductOnMain.Recomended://GlorySoft_023
+                    sqlCmd = "Update Catalog.Product set Recomended=1 where ProductId=@productId";
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -295,6 +319,9 @@ namespace AdvantShop.Catalog
                     break;
                 case EProductOnMain.Sale:
                     sqlCmd = "Update Catalog.Product set SortDiscount=0, Discount=0, DiscountAmount=0 where ProductId=@productId";
+                    break;
+                case EProductOnMain.Recomended://GlorySoft_023
+                    sqlCmd = "Update Catalog.Product set Recomended=0 where ProductId=@productId";
                     break;
                 default:
                     throw new NotImplementedException();

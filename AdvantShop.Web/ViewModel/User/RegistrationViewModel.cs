@@ -5,6 +5,7 @@ using AdvantShop.Configuration;
 using AdvantShop.Core.Modules;
 using AdvantShop.Core.Modules.Interfaces;
 using AdvantShop.Customers;
+using AdvantShop.Repository;
 
 namespace AdvantShop.ViewModel.User
 {

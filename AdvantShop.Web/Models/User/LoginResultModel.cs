@@ -20,15 +20,24 @@ namespace AdvantShop.Models.User
         {
         }
 
-        public LoginResult(string status, string error) : this(status, error, false)
+        public LoginResult(string status, string error) : this(status, error, false,/*GlorySoft_014*/ null)
         {
         }
 
-        public LoginResult(string status, string error, bool requestCaptcha)
+        public LoginResult(string status, string error, bool requestCaptcha) : this(status, error, requestCaptcha, null)//GlorySoft_014
+        {
+        }
+
+        public LoginResult(string status, string error, string redirectTo) : this(status, error, false, redirectTo)//GlorySoft_014
+        {
+        }
+
+        public LoginResult(string status, string error, bool requestCaptcha,/*GlorySoft_014*/ string redirectTo)
         {
             Status = status;
             Error = error;
             RequestCaptcha = requestCaptcha;
+            RedirectTo = redirectTo;//GlorySoft_014
         }
     }
 }

@@ -362,6 +362,38 @@ namespace AdvantShop
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional },
                 namespaces: new[] { "AdvantShop.Controllers" }
             );
+
+            //GlorySoft_028
+            routes.MapRoute(
+                name: "RegCodePhysicalEntity",
+                url: "registrationwaiting/{customerId}",
+                defaults: new { controller = "User", action = "RegCodePhysicalEntity", customerId = UrlParameter.Optional },
+                namespaces: new[] { "AdvantShop.Controllers" }
+            );
+            routes.MapRoute(
+                name: "ConfirmRegistration",
+                url: "confirmregistration/{hash}",
+                defaults: new { controller = "User", action = "ConfirmRegistration", hash = UrlParameter.Optional },
+                namespaces: new[] { "AdvantShop.Controllers" }
+            );
+            routes.MapRoute(
+                name: "AccountForAdmin",
+                url: "accountforadmin/{hash}",
+                defaults: new { controller = "User", action = "AccountForAdmin", hash = UrlParameter.Optional },
+                namespaces: new[] { "AdvantShop.Controllers" }
+            );
+            routes.MapRoute(
+                name: "PrintCart",
+                url: "printcart",
+                defaults: new { controller = "Checkout", action = "PrintCart" },
+                namespaces: new[] { "AdvantShop.Controllers" }
+            );
+            routes.MapRoute(
+                name: "FeedbackSuccess",
+                url: "feedback/success",
+                defaults: new { controller = "Feedback", action = "Success" },
+                namespaces: new[] { "AdvantShop.Controllers" }
+            );
         }
 
         private static void RegisterAllRoutes(RouteCollection routes)

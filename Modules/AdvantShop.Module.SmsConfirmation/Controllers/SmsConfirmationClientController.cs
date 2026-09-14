@@ -51,11 +51,23 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
                 pageType = "registration";
             }
 
+<<<<<<< Updated upstream
+=======
+            if (controllerName == "preorder" && actionName == "index" && SmsConfirmationSettings.RegistrationPageActive)//GlorySoft_009
+            {
+                pageType = "registration";
+            }
+
+>>>>>>> Stashed changes
             return PartialView("~/modules/" + ModuleID + "/Views/Client/_SmsConfirmation.cshtml", pageType);
         }
 
         [HttpGet]
+<<<<<<< Updated upstream
         public JsonResult GetFormSettings(string pageToRedirect)
+=======
+        public JsonResult GetFormSettings(string pageToRedirect,/*GlorySoft_018*/ string pageType)
+>>>>>>> Stashed changes
         {
             if (string.IsNullOrEmpty(pageToRedirect))
                 pageToRedirect = "login";
@@ -67,6 +79,12 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
                 UseCaptcha = SmsConfirmationSettings.UseCaptcha
             };
 
+<<<<<<< Updated upstream
+=======
+            if (pageType == "registration" || pageType == "checkout")//GlorySoft_018
+                settings.FormTitle = "Подтверждение телефона";
+
+>>>>>>> Stashed changes
             string socialLinks = null;
 
             if (Configuration.SettingsOAuth.GoogleActive || Configuration.SettingsOAuth.YandexActive || Configuration.SettingsOAuth.FacebookActive ||
@@ -133,10 +151,30 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
             if (string.IsNullOrEmpty(phone) || phone.Contains('_'))
                 return JsonError("Пустой номер телефона");
 
+<<<<<<< Updated upstream
             var standardPhone = Helpers.StringHelper.ConvertToStandardPhone(phone);
             if (!standardPhone.HasValue)
                 return JsonError("Введите корректный номер телефона");
 
+=======
+            var standardPhone = SmsConfirmationService/*GlorySoft_004 Helpers.StringHelper*/.ConvertToStandardPhone(phone);
+            if (!standardPhone.HasValue)
+                return JsonError("Введите корректный номер телефона");
+
+            //GlorySoft_004
+            var exist = SmsConfirmationService.GetCustomersByPhone(phone, null, null).Count > 0;
+            var enabled = SmsConfirmationService.GetCustomersByPhone(phone, true, null).Count > 0;
+            var confirmed = SmsConfirmationService.GetCustomersByPhone(phone, true, true).Count > 0;
+            if ((pageType == "registration" || pageType == "checkout") && confirmed)
+                return JsonError("Указанный номер телефона уже используется");
+            else if ((pageType == "login") && !exist)
+                return JsonError(T("SmsConfirmation.Alert.NotFound"));
+            else if ((pageType == "login") && !enabled)
+                return JsonError(T("SmsConfirmation.Alert.EmailNotConfirmed"));
+            else if ((pageType == "login") && !confirmed)
+                return JsonError(T("SmsConfirmation.Alert.PhoneNotConfirmed"));
+
+>>>>>>> Stashed changes
             var activeSmsModule = SmsNotifier.GetActiveSmsModule();
             if (activeSmsModule == null)
                 return JsonError("Модуль для отправки SMS не установлен");
@@ -217,7 +255,11 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
                     if (pageType != "login")
                         return JsonOk();
 
+<<<<<<< Updated upstream
                     var customersByPhone = CustomerService.GetCustomersByPhone(phone);
+=======
+                    var customersByPhone = SmsConfirmationService/*GlorySoft_004 CustomerService*/.GetCustomersByPhone(phone, /*GlorySoft_004*/null, null);
+>>>>>>> Stashed changes
                     var customer = customersByPhone.FirstOrDefault(x => !string.IsNullOrEmpty(x.EMail)) 
                                    ?? customersByPhone.FirstOrDefault();
 
@@ -229,7 +271,12 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
                             SmsConfirmationService.UpdateCustomerEmailByCustomerId(customer.Id, customer.EMail);
                         }
 
+<<<<<<< Updated upstream
                         AuthorizeService.SignIn(customer.EMail, customer.Password, true, true);
+=======
+                        if (!AuthorizeService.SignIn(customer.EMail, customer.Password, true, true))/*GlorySoft_004*/
+                            return JsonError("Ошибка при авторизации");//GlorySoft_004
+>>>>>>> Stashed changes
                     }
                     else
                     {

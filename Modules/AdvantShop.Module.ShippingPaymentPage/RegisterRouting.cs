@@ -22,6 +22,16 @@ namespace AdvantShop.Module.ShippingPaymentPage
                 namespaces: new[] { "AdvantShop.Module.ShippingPaymentPage.Controllers" }
                 );
 
+<<<<<<< Updated upstream
+=======
+            routes.MapRoute(//GlorySoft_008
+                name: "CheckoutShippingJson",
+                url: "shipping-payment/checkoutshippingjson",
+                defaults: new { controller = "Home", action = "CheckoutShippingJson" },
+                namespaces: new[] { "AdvantShop.Module.ShippingPaymentPage.Controllers" }
+                );
+
+>>>>>>> Stashed changes
         }
     }
 }

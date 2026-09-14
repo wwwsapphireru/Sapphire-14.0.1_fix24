@@ -158,6 +158,15 @@ namespace AdvantShop.Module.RemindAboutReceipt
                     ActionName="ShowNotificationFormProductView"
 
                 },
+<<<<<<< Updated upstream
+=======
+                new ModuleRoute//GlorySoft_012
+                {
+                    Key= "product_view_altbutton",
+                    ControllerName="LandingRARClient",
+                    ActionName="ProductView"
+                },
+>>>>>>> Stashed changes
                 /*new ModuleRoute()
                 {
                     Key = "body_end",

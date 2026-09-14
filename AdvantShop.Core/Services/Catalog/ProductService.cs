@@ -2281,5 +2281,29 @@ namespace AdvantShop.Catalog
                 CommandType.Text,
                 reader => SQLDataHelper.GetBoolean(reader, "AllowAddProductToCart"),
                 new SqlParameter("@ProductId", productId));
+
+        public static List<int> GetCategoriesIDsByProductIds(List<int> productIds, bool onlyActive)//GlorySoft_023
+        {
+            if (productIds == null || productIds.Count == 0)
+                return new List<int>();
+            if (onlyActive)
+            {
+                return SQLDataAccess.ExecuteReadColumn<int>(
+                    "SELECT Distinct Category.CategoryID FROM Catalog.ProductCategories " +
+                    "inner join Catalog.Category on Category.CategoryId = ProductCategories.CategoryId " +
+                    string.Format("WHERE ProductID In ({0}) and Enabled = 1 and HirecalEnabled = 1 and Hidden = 0 And Main = 1 ", productIds.AggregateString(',')),
+                    //"order by main desc",
+                    CommandType.Text, "CategoryID");
+            }
+            else
+            {
+                return SQLDataAccess.ExecuteReadColumn<int>(
+                    "SELECT Distinct CategoryID FROM Catalog.ProductCategories " +
+                    string.Format("WHERE ProductID In ({0}) And Main = 1 ", productIds.AggregateString(',')),
+                    //"order by main desc",
+                    CommandType.Text, "CategoryID");
+            }
+        }
+
     }
 }

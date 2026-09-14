@@ -27,5 +27,7 @@ namespace AdvantShop.Areas.Mobile.Models.Catalog
         {
             get { return Filter != null && Products != null && Products.Products.Count > 0; }
         }
+
+        public int? SalesType { get; set; }//GlorySoft_016
     }
 }

@@ -1,0 +1,41 @@
+﻿@model AdvantShop.Module.OneSApi.Models.Client.ClientDepotsProductModel
+
+<div class="block-exuding-row product__shipping cs-bg-4">
+    <div class="top-shipping-row">
+        НАЛИЧИЕ на @(DateTime.Today.ToShortDateString())
+    </div>
+    <div class="details-shipping__variants">
+        <ul class="shipping-variants">
+            @foreach (var offer in Model.Amounts)
+            {
+                <li class="shipping-variants-row">
+                    <div class="shipping-variants-cell shipping-variants-name">
+                        <span>@offer.DepotTitle</span>
+                    </div>
+                    <div class="shipping-variants-cell shipping-variants-value" style="font-size: 14px; color: #000;">
+                        @*<span>@offer.Amount @offer.Unit</span>*@
+                        @if (offer.Amount > 0)
+                        {
+                            <span class="depot-available">есть</span>
+                        }
+                        else
+                        {
+                            <span class="depot-not-available">нет</span>
+                        }
+                    </div>
+                </li>
+            }
+            @if (Model.ExpectedDate.HasValue && !Model.Amounts.Any(x => x.Amount > 0))
+            {
+                <li class="shipping-variants-row">
+                    <div class="shipping-variants-cell shipping-variants-name">
+                        <span class="depot-not-available">@T("Product.ExpectedDate")</span>
+                    </div>
+                    <div class="shipping-variants-cell shipping-variants-value" style="font-size: 14px; color: #000;">
+                        <span class="depot-not-available">@Model.ExpectedDate.Value.ToString("dd.MM.yyyy")</span>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+@using AdvantShop.Module.OneSApi
+@{
+    var url = UrlService.GetUrl();
+    var scripts = new List<string>
+    {
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/module-service.js",
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/export/orders.js",
+        //url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/export/customers.js",
+    };
+    var version = Html.GetModuleVersion(OneSApi.ModuleStringId);
+}
+
+<div data-oc-lazy-load="[@String.Join(",", scripts.Select(x => "'" + x + "?" + version + "'"))]">
+    <div>
+        <div>
+            <div>
+                <uib-tabset active uid="exporttab" style="margin: -20px -25px;">
+                    <uib-tab active index="0" heading="Заказы" classes="ng-tab">
+                        <div data-ng-controller="OneExportOrdersCtrl as oneExportOrders">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_OrderList.cshtml")
+                        </div>
+                    </uib-tab>
+                    @*<uib-tab active index="1" heading="Покупатели" classes="ng-tab">
+                        <div data-ng-controller="OneOrdersCtrl as oneOrders">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_LogTab.cshtml", new KeyValuePair<int, string[]>(1, new string[] { "GetOrders" }))
+                        </div>
+                    </uib-tab>*@
+                </uib-tabset>
+            </div>
+        </div>
+    </div>
+    
+    @*<div data-ng-controller="OneOrdersCtrl as oneOrders">
+        <div> 
+            <div>
+                @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_OrderList.cshtml")
+            </div>
+        </div>
+    </div>*@
+</div>

@@ -1,0 +1,46 @@
+@using AdvantShop.Module.OneSApi
+@{
+    var url = UrlService.GetUrl();
+    var scripts = new List<string>
+    {
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/module-service.js",
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/export/orders.js",
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/export/customers.js",
+        url + "modules/" + OneSApi.ModuleStringId + "/content/scripts/admin/export/products.js",
+    };
+    var version = Html.GetModuleVersion(OneSApi.ModuleStringId);
+}
+
+<div data-oc-lazy-load="[@String.Join(",", scripts.Select(x => "'" + x + "?" + version + "'"))]">
+    <div>
+        <div>
+            <div>
+                <uib-tabset active uid="exporttab" style="margin: -20px -25px;">
+                    <uib-tab active index="0" heading="Orders" classes="ng-tab">
+                        <div data-ng-controller="OneExportOrdersCtrl as oneExportOrders">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_OrderList.cshtml")
+                        </div>
+                    </uib-tab>
+                    <uib-tab active index="1" heading="Customers" classes="ng-tab">
+                        <div data-ng-controller="OneExportCustomersCtrl as oneExportCustomers">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_CustomerList.cshtml")
+                        </div>
+                    </uib-tab>
+                    <uib-tab active index="2" heading="Products" classes="ng-tab">
+                        <div data-ng-controller="OneExportProductsCtrl as oneExportProducts">
+                            @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_ProductList.cshtml")
+                        </div>
+                    </uib-tab>
+                </uib-tabset>
+            </div>
+        </div>
+    </div>
+    
+    @*<div data-ng-controller="OneOrdersCtrl as oneOrders">
+        <div> 
+            <div>
+                @Html.Partial("~/Modules/" + OneSApi.ModuleStringId + "/Views/Admin/_OrderList.cshtml")
+            </div>
+        </div>
+    </div>*@
+</div>

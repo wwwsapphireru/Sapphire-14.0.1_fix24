@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -18,6 +19,8 @@ using AdvantShop.Localization;
 using AdvantShop.Models.Attachments;
 using AdvantShop.Models.MyAccount;
 using AdvantShop.Orders;
+using AdvantShop.Payment;
+using AdvantShop.Shipping;
 
 namespace AdvantShop.Handlers.MyAccount
 {
@@ -139,13 +142,18 @@ namespace AdvantShop.Handlers.MyAccount
                 ShippingName = _order.OrderCustomer.FirstName + " " + _order.OrderCustomer.LastName,
                 ShippingInfo = shippingInfo,
                 ArchivedShippingName = _order.ArchivedShippingName,
-                ShippingAddress = _order.OrderPickPoint != null ? _order.OrderPickPoint.PickPointAddress : null,
+                //ShippingAddress = _order.OrderPickPoint != null ? _order.OrderPickPoint.PickPointAddress : null,GlorySoft_027
+                ShippingAddress = _order.OrderPickPoint != null && !_order.ShippingMethod.ShippingType.Contains("RussianPost")//GlorySoft_027
+                    ? _order.OrderPickPoint.PickPointAddress
+                    : (_order.ShippingMethod.TypeOfDelivery == EnTypeOfDelivery.SelfDelivery
+                        ? _order.ShippingMethod.Description
+                        : (shippingInfo.Zip.IsNotEmpty() ? shippingInfo.Zip + ", " : "") + shippingInfo.Street),
                 PaymentMethodId = _order.PaymentMethodId,
                 PaymentMethodName = _order.PaymentMethodName,
-                TotalDiscountPrice = _order.GetOrderDiscountPrice(),
-                TotalDiscountPriceFormatted = _order.GetOrderDiscountPrice().FormatPrice(_order.OrderCurrency),
-                ProductsPrice = _order.OrderItems.Sum(item => PriceService.SimpleRoundPrice(item.Amount * item.Price, _order.OrderCurrency)).FormatPrice(_order.OrderCurrency),
-                TotalDiscount = _order.OrderDiscount,
+                TotalDiscountPrice = /*GlorySoft_027 _order.*/GetOrderDiscountPrice(),
+                TotalDiscountPriceFormatted = /*GlorySoft_027 _order.*/GetOrderDiscountPrice().FormatPrice(_order.OrderCurrency),
+                ProductsPrice = GetOrderProductPrice()/*GlorySoft_027 _order.OrderItems.Sum(item => PriceService.SimpleRoundPrice(item.Amount * item.Price, _order.OrderCurrency))*/.FormatPrice(_order.OrderCurrency),
+                TotalDiscount = GetOrderProductPrice() != 0 ? (float)Math.Round(GetOrderDiscountPrice() * 100 / GetOrderProductPrice()) : 0/*GlorySoft_027 _order.OrderDiscount*/,
                 CertificatePrice = _order.Certificate != null
                                         ? _order.Certificate.Price.FormatPrice(_order.OrderCurrency)
                                         : string.Empty,
@@ -187,7 +195,15 @@ namespace AdvantShop.Handlers.MyAccount
                             ObjId = x.ObjId,
                             FileName = x.OriginFileName.IsNullOrEmpty() ? x.FileName : x.OriginFileName
                         }).ToList(),
-                ShippingHistory = new GetShippingHistoryAndPointInfoHandler(_order).Get()
+                ShippingHistory = new GetShippingHistoryAndPointInfoHandler(_order).Get(),
+
+                //GlorySoft_027
+                StatusColor = $"#{_order.OrderStatus.Color}",
+                Manager = _order.Manager,
+                ManagerPhone = _order.Manager != null ? _order.Manager.Customer.Phone : null,
+                EmailForFeedback = SettingsMail.EmailForFeedback,
+                ChequeUrl = OrderService.GetOrderAdditionalData(_order.OrderID, "ChequeUrl"),
+                PaymentMethodIsOnline = _order.PaymentMethod?.ProcessType != null && _order.PaymentMethod?.ProcessType != ProcessType.None
             };
             
             var accrueBonusesByOrder = BonusSystem.GetAccrueBonusesByOrder(_order.Number);
@@ -198,7 +214,32 @@ namespace AdvantShop.Handlers.MyAccount
                     IsAccrued = accrueBonusesByOrder.IsAccrued
                 };
 
+            //GlorySoft_027
+            if (_order.ShippingMethod != null)
+            {
+                if (orderDetails.TrackNumber.IsNotEmpty())
+                {
+                    if (_order.ShippingMethod != null && _order.ShippingMethod.TrackingUrl.IsNotEmpty())
+                        orderDetails.TrackingUrl = string.Format(_order.ShippingMethod.TrackingUrl, orderDetails.TrackNumber);
+                }
+                if (!_order.OrderStatus.IsCompleted && !_order.OrderStatus.IsCanceled)
+                    orderDetails.KeepFreeUntil = OrderService.GetOrderAdditionalData(_order.OrderID, "KeepFreeUntil");
+            }
+            if (_order.OrderStatusId == OrderStatusService.DefaultOrderStatus)
+                orderDetails.AdminComment = LocalizationService.GetResource("MyAccount.OrderDetails.AdminComment.DefaultOrderStatus");
+
             return orderDetails;
         }
+
+        private float GetOrderDiscountPrice()//GlorySoft_027
+        {
+            return _order.OrderItems.Sum(item => PriceService.SimpleRoundPrice(item.Amount * ((item.BasePrice ?? item.Price) - item.Price), _order.OrderCurrency));
+        }
+
+        private float GetOrderProductPrice()//GlorySoft_027
+        {
+            return _order.OrderItems.Sum(item => PriceService.SimpleRoundPrice(item.Amount * (item.BasePrice ?? item.Price), _order.OrderCurrency));
+        }
+
     }
 }

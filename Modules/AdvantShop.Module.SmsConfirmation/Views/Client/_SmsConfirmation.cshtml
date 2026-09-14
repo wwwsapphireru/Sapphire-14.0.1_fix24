@@ -65,7 +65,11 @@
         }
     </div>
 
+<<<<<<< Updated upstream
     @if (Model == "checkout" || Model == "registration")
+=======
+    @if ((Model == "checkout" || Model == "registration") &&/*GlorySoft_018*/ false)
+>>>>>>> Stashed changes
     {
         <div data-module-sms-confirmation-add-field data-page-type="@Model" data-is-mobile="@isMobile.ToLowerString()"></div>
     }

@@ -36,7 +36,7 @@ namespace AdvantShop.Handlers.MyAccount
                 valid &= account.District.IsNotEmpty();
             }
 
-            if (SettingsCheckout.IsShowAddress && SettingsCheckout.IsRequiredAddress)
+            if (SettingsCheckout.IsShowAddress && SettingsCheckout.IsRequiredAddress &&/*GlorySoft_027*/ account.IsRequiredAddress != false)
             {
                 valid &= account.Street.IsNotEmpty();
             }

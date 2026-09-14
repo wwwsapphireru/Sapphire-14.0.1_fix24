@@ -6,6 +6,8 @@ using System.Web.Mvc;
 using AdvantShop.Core.Common.Attributes;
 using AdvantShop.Core.Common.Extensions;
 using AdvantShop.Core.Services.Shipping;
+using AdvantShop.Customers;
+using AdvantShop.Orders;
 using AdvantShop.Shipping.RussianPost;
 using AdvantShop.Shipping.RussianPost.Api;
 using AdvantShop.Shipping.RussianPost.PickPoints;
@@ -610,5 +612,54 @@ namespace AdvantShop.Web.Infrastructure.Admin.ShippingMethods
             if (string.IsNullOrWhiteSpace(Token))
                 yield return new ValidationResult("Введите токен", new[] { "Token" });
         }
+
+        //GlorySoft_001
+        public int StatusForReady
+        {
+            get { return Params.ElementOrDefault(RussianPostTemplate.StatusForReady).TryParseInt(0); }
+            set { Params.TryAddValue(RussianPostTemplate.StatusForReady, value.ToString()); }
+        }
+        public List<SelectListItem> ListOfStatuses
+        {
+            get
+            {
+                var listOfStatuses = new List<SelectListItem>()
+                {
+                    new SelectListItem() {Text = "не выбран", Value = "0"}
+                };
+
+                listOfStatuses.AddRange(OrderStatusService.GetOrderStatuses().OrderBy(x => x.SortOrder).ToList()
+                    .Select(x => new SelectListItem()
+                    {
+                        Text = x.StatusName,
+                        Value = (x.StatusID).ToString()
+                    })
+                    .ToList());
+
+                return listOfStatuses;
+            }
+        }
+        public CustomerType CustomerType
+        {
+            get { return (CustomerType)Params.ElementOrDefault(RussianPostTemplate.CustomerType).TryParseInt((int)CustomerType.All); }
+            set { Params.TryAddValue(RussianPostTemplate.CustomerType, ((int)value).ToString()); }
+        }
+        public List<SelectListItem> CustomerTypes
+        {
+            get
+            {
+                return Enum.GetValues(typeof(CustomerType)).Cast<CustomerType>().Select(x => new SelectListItem
+                {
+                    Text = x.Localize(),
+                    Value = x.ToString()
+                }).OrderBy(x => x.Text).ToList();
+            }
+        }
+        public int MaxWeight
+        {
+            get { return Params.ElementOrDefault(RussianPostTemplate.MaxWeight).TryParseInt(0); }
+            set { Params.TryAddValue(RussianPostTemplate.MaxWeight, (value).ToString()); }
+        }
+
     }
 }

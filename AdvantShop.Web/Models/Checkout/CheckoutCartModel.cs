@@ -76,5 +76,7 @@ namespace AdvantShop.Models.Checkout
         public string SizeHeader { get; set; }
         public string Valid { get; set; }
         public float TotalItems { get; set; }
+
+        public CheckoutCartParam DiscountOnTotalPrice { get; set; }//GlorySoft_026
     }
 }

@@ -5,6 +5,10 @@ using System.Net;
 using System.Text;
 using AdvantShop.Core.Common.Extensions;
 using AdvantShop.Diagnostics;
+<<<<<<< Updated upstream
+=======
+using AdvantShop.Helpers;
+>>>>>>> Stashed changes
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -14,32 +18,56 @@ namespace AdvantShop.Module.Rees46.Domain.PartnersApi
     public class Rees46PartnerService
     {
         private static readonly string Rees46Url = Rees46Settings.Url;
+<<<<<<< Updated upstream
         
         public static Rees46ApiKeys RegisterCustomer(Rees46Customer customer)
         {
             return MakeRequest<Rees46ApiKeys>("/api/customers", customer);
+=======
+        private const string Rees46ApiUrl = "https://api.rees46.ru";//GlorySoft_010
+
+        public static Rees46ApiKeys RegisterCustomer(Rees46Customer customer)
+        {
+            return MakeRequest<Rees46ApiKeys>(/*GlorySoft_010*/Rees46Url + "/api/customers", customer);
+>>>>>>> Stashed changes
         }
 
         public static Rees46ShopKeys CreateShop(Rees46Shop shop)
         {
+<<<<<<< Updated upstream
             return MakeRequest<Rees46ShopKeys>("/api/shops", shop);
+=======
+            return MakeRequest<Rees46ShopKeys>(/*GlorySoft_010*/Rees46Url + "/api/shops", shop);
+>>>>>>> Stashed changes
         }
 
         public static List<Rees46Category> GetCategories()
         {
+<<<<<<< Updated upstream
             return MakeRequest<List<Rees46Category>>("/api/categories", method: "GET");
+=======
+            return MakeRequest<List<Rees46Category>>(/*GlorySoft_010*/Rees46Url + "/api/categories", method: "GET");
+>>>>>>> Stashed changes
         }
 
         public static List<Rees46Currency> GetCurrencies()
         {
+<<<<<<< Updated upstream
             return MakeRequest<List<Rees46Currency>>("/api/currencies", method: "GET");
+=======
+            return MakeRequest<List<Rees46Currency>>(/*GlorySoft_010*/Rees46Url + "/api/currencies", method: "GET");
+>>>>>>> Stashed changes
         }
 
         private static T MakeRequest<T>(string url, object data = null, string method = "POST", string contentType = "application/json")
         {
             try
             {
+<<<<<<< Updated upstream
                 var requestUrl = string.Format(Rees46Url + url, method == "GET" ? "?" + data : string.Empty);
+=======
+                var requestUrl = string.Format(/*GlorySoft_010 Rees46Url +*/ url, method == "GET" ? "?" + data : string.Empty);
+>>>>>>> Stashed changes
 
                 var request = WebRequest.Create(requestUrl) as HttpWebRequest;
                 request.Method = method;
@@ -107,5 +135,17 @@ namespace AdvantShop.Module.Rees46.Domain.PartnersApi
             }
             return default(T);
         }
+<<<<<<< Updated upstream
+=======
+
+        public static Rees46Search GetSearch(string term)//GlorySoft_010
+        {
+            var did = CommonHelper.GetCookieString("rees46_device_id");
+            var sid = CommonHelper.GetCookieString("rees46_session_code");
+            var url = $"{Rees46ApiUrl}/search?did={did}&shop_id={Rees46Settings.ShopKey}&sid={sid}&type=full_search&search_query={term}&extended=false&limit=1000";
+            return MakeRequest<Rees46Search>(url, method: "GET");
+        }
+
+>>>>>>> Stashed changes
     }
 }

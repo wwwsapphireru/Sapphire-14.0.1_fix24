@@ -203,15 +203,17 @@ function CatalogFilterCtrl($http, $window, $timeout, popoverService, domService,
 
     ctrl.getFilterCount = function(filterString) {
         return $http
-            .get(ctrl.urlCount + (filterString != null && filterString.length > 0 ? `?${filterString}` : ''), {
-                params: angular.extend(ctrl.parameters(), { rnd: Math.random() }),
-            })
+            //.get(ctrl.urlCount + (filterString != null && filterString.length > 0 ? `?${filterString}` : ''), {
+            //    params: angular.extend(ctrl.parameters(), { rnd: Math.random() }),
+            //})GlorySoft_019
+            .post(ctrl.urlCount + (filterString != null && filterString.length > 0 ? '?' + filterString : ''), angular.extend(ctrl.parameters(), { rnd: Math.random() }))//GlorySoft_019
             .then((response) => response.data);
     };
 
     ctrl.getFilterData = function() {
         return $http
-            .get(ctrl.url, { params: angular.extend({}, pageParameters, ctrl.parameters(), { rnd: Math.random() }) })
+            //.get(ctrl.url, { params: angular.extend({}, pageParameters, ctrl.parameters(), { rnd: Math.random() }) })GlorySoft_019
+            .post(ctrl.url, angular.extend({}, pageParameters, ctrl.parameters(), { rnd: Math.random() }))//GlorySoft_019
             .then((response) => response.data);
     };
 }

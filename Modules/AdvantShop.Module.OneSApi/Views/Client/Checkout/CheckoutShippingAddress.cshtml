@@ -1,0 +1,282 @@
+﻿@model AdvantShop.ViewModel.Checkout.CheckoutShippingAddressViewModel
+@{ 
+    var useAddressSuggestions = Model.SuggestionsModule != null && Model.SuggestionsModule.SuggestAddressInClient;
+}
+<div data-ng-init="checkout.HasAddresses = @Model.HasAddresses.ToLowerString(); checkout.HasCustomShippingFields = @Model.HasCustomShippingFields.ToLowerString()">
+    <article class="checkout-block" data-ng-if="((checkout.HasAddresses && checkout.HasCustomShippingFields && checkout.ngSelectShipping.DisplayCustomFields) ||
+                    ((!checkout.HasAddresses && checkout.ngSelectShipping.HideAddressBlock === false && @SettingsCheckout.IsShowAddress.ToLowerString())
+                    || (checkout.ngSelectShipping.DisplayCustomFields === true && checkout.HasCustomShippingFields)
+                    || (checkout.ngSelectShipping.DisplayIndex === true && @SettingsCheckout.IsShowZip.ToLowerString() && !@SettingsCheckout.ZipDisplayPlace.ToLowerString())))">
+        <div class="checkout-block-title h2 h-inline">@*GlorySoft_023*@
+            @T("Checkout.CheckoutShippingAddress.AddressTitle")
+        </div>
+        <a class="link-dotted-invert checkout-shipping__zone" href="" data-zone-dialog-trigger>@*GlorySoft_023*@
+            <span data-zone-current data-ng-bind-template="{{zone.CountryName }}{{zone.Region != null && zone.Region.length ? ', ' +  zone.Region: ''}}{{zone.District != null && zone.District.length ? ', ' +  zone.District: ''}}{{zone.City != null && zone.City.length ?', ' +  zone.City : ''}}"></span>
+        </a>
+        <div class="checkout-block-content">
+            @if (SettingsCheckout.IsShowCustomShippingField1)
+            {
+                <div class="row" data-ng-if="checkout.ngSelectShipping.DisplayCustomFields === true">
+                    <div class="col-xs-12 col-sm-10">
+                        <div class="row form-field-control">
+                            <label for="customField1" class="col-xs-12 col-sm-4 form-field-name-wrap">
+                                <span class="form-field-name vertical-interval-xsmall @(SettingsCheckout.IsReqCustomShippingField1 ? "input-required" : "")">
+                                    @Html.Raw(SettingsCheckout.CustomShippingField1)
+                                </span>
+                            </label>
+                            <span class="col-xs-12 col-sm-8 form-field-input-wrap">
+                                <span class="form-field-input vertical-interval-xsmall">
+                                    @Html.TextBox("customField1", Model.AddressContact.CustomField1, new
+                                    {
+                                        @class = "input-small",
+                                        id = "customField1",
+                                        data_ng_model = "checkout.contact.CustomField1",
+                                        data_ng_blur = "checkout.saveContact()",
+                                        data_ng_required = SettingsCheckout.IsReqCustomShippingField1.ToLowerString(),
+                                        maxlength = "1000"
+                                    })
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (SettingsCheckout.IsShowCustomShippingField2)
+            {
+                <div class="row" data-ng-if="checkout.ngSelectShipping.DisplayCustomFields === true">
+                    <div class="col-xs-12 col-sm-10">
+                        <div class="row form-field-control">
+                            <label for="customField2" class="col-xs-12 col-sm-4 form-field-name-wrap">
+                                <span class="form-field-name vertical-interval-xsmall @(SettingsCheckout.IsReqCustomShippingField2 ? "input-required" : "")">
+                                    @Html.Raw(SettingsCheckout.CustomShippingField2)
+                                </span>
+                            </label>
+                            <span class="col-xs-12 col-sm-8 form-field-input-wrap">
+                                <span class="form-field-input vertical-interval-xsmall">
+                                    @Html.TextBox("customField2", Model.AddressContact.CustomField2, new
+                                    {
+                                        @class = "input-small",
+                                        id = "customField2",
+                                        data_ng_model = "checkout.contact.CustomField2",
+                                        data_ng_blur = "checkout.saveContact()",
+                                        data_ng_required = SettingsCheckout.IsReqCustomShippingField2.ToLowerString(),
+                                        maxlength = "1000"
+                                    })
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (SettingsCheckout.IsShowZip && !SettingsCheckout.ZipDisplayPlace)
+            {
+                <div class="row" data-ng-if="checkout.ngSelectShipping.DisplayIndex === true">
+                    <div class="col-xs-12 col-sm-10">
+                        <div class="row form-field-control">
+                            <label for="zip" class="col-xs-12 col-sm-4 form-field-name-wrap">
+                                <span class="form-field-name vertical-interval-xsmall @(SettingsCheckout.IsRequiredZip ? "input-required" : "")">
+                                    @T("Checkout.CheckoutShippingAddress.Zip")
+                                </span>
+                            </label>
+                            <span class="col-xs-12 col-sm-8 form-field-input-wrap">
+                                <span class="form-field-input vertical-interval-xsmall">
+                                    @Html.TextBox("zip", Model.AddressContact.Zip, new
+                                    {
+                                        @class = "input-small",
+                                        id = "zip",
+                                        data_ng_model = "checkout.contact.Zip",
+                                        data_ng_required = SettingsCheckout.IsRequiredZip.ToLowerString(),
+                                        data_ng_blur = "checkout.saveContact()",
+                                        maxlength = "70",
+                                        autocomplete = useAddressSuggestions ? "new-password" : "shipping postal-code"
+                                    })
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (SettingsCheckout.IsShowAddress /*GlorySoft_021 && !Model.HasAddresses*/)
+            {
+                if (!SettingsCheckout.IsShowFullAddress)
+                {
+                    <div class="row" data-ng-if="checkout.ngSelectShipping.HideAddressBlock === false"> @*GlorySoft_021 && checkout.HasAddresses === false">*@
+                        <div class="col-xs-12 col-sm-10">
+                            <div class="row form-field-control">
+                                <label for="street" class="col-xs-12 col-sm-4 form-field-name-wrap">
+                                    <span class="form-field-name vertical-interval-xsmall @(SettingsCheckout.IsRequiredAddress ? "input-required" : "")">
+                                        @T("Checkout.CheckoutShippingAddress.Address")
+                                    </span>
+                                </label>
+                                <span class="col-xs-12 col-sm-8 form-field-input-wrap">
+                                    <span class="autocompleter-block form-field-input vertical-interval-xsmall"
+                                          data-field="Name" data-autocompleter data-min-length="1"
+                                          data-request-url="@(Model.SuggestionsModule != null ? Model.SuggestionsModule.SuggestAddressUrl : null)"
+                                          data-template-path="scripts/_common/autocompleter/templates/location.html"
+                                          data-apply-fn="checkout.processAddress(obj, 0)" data-params="{city: checkout.contact.City, district: checkout.contact.District, region: checkout.contact.Region}">
+                                        @Html.TextBoxFor(x => x.AddressContact.Street, new
+                                        {
+                                            @class = "input-small",
+                                            id = "street",
+                                            data_ng_model = "checkout.contact.Street",
+                                            data_ng_required = SettingsCheckout.IsRequiredAddress.ToLowerString(),
+                                            maxlength = "255",
+                                            data_ng_change = useAddressSuggestions ? "checkout.processAddress()" : "checkout.saveContact()",
+                                            data_autocompleter_input = "",
+                                            data_autocompleter_disabled = (!useAddressSuggestions).ToLowerString(),
+                                            autocomplete = useAddressSuggestions ? "new-password" : "shipping street-address",
+                                            data_autocomplete_debounce = "400",
+                                            data_autocomplete_apply_on_blur = "false"
+                                        })
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row" data-ng-if="checkout.ngSelectShipping.HideAddressBlock === false"> @*GlorySoft_021 && checkout.HasAddresses === false">*@
+                        <div class="col-xs-12 col-sm-10">
+                            <div class="row form-field-control">
+                                <label for="street" class="col-xs-12 col-sm-4 form-field-name-wrap">
+                                    <span class="form-field-name vertical-interval-xsmall @(SettingsCheckout.IsRequiredAddress ? "input-required" : "")">
+                                        @T("Checkout.CheckoutShippingAddress.Street")
+                                    </span>
+                                </label>
+                                <span class="col-xs-12 col-sm-8 form-field-input-wrap">
+                                    <span class="autocompleter-block form-field-input vertical-interval-xsmall"
+                                          data-field="Name" data-min-length="1" data-autocompleter
+                                          data-request-url="@(Model.SuggestionsModule != null ? Model.SuggestionsModule.SuggestAddressUrl : null)"
+                                          data-template-path="scripts/_common/autocompleter/templates/location.html"
+                                          data-apply-fn="checkout.processAddress(obj, 0)"
+                                          data-params="{part: 'Street', city: checkout.contact.City, district: checkout.contact.District, region: checkout.contact.Region}">
+                                        @Html.TextBoxFor(x => x.AddressContact.Street, new
+                                        {
+                                            @class = "input-small",
+                                            id = "street",
+                                            data_ng_model = "checkout.contact.Street",
+                                            data_ng_required = SettingsCheckout.IsRequiredAddress.ToLowerString(),
+                                            maxlength = "255",
+                                            data_ng_change = useAddressSuggestions ? "checkout.processAddress()" : "checkout.saveContact()",
+                                            data_autocompleter_input = "",
+                                            data_autocompleter_disabled = (!useAddressSuggestions).ToLowerString(),
+                                            autocomplete = useAddressSuggestions ? "new-password" : "shipping street-address",
+                                            data_autocomplete_debounce = "400",
+                                            data_autocomplete_apply_on_blur = "false"
+                                        })
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" data-ng-if="checkout.ngSelectShipping.HideAddressBlock === false && checkout.HasAddresses === false">
+                        <div class="col-xs-12 col-sm-10">
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-2">
+                                    <label class="control-label text-left m-b-xs @(SettingsCheckout.IsRequiredAddress ? "input-required" : "")">@T("Checkout.CheckoutShippingAddress.House")</label>
+                                    <span class="autocompleter-block form-field-input"
+                                          data-field="Name" data-min-length="1" data-autocompleter
+                                          data-request-url="@(Model.SuggestionsModule != null ? Model.SuggestionsModule.SuggestAddressUrl : null)"
+                                          data-template-path="scripts/_common/autocompleter/templates/location.html"
+                                          data-apply-fn="checkout.processAddress(obj, 0)"
+                                          data-params="{part: 'House', city: checkout.contact.City, district: checkout.contact.District, region: checkout.contact.Region, street: checkout.contact.Street}">
+                                        @Html.TextBoxFor(x => x.AddressContact.House, new
+                                        {
+                                            @class = "input-small",
+                                            data_ng_model = "checkout.contact.House",
+                                            data_ng_required = SettingsCheckout.IsRequiredAddress.ToLowerString(),
+                                            maxlength = "10",
+                                            data_ng_change = useAddressSuggestions ? "checkout.processAddress()" : "checkout.saveContact()",
+                                            data_autocompleter_input = "",
+                                            data_autocompleter_disabled = (!useAddressSuggestions).ToLowerString(),
+                                            autocomplete = "new-password",
+                                            data_autocomplete_debounce = "400",
+                                            data_autocomplete_apply_on_blur = "false"
+                                        })
+                                    </span>
+                                </div>
+                                <div class="col-xs-12 col-sm">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-sm-6">
+                                            <label class="control-label text-left m-b-xs">@T("Checkout.CheckoutShippingAddress.Structure")</label>
+                                            <div class="row">
+                                                <div class="col-xs-12">
+                                                    @Html.TextBoxFor(x => x.AddressContact.Structure, new
+                                                    {
+                                                        @class = "input-small",
+                                                        data_ng_model = "checkout.contact.Structure",
+                                                        data_ng_change = "checkout.saveContact()",
+                                                        maxlength = "10"
+                                                    })
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xs-12 col-sm-6">
+                                            <label class="control-label text-left m-b-xs">@T("Checkout.CheckoutShippingAddress.Apartment")</label>
+                                            @Html.TextBoxFor(x => x.AddressContact.Apartment, new
+                                            {
+                                                @class = "input-small",
+                                                data_ng_model = "checkout.contact.Apartment",
+                                                data_ng_blur = "checkout.saveContact(true)",
+                                                maxlength = "10"
+                                            })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-2">
+                                    <label class="control-label text-left m-b-xs">@T("Checkout.CheckoutShippingAddress.Entrance")</label>
+                                    @Html.TextBoxFor(x => x.AddressContact.Entrance, new
+                                    {
+                                        @class = "input-small",
+                                        data_ng_model = "checkout.contact.Entrance",
+                                        data_ng_blur = "checkout.saveContact(true)",
+                                        maxlength = "10"
+                                    })
+                                </div>
+                                <div class="col-xs-12 col-sm-2">
+                                    <label class="control-label text-left m-b-xs">@T("Checkout.CheckoutShippingAddress.Floor")</label>
+                                    @Html.TextBoxFor(x => x.AddressContact.Floor, new
+                                    {
+                                        @class = "input-small",
+                                        data_ng_model = "checkout.contact.Floor",
+                                        data_ng_blur = "checkout.saveContact(true)",
+                                        maxlength = "10"
+                                    })
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            @if (SettingsCheckout.IsShowCustomShippingField3)
+            {
+                <div class="row" data-ng-if="checkout.ngSelectShipping.DisplayCustomFields === true">
+                    <div class="col-xs-12 col-sm-10">
+                        <div class="row form-field-control">
+                            <span class="col-xs-12 col-sm-4 form-field-name-wrap">
+                                <span class="form-field-name vertical-interval-xsmall @(SettingsCheckout.IsReqCustomShippingField3 ? "input-required" : "")">
+                                    @Html.Raw(SettingsCheckout.CustomShippingField3)
+                                </span>
+                            </span>
+                            <span class="col-xs-12 col-sm-8 form-field-input-wrap">
+                                <span class="form-field-input vertical-interval-xsmall">
+                                    @Html.TextBox("customField3", Model.AddressContact.CustomField3, new
+                                    {
+                                        @class = "input-small",
+                                        data_ng_model = "checkout.contact.CustomField3",
+                                        data_ng_blur = "checkout.saveContact()",
+                                        data_ng_required = SettingsCheckout.IsReqCustomShippingField3.ToLowerString(),
+                                        maxlength = "1000"
+                                    })
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </article>
+</div>

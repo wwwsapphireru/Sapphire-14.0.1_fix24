@@ -1,0 +1,44 @@
+﻿@model AdvantShop.Module.OneSApi.Models.Client.FeedbackSuccessModel
+@{ 
+    Html.AddAsset("checkoutSuccess");
+}
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    if (Model.IsEmptyLayout)
+    {
+        Layout = "~/Views/Shared/_LayoutEmpty.cshtml";
+    }
+}
+
+<div class="psk_checkout_001">
+	<div class="psk_checkout_002">
+		<div class="psk_checkout_004">@T("Feedback.Success.Success")</div>
+        <div class="psk_checkout_005">Ваше обращение зарегистрировано под номером @Model.TaskId</div>
+		<div class="psk_checkout_006">
+			@Html.StaticBlock("feedbacksuccess")
+		</div>
+	</div>
+</div>
+
+<div class="site-body-cell mobile-content-padding checkout-success @(Model.IsEmptyLayout ? "checkout-success--layout-empty" : "checkout-success--layout-default")">
+    <div class="checkout-success-content">
+        <div>
+            @Html.Action("ThankYouPage", "Checkout", new { area = "" })
+
+            @*@Html.StaticBlock("feedbacksuccess")*@
+
+            @*<script>
+            window.addEventListener('load', function () {
+                setTimeout(function () {
+                    window.PubSub.publish("order.add");
+                }, 2000);
+            });
+        </script>*@
+
+            @Html.RenderModules("feedback_success", new { area = "", order = Model.TaskId })
+            @*@Html.Raw(Model.SuccessScript)*@
+        </div>
+
+    </div>
+</div>

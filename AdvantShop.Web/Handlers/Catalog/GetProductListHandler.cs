@@ -31,17 +31,19 @@ namespace AdvantShop.Handlers.Catalog
         private bool _existsBest;
         private bool _existsNew;
         private bool _existsSale;
-        
+        private readonly int? _salesType;//GlorySoft_016
+
         private ProductListPagingModel _paging;
 
         private string _title;
         
-        public GetProductListHandler(EProductOnMain? type, CategoryModel categoryModel, string list, UrlHelper urlHelper)
+        public GetProductListHandler(EProductOnMain? type, CategoryModel categoryModel, string list, UrlHelper urlHelper,/*GlorySoft_016*/ int? salesType)
         {
             _type = type;
             _categoryModel = categoryModel;
             _list = list;
             _urlHelper = urlHelper;
+            _salesType = salesType;//GlorySoft_016
         }
         public (ProductListViewModel, MetaInfo, string) Execute()
         {
@@ -85,7 +87,7 @@ namespace AdvantShop.Handlers.Catalog
                 true, 
                 _categoryModel, 
                 _productList?.Id, 
-                false).Get();
+                false,/*GlorySoft_016*/ _salesType).Get();
 
         private (ProductListViewModel, MetaInfo, string) Build() => 
             (BuildModel(), BuildMeta(), _title);
@@ -150,7 +152,8 @@ namespace AdvantShop.Handlers.Catalog
                     {
                         new BreadCrumbs(LocalizationService.GetResource("MainPage"), _urlHelper.AbsoluteRouteUrl("Home")),
                         new BreadCrumbs(_title, _urlHelper.AbsoluteRouteUrl("ProductList", new {type = _currentType.ToString()}))
-                    }
+                    },
+                SalesType = _salesType//GlorySoft_016
             };
 
         private MetaInfo BuildMeta()
@@ -182,7 +185,10 @@ namespace AdvantShop.Handlers.Catalog
                     _title = LocalizationService.GetResource("Catalog.ProductList.AllNewProducts");
                     break;
                 case EProductOnMain.Sale:
-                    _title = LocalizationService.GetResource("Catalog.ProductList.AllSales");
+                    if (_salesType == 1)/*GlorySoft_016*/
+                        _title = LocalizationService.GetResource("Catalog.ProductList.AllSales");
+                    else if (_salesType == 2)//GlorySoft_016
+                        _title = LocalizationService.GetResource("Catalog.ProductList.AllSales2");
                     break;
                 case EProductOnMain.List:
                     _title = _productList != null ? _productList.Name : string.Empty;
@@ -230,7 +236,10 @@ namespace AdvantShop.Handlers.Catalog
                 case EProductOnMain.NewArrivals:
                     return SettingsCatalog.NewDescription;
                 case EProductOnMain.Sale:
-                    return SettingsCatalog.DiscountDescription;
+                    if (_salesType == 1)/*GlorySoft_016*/
+                        return SettingsCatalog.DiscountDescription;
+                    else//GlorySoft_016
+                        return string.Empty;
                 case EProductOnMain.List when _productList != null:
                     return _productList.Description;
                 default:

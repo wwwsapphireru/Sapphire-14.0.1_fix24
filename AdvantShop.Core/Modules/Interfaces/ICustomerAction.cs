@@ -31,5 +31,7 @@ namespace AdvantShop.Core.Modules.Interfaces
         void Login(Customer customer);
 
         void Vote();
+
+        int GetDefaultCustomerGroup();//GlorySoft_003
     }
 }

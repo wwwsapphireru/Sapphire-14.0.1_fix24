@@ -10,5 +10,6 @@ namespace AdvantShop.Payment
         public const string MerchantId = "PayOnline_MerchantId";
         public const string SecretKey = "PayOnline_SecretKey";
         public const string PayType = "PayOnline_PayType";
+        public const string ShowForNewUsers = "ShowForNewUsers";//GlorySoft_001
     }
 }

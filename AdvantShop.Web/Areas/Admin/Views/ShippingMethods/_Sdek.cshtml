@@ -68,6 +68,15 @@
     </div>
 </div>
 
+<div class="form-group row middle-xs">@*GlorySoft_001*@
+    <div class="flex-grow-n  @(isMobile ? "col-xs-12 setting__label setting--m-b-sm" : "col-fixed-size-md")">
+        <span class="text-required">Дополнительные учетные записи</span>
+    </div>
+    <div class="col-xs-12 col-md-6 relative @(isMobile ? "flex middle-xs" : "")">
+        @Html.TextAreaFor(x => x.AdditionalAccounts, new { ng_model = "shippingMethod.Params.AdditionalAccounts", @class = "form-control input-alt" })
+    </div>
+</div>
+
 
 
 <div class="form-group row middle-xs">
@@ -480,6 +489,15 @@
                       data-title="Номер телефона">
             Используется при передаче заказа в СДЭК
         </help-trigger>
+    </div>
+</div>
+
+<div class="form-group row middle-xs">@*GlorySoft_001*@
+    <div class="flex-grow-n @(isMobile ? "col-xs-12 setting__label " : "col-fixed-size-md")">
+        Максимальный вес
+    </div>
+    <div class="col-xs-12 col-md-6 relative @(isMobile ? "flex middle-xs setting--m-t-sm" : "")">
+        @Html.TextBoxFor(x => x.MaxWeight, new { ng_model = "shippingMethod.Params.MaxWeight", ng_init = "shippingMethod.Params.MaxWeight='" + Model.MaxWeight + "'", @class = "form-control input-alt", @type = "number" })
     </div>
 </div>
 

@@ -31,5 +31,7 @@ namespace AdvantShop.Models.Checkout
         public string CheckoutType { get; set; }
         public string ShippingDesignMode { get; set; }
         public string PaymentDesignMode { get; set; }
+
+        public bool PhoneConfirmed { get; set; }//GlorySoft_026
     }
 }

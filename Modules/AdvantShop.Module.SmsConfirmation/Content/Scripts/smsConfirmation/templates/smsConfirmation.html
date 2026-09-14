@@ -11,14 +11,23 @@
                                            class="input-small"
                                            data-mask-control
                                            data-mask-control-preset="phone"
+<<<<<<< Updated upstream
                                            data-ng-init="moduleSmsConfirmation.phone=''"
+=======
+>>>>>>> Stashed changes
                                            data-ng-model="moduleSmsConfirmation.phone"
                                            id="smsConfirmationPhone"
                                            maxlength="70"
                                            name="smsConfirmationPhone"
                                            placeholder="Номер телефона"
                                            required="required"
+<<<<<<< Updated upstream
                                            type="text">
+=======
+                                           type="text"
+                                           ng-readonly="smsConfirmation.pageType != 'login'"><!--GlorySoft_018-->
+                                    <!--data-ng-init="smsConfirmation.phone=''"GlorySoft_018-->
+>>>>>>> Stashed changes
                                 </span>
                             </span>
                         </div>
@@ -35,8 +44,15 @@
                             </div>
                         </div>
 
+<<<<<<< Updated upstream
                         <div class="row middle-xs" ng-if="moduleSmsConfirmation.settings.FormContent !== null && moduleSmsConfirmation.settings.FormContent !== ''">
                             <span class="col-xs text-justify sms-confirmation-text" data-ng-bind-html="moduleSmsConfirmation.settings.FormContent"></span>
+=======
+                        <div ng-if="smsConfirmation.pageType == 'login'"><!--GlorySoft_018-->
+                            <div class="row middle-xs" ng-if="moduleSmsConfirmation.settings.FormContent !== null && moduleSmsConfirmation.settings.FormContent !== ''">
+                                <span class="col-xs text-justify sms-confirmation-text" data-ng-bind-html="moduleSmsConfirmation.settings.FormContent"></span>
+                            </div>
+>>>>>>> Stashed changes
                         </div>
 
                         <div data-ng-if="moduleSmsConfirmation.settings.useCaptcha">
@@ -154,7 +170,11 @@
                         <div class="row middle-xs" ng-if="moduleSmsConfirmation.errorCode">
                             <div class="col-xs-12">
                                 <p class="alert">
+<<<<<<< Updated upstream
                                     Неверный код. Попробуйте ещё раз
+=======
+                                    {{smsConfirmation.errorMessage}}<!--GlorySoft_004 Неверный код. Попробуйте ещё раз-->
+>>>>>>> Stashed changes
                                 </p>
                             </div>
                         </div>

@@ -16,6 +16,7 @@ using AdvantShop.Core.Services.Shipping;
 using AdvantShop.Repository;
 using AdvantShop.Shipping.Sdek.Api;
 using AdvantShop.Shipping.Sdek.DeliveryPoints;
+using Newtonsoft.Json;
 
 namespace AdvantShop.Shipping.Sdek
 {
@@ -47,6 +48,11 @@ namespace AdvantShop.Shipping.Sdek
 
         public override string[] CurrencyIso3Available { get { return new[] { "RUB", "KZT", "USD", "EUR", "GBP", "CNY", "BYR", "UAH", "KGS", "AMD", "TRY", "THB", "KRW", "AED", "UZS", "MNT", "PLN", "AZN", "GEL", "JPY", "VND" }; } }
 
+        //GlorySoft_001
+        private List<SdekApiService20> _sdekApiServices20;
+        private const string _basis = "Синхронизация статусов для СДЭК";
+        private readonly int _maxWeight;
+
         public Sdek(ShippingMethod method, ShippingCalculationParameters calculationParameters) : base(method, calculationParameters)
         {
             _authLogin = _method.Params.ElementOrDefault(SdekTemplate.AuthLogin);
@@ -68,6 +74,21 @@ namespace AdvantShop.Shipping.Sdek
             _tryingOn = method.Params.ElementOrDefault(SdekTemplate.TryingOn).TryParseBool();
             _yaMapsApiKey = _method.Params.ElementOrDefault(SdekTemplate.YaMapsApiKey);
             _sdekApiService20 = new SdekApiService20(_authLogin, _authPassword);
+
+            //GlorySoft_001
+            _sdekApiServices20 = new List<SdekApiService20>
+            {
+                //new SdekApiService20(_method.Params.ElementOrDefault(SdekTemplate.AuthLogin), method.Params.ElementOrDefault(SdekTemplate.AuthPassword))
+                _sdekApiService20
+            };
+            var additionalAccounts = (_method.Params.ElementOrDefault("AdditionalAccounts") ?? "").Split("\n");
+            foreach (var additional in additionalAccounts)
+            {
+                var add = additional.Trim().Split("|");
+                if (add.Length == 2)
+                    _sdekApiServices20.Add(new SdekApiService20(add[0], add[1]));
+            }
+            _maxWeight = _method.Params.ElementOrDefault(SdekTemplate.MaxWeight).TryParseInt(0);
 
             var newStatusesReference = method.Params.ElementOrDefault(SdekTemplate.StatusesReference);
             if (newStatusesReference == null)
@@ -107,14 +128,31 @@ namespace AdvantShop.Shipping.Sdek
             var sdekOrderUuid = OrderService.GetOrderAdditionalData(order.OrderID, KeyNameSdekOrderUuidInOrderAdditionalData);
             var sdekOrderNumber = OrderService.GetOrderAdditionalData(order.OrderID, KeyNameDispatchNumberInOrderAdditionalData);
 
+            if (sdekOrderUuid.IsNullOrEmpty() && sdekOrderNumber.IsNullOrEmpty() && order.TrackNumber.IsNullOrEmpty())//GlorySoft_001
+                return;
+
             GetOrderResult orderResult = null;
-            if (sdekOrderUuid.IsNotEmpty())
-                orderResult = _sdekApiService20.GetOrder(sdekOrderUuid.TryParseGuid(), null, null);
-            if (orderResult == null && sdekOrderNumber.IsNotEmpty())
-                orderResult = _sdekApiService20.GetOrder(null, sdekOrderNumber, null);
+            //if (sdekOrderUuid.IsNotEmpty())GlorySoft_001
+            //    orderResult = _sdekApiService20.GetOrder(sdekOrderUuid.TryParseGuid(), null, null);
+            //if (orderResult == null && sdekOrderNumber.IsNotEmpty())
+            //    orderResult = _sdekApiService20.GetOrder(null, sdekOrderNumber, null);
+            foreach (var sdekAllApiService20 in _sdekApiServices20)//GlorySoft_001
+            {
+                if (sdekOrderUuid.IsNotEmpty())
+                    orderResult = sdekAllApiService20.GetOrder(sdekOrderUuid.TryParseGuid(), null, null);
+                if (orderResult?.Entity == null && sdekOrderNumber.IsNotEmpty())
+                    orderResult = sdekAllApiService20.GetOrder(null, sdekOrderNumber, null);
+                if (orderResult?.Entity == null && order.TrackNumber.IsNotEmpty())
+                    orderResult = sdekAllApiService20.GetOrder(null, order.TrackNumber, null);
+                if (orderResult?.Entity != null)
+                    break;
+            }
 
             if (orderResult?.Entity != null)
             {
+                if (order.OrderStatus.IsCanceled)//GlorySoft_001
+                    Debug.Log.Info("OneSApi CheckRefusing ShippingType Sdek Entity = " + JsonConvert.SerializeObject(orderResult.Entity));
+
                 if (sdekOrderUuid.IsNullOrEmpty())
                     OrderService.AddUpdateOrderAdditionalData(
                         order.OrderID, 
@@ -131,7 +169,7 @@ namespace AdvantShop.Shipping.Sdek
                     {
                         order.TrackNumber = orderResult.Entity.CdekNumber;
                         OrderService.UpdateOrderMain(order,
-                            changedBy: new OrderChangedBy("Синхронизация статусов для СДЭК"));
+                            changedBy: new OrderChangedBy(_basis/*GlorySoft_001 "Синхронизация статусов для СДЭК"*/));
                     }
                 }
                 
@@ -156,14 +194,52 @@ namespace AdvantShop.Shipping.Sdek
                             OrderStatusService.GetOrderStatusHistory(order.OrderID)
                                 .OrderByDescending(item => item.Date).FirstOrDefault();
 
-                        if (lastOrderStatusHistory == null ||
-                            lastOrderStatusHistory.Date < lastStatus.DateTime)
+                        //if (lastOrderStatusHistory == null ||
+                        //    lastOrderStatusHistory.Date < lastStatus.DateTime)GlorySoft_001
+                        if (order.OrderStatus == null ||
+                            (!order.OrderStatus.IsCanceled && !order.OrderStatus.IsCompleted))//GlorySoft_001
                         {
                             OrderStatusService.ChangeOrderStatus(order.OrderID,
-                                sdekOrderStatus.Value, "Синхронизация статусов для СДЭК");
+                                sdekOrderStatus.Value, _basis/*GlorySoft_001 "Синхронизация статусов для СДЭК"*/);
+
+                            if (orderResult.Entity.KeepFreeUntil.HasValue)//GlorySoft_001
+                            {
+                                var keepFreeUntilOld = OrderService.GetOrderAdditionalData(order.OrderID, "KeepFreeUntil");
+                                var keepFreeUntilNew = orderResult.Entity.KeepFreeUntil.ToString();
+                                if (keepFreeUntilNew != keepFreeUntilOld)
+                                {
+                                    OrderService.AddUpdateOrderAdditionalData(order.OrderID, "KeepFreeUntil", keepFreeUntilNew);
+                                    var comment = "Срок бесплатного хранения: " + keepFreeUntilNew;
+                                    var changedBy = new OrderChangedBy(_basis);
+                                    OrderService.UpdateAdminOrderComment(order.OrderID, order.AdminOrderComment + "\n" + comment, changedBy);
+                                    OrderService.UpdateStatusComment(order.OrderID, comment, changedBy);
+                                }
+                            }
                         }
                     }
                 }               
+            }
+            else//GlorySoft_001
+            {
+                Debug.Log.Warn(string.Format("SdekAll SyncStatusOfOrder Fault: OrderId={0} Track={1} Entity == null", order.OrderID, order.TrackNumber));
+                var v2_internal_error = false;
+                if (orderResult != null)
+                {
+                    var errors = _sdekApiService20.GetErrors(orderResult);
+                    Debug.Log.Warn($"SdekAll SyncStatusOfOrder Fault errors: {JsonConvert.SerializeObject(errors)}");
+                    if (errors != null && errors.Count > 0)
+                    {
+                        foreach (var error in errors)
+                            if (error.Code == "v2_internal_error")
+                            {
+                                v2_internal_error = true;
+                                break;
+                            }
+                    }
+                }
+                if (!v2_internal_error)
+                    /*var pyrusResponse = */
+                    SdekService.CreateFormTaskWrongTrack(2304147, order.Number, order.TrackNumber, order.OrderID);
             }
         }
 
@@ -302,6 +378,13 @@ namespace AdvantShop.Shipping.Sdek
 
         protected override IEnumerable<BaseShippingOption> CalcOptions(CalculationVariants calculationVariants)
         {
+            if (_maxWeight > 0)//GlorySoft_001
+            {
+                int weight = (int)GetTotalWeight(1000);
+                if (weight > _maxWeight * 1000)
+                    return null;
+            }
+
             var options = new List<BaseShippingOption>();
             if (string.IsNullOrEmpty(_calculationParameters.City) || string.IsNullOrEmpty(_cityFrom))
                 return options;

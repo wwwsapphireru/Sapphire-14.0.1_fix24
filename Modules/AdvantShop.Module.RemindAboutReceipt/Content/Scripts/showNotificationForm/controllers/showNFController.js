@@ -57,6 +57,11 @@
                 ctrl.FormRequest.PhoneNumber = ctrl.form.Phone;
                 ctrl.form.IsShowUserAgreementText = response.data.Form.IsShowUserAgreementText;
                 ctrl.form.UserAgreementText = response.data.Form.UserAgreementText;
+<<<<<<< Updated upstream
+=======
+
+                ctrl.FormRequest = response.data.Form.FormRequest;//GlorySoft_012
+>>>>>>> Stashed changes
             });
         };
 

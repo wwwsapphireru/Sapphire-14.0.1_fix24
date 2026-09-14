@@ -1,5 +1,6 @@
 ﻿using AdvantShop.Core.Models;
 using AdvantShop.Core.Services.Catalog;
+using System.Collections.Generic;
 
 namespace AdvantShop.Models.Catalog
 {
@@ -14,6 +15,8 @@ namespace AdvantShop.Models.Catalog
 
         public Pager Pager { get; set; }
 
-        public CategoryFiltering Filter { get; set; }        
+        public CategoryFiltering Filter { get; set; }
+
+        public List<int> ProductIds { get; set; }//GlorySoft_023
     }
 }

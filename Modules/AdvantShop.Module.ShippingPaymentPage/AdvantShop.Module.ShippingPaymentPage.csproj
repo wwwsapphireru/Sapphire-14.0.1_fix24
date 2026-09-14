@@ -75,6 +75,10 @@
     <Compile Include="Controllers\ShippingPaymentPageAdminController.cs" />
     <Compile Include="Models\SettingsModel.cs" />
     <Compile Include="Services\ShippingPaymentPageRepository.cs" />
+<<<<<<< Updated upstream
+=======
+    <Compile Include="Services\ShippingPaymentPageService.cs" />
+>>>>>>> Stashed changes
     <Compile Include="Services\ShippingPaymentPageSettings.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Models\ShippingPaymentModel.cs" />

@@ -256,10 +256,6 @@
       <Project>{95339807-58ec-4b9c-8808-0a893f3a2cc6}</Project>
       <Name>AdvantShop.Web.Infrastructure</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\AdvantShop.Web\AdvantShop.Web.Site.csproj">
-      <Project>{42a43dba-9d37-4982-bea6-82e1051eaf1e}</Project>
-      <Name>AdvantShop.Web.Site</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
