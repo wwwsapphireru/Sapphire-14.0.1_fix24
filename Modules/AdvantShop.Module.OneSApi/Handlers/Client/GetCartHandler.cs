@@ -10,6 +10,7 @@ using AdvantShop.Core.Common.Extensions;
 using AdvantShop.Core.Modules;
 using AdvantShop.Core.Modules.Interfaces;
 using AdvantShop.Core.Services.Bonuses;
+using AdvantShop.Core.Services.Bonuses.Internal;
 using AdvantShop.Core.Services.Catalog;
 using AdvantShop.Core.Services.Configuration.Settings;
 using AdvantShop.Core.Services.Localization;
@@ -95,7 +96,7 @@ namespace AdvantShop.Module.OneSApi.Handlers.Client
 
             if (totalPrice > 0 && BonusSystem.IsActive)
             {
-                bonusPlus = BonusSystemService.GetBonusCost(cart).BonusPlus;
+                bonusPlus = InternalBonusSystemService.GetBonusCost(cart).BonusPlus;
             }
 
             var showConfirmButtons = true;
