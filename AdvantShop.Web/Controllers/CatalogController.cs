@@ -243,7 +243,7 @@ namespace AdvantShop.Controllers
 
         
 
-        [HttpGet]
+        [HttpPost]
         public JsonResult Filter(CategoryModel categoryModel)
         {
             if (categoryModel.Page != null && categoryModel.Page < 0)
@@ -321,7 +321,7 @@ namespace AdvantShop.Controllers
             return Json(resultFilter);
         }
 
-        [HttpGet]
+        [HttpPost]
         public JsonResult FilterProductCount(CategoryModel categoryModel)
         {
             if (categoryModel.CategoryId == 0 || (categoryModel.Page != null && categoryModel.Page < 0))

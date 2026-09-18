@@ -451,7 +451,7 @@ namespace AdvantShop.Shipping
                 "SET [TrackingUrl] = @TrackingUrl " +//, [ShippingForTK] = @ShippingForTK " +
                 "WHERE ShippingMethodID=@ShippingMethodID",
                 CommandType.Text,
-                new SqlParameter("@TrackingUrl", item.TrackingUrl),
+                new SqlParameter("@TrackingUrl", item.TrackingUrl ?? ""),
                 //new SqlParameter("@ShippingForTK", item.ShippingForTK),//GlorySoft_030
                 new SqlParameter("@ShippingMethodID", item.ShippingMethodId));
 
@@ -513,7 +513,7 @@ namespace AdvantShop.Shipping
                 "SET [TrackingUrl] = @TrackingUrl " +//, [ShippingForTK] = @ShippingForTK " +
                 "WHERE ShippingMethodID=@ShippingMethodID",
                 CommandType.Text,
-                new SqlParameter("@TrackingUrl", item.TrackingUrl),
+                new SqlParameter("@TrackingUrl", item.TrackingUrl ?? ""),
                 //new SqlParameter("@ShippingForTK", item.ShippingForTK),//GlorySoft_030
                 new SqlParameter("@ShippingMethodID", item.ShippingMethodId));
 
