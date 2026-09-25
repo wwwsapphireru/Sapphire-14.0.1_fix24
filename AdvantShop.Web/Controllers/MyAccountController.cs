@@ -228,6 +228,7 @@ namespace AdvantShop.Controllers
                                      item.ArchivedPaymentName,
                                      Status = item.OrderStatus/*GlorySoft_027 OrderStatusService.GetOrderStatus(item.StatusID)*/.Hidden ? item.PreviousStatus : item.OrderStatus.StatusName/*GlorySoft_027 Status*/,
                                      item.ShippingMethodName,
+                                     OrderNumber = item.Number,//GlorySoft_027
                                      OrderDate = item.OrderDate.ToString(SettingsMain.ShortDateFormat),
                                      OrderTime = item.OrderDate.ToString("HH:mm"),
                                      //Sum = PriceFormatService.FormatPrice(item.Sum, item.CurrencyValue, item.CurrencySymbol, item.CurrencyCode, item.IsCodeBefore, null),GlorySoft_027
