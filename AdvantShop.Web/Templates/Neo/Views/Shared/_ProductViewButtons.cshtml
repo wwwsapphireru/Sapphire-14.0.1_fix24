@@ -1,0 +1,47 @@
+﻿@using AdvantShop.ViewCommon
+@model ProductViewButtonsViewModel
+
+@if (!Model.Product.OfferId.IsDefault() /*GlorySoft_012 && (Model.ShowBuyButton || Model.ShowPreOrderButton)*/)
+{
+    <div class="products-view-buttons-cell">
+        <div class="products-view-buttons">
+            @if (Model.ShowBuyButton)
+            {
+                @Html.Partial("_CartAdd", new CartAddViewModel
+                {
+                    Classes = "btn btn-buy icon-bag-before products-view-buy",
+                    NgHref = "{{productViewItem.getUrl('" + @Model.ProductUrl + "')}}",
+                    NgOfferId = "productViewItem.offer.OfferId",
+                    ProductId = Model.Product.ProductId,
+                    BtnContent = Model.BtnContent,
+                    AllowAddProductToCart = Model.Product.AllowAddProductToCart,
+                    Size = CardAddSize.Small,
+                    CartAddType = SettingsDesign.CartAddType,
+                    ChooseBtnContent = Model.ChooseBtnContent,
+                    NgAmount = "productViewItem.offer.AmountBuy",
+                    NgMinStepSpinbox = "productViewItem.offer.MinAmount",
+                    NgMaxStepSpinbox = "productViewItem.offer.MaxAmount",
+                    NgStepSpinbox = "productViewItem.offer.Multiplicity",
+                    SpinboxMin = Model.Product.GetMinAmount(),
+                    SpinboxMax = Model.Product.MaxAmount,
+                    StepSpinbox = Model.Product.Multiplicity,
+                    Source = Model.IsMobile ? "mobile" : string.Empty
+                })
+            }
+            @if (Model.ShowPreOrderButton)
+            {
+                <div
+                    class="details-payment-item details-payment-inline @(Model.IsAvailableForPurchase ? "ng-hide" : string.Empty)">
+                    <a href="javascript:void(0)" class="btn btn-middle btn-action btn-preorder" 
+                       data-ng-click='productViewItem.showPreOrder("modalPreOrder_@Model.Product.ProductId", "@T("PreOrder.Index.Header") - @Html.AttributeEncode(Model.Product.Name)")'>
+                        @Model.PreOrderButtonText
+                    </a>
+                </div>
+            }
+            @if (!Model.ShowBuyButton && (!Model.ShowPreOrderButton || Model.IsAvailableForPurchase))//GlorySoft_012
+            {
+                @Html.RenderModules("product_view_altbutton", new { Model.Product.OfferId, area = "" })
+            }
+       </div>
+    </div>
+}
