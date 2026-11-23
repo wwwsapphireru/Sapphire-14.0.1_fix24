@@ -20,6 +20,8 @@ using AdvantShop.Core.Services.Configuration.Settings.Enums;
 using AdvantShop.Core.Services.Customers;
 using AdvantShop.Core.Services.Diagnostics;
 using AdvantShop.Core.Common.Extensions;
+using AdvantShop.Core.Modules;
+using AdvantShop.Core.Services.Smses;
 using AdvantShop.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
@@ -693,11 +695,32 @@ namespace AdvantShop.Controllers
         [HttpPost, ValidateJsonAntiForgeryToken]
         public JsonResult SendRequestConfirmPhone(string customerId, string phone)//GlorySoft_031
         {
+            //Vadim_Dyl_381073705: телефон подтверждается только кодом из SMS (отметку ставит
+            //SmsConfirmationClientController.ConfirmSmsCode). Прямой вызов без кода PhoneConfirmed не выставляет (T-07)
+            var customer = CustomerContext.CurrentCustomer;
+            if (customer == null || customer.CustomerRole == Role.Guest)
+                return JsonConfirmPhoneError("Пользователь не авторизован");
+
+            // Vadim_Dyl_381073705: без включённого модуля SMS-авторизации подтверждать нечего
+            if (!ModulesRepository.IsActiveModule("SmsConfirmation"))
+                return JsonConfirmPhoneError("Подтверждение телефона по SMS отключено");
+
+            // Vadim_Dyl_381073705: без активного SMS-провайдера код отправить невозможно — функция недоступна
+            if (SmsNotifier.GetActiveSmsModule() == null)
+                return JsonConfirmPhoneError("Отправка SMS не настроена");
+
+            if (customerId.IsNotEmpty() && !string.Equals(customerId, customer.Id.ToString(), StringComparison.OrdinalIgnoreCase))
+                return JsonConfirmPhoneError("Пользователь не найден");
+
+            if (!IsPhoneConfirmedBySms(customer.Id, phone))
+                return JsonConfirmPhoneError("Телефон не подтвержден кодом из SMS");
+
             var errors = new List<string> { };
 
             try
             {
-                CustomerService.SetConfirmPhone(customerId, phone);
+                CustomerService.SetConfirmPhone(customer.Id.ToString(), phone);
+                RemovePhoneConfirmedBySms(customer.Id);
             }
             catch (Exception E)
             {
@@ -706,6 +729,68 @@ namespace AdvantShop.Controllers
 
             return Json(new { result = errors.Count == 0, errors = errors, title = "Ошибка при отправке запроса" });
         }
+
+        #region Vadim_Dyl_381073705: подтверждение телефона по SMS (T-07)
+
+        // Ключ и формат значения согласованы с SmsConfirmationClientController.ConfirmSmsCode:
+        // значение в сессии — "<ticks истечения>|<только цифры телефона>".
+        private const string SmsConfirmedPhoneSessionPrefix = "SmsConfirmedPhone:";
+
+        private static string GetPhoneDigits(string phone)
+        {
+            return string.IsNullOrEmpty(phone)
+                ? string.Empty
+                : System.Text.RegularExpressions.Regex.Replace(phone, @"[^\d]", "");
+        }
+
+        private static string GetConfirmedPhoneSessionKey(Guid customerId)
+        {
+            return SmsConfirmedPhoneSessionPrefix + customerId.ToString("N");
+        }
+
+        private JsonResult JsonConfirmPhoneError(string error)
+        {
+            return Json(new { result = false, errors = new List<string> { error }, title = "Ошибка при отправке запроса" });
+        }
+
+        /// <summary>
+        /// Проверяет, что именно этот телефон был подтверждён кодом из SMS в текущей сессии.
+        /// </summary>
+        private bool IsPhoneConfirmedBySms(Guid customerId, string phone)
+        {
+            var session = Session;
+            if (session == null || customerId == Guid.Empty)
+                return false;
+
+            var key = GetConfirmedPhoneSessionKey(customerId);
+            var value = session[key] as string;
+            if (value.IsNullOrEmpty())
+                return false;
+
+            var parts = value.Split(new[] { '|' }, 2);
+            long expiresAtTicks;
+            if (parts.Length != 2 || !long.TryParse(parts[0], out expiresAtTicks))
+            {
+                session.Remove(key);
+                return false;
+            }
+
+            if (new DateTime(expiresAtTicks) < DateTime.Now)
+            {
+                session.Remove(key);
+                return false;
+            }
+
+            return parts[1] == GetPhoneDigits(phone);
+        }
+
+        private void RemovePhoneConfirmedBySms(Guid customerId)
+        {
+            if (Session != null)
+                Session.Remove(GetConfirmedPhoneSessionKey(customerId));
+        }
+
+        #endregion
 
         [HttpPost, ValidateJsonAntiForgeryToken]
         public async Task<JsonResult> RetrySendRegCode(string customerId, string email, bool? createTask)//GlorySoft_031

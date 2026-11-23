@@ -86,7 +86,7 @@
                             data-ng-click="personal.openChange()">
                         Изменить данные
                     </button>
-                    @if (Model.CustomerTypeEntity == CustomerType.PhysicalEntity)
+                    @if (Model.CustomerTypeEntity == CustomerType.PhysicalEntity && Model.CanConfirmPhone)
                     {
                         <button type="button" class="btn btn-middle btn-action"
                                 data-ng-if="!myaccount.phoneConfirmed && myaccount.user.phone"
@@ -331,5 +331,9 @@
 @Html.Partial("_PassportChangeModal")
 @Html.Partial("_PersonalChangeModal")
 @Html.Partial("_DeleteAccountModal")
-@Html.Partial("_ConfirmPhoneModal")
+@if (Model.CanConfirmPhone)
+{
+    @* Vadim_Dyl_381073705: модалка SMS-подтверждения нужна только при включённом модуле SmsConfirmation *@
+    @Html.Partial("_ConfirmPhoneModal")
+}
 

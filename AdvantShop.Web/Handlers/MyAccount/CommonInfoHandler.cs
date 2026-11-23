@@ -4,6 +4,7 @@ using AdvantShop.Configuration;
 using AdvantShop.Core.Modules;
 using AdvantShop.Core.Modules.Interfaces;
 using AdvantShop.Core.Services.Localization;
+using AdvantShop.Core.Services.Smses;
 using AdvantShop.Customers;
 using AdvantShop.Models.MyAccount;
 
@@ -36,6 +37,9 @@ namespace AdvantShop.Handlers.MyAccount
                                                 SettingsCustomers.IsRegistrationAsPhysicalEntity,
                 IsAgreeForPromotionalNewsletter = customer.IsAgreeForPromotionalNewsletter,
                 AllowChangePhone = SetAllowChangePhone(),
+                // Vadim_Dyl_381073705: кнопка/модалка SMS-подтверждения — только если модуль включён и есть активный SMS-провайдер
+                CanConfirmPhone = ModulesRepository.IsActiveModule("SmsConfirmation") &&
+                                  SmsNotifier.GetActiveSmsModule() != null,
                 IsForbiddenAsChangingGeneralData = SettingsCustomers.IsForbiddenAsChangingGeneralData,
                 IsForbiddenAsChangingAddressBook = SettingsCustomers.IsForbiddenAsChangingAddressBook,
             };
