@@ -12,7 +12,8 @@
         patronymic = Model.Patronymic ?? "",
         phone = Model.Phone ?? "",
         email = Model.Email ?? "",
-        birthday = Model.BirthDay != null ? Model.BirthDay.Value.ToString("dd.MM.yyyy") : ""
+        birthday = Model.BirthDay != null ? Model.BirthDay.Value.ToString("dd.MM.yyyy") : "",
+        phoneConfirmed = CustomerService.GetConfirmPhone(CustomerContext.CustomerId.ToString())
     }).Replace("\"", "&quot;");
 }
 
@@ -70,6 +71,10 @@
                             </div>
                         }
                     </div>
+                    @if (Model.CustomerTypeEntity == CustomerType.PhysicalEntity)
+                    {
+                        <div class="myaccount-phone-status" data-ng-if="myaccount.phoneConfirmed">Телефон подтвержден</div>
+                    }
                 </div>
                 <div class="myaccount-card__actions">
                     <button ng-show="!myaccount.isReadonly && @(Model.AllowChangePhone ? "!personal.isLocked('phone')" : "false")"
@@ -81,6 +86,14 @@
                             data-ng-click="personal.openChange()">
                         Изменить данные
                     </button>
+                    @if (Model.CustomerTypeEntity == CustomerType.PhysicalEntity)
+                    {
+                        <button type="button" class="btn btn-middle btn-action"
+                                data-ng-if="!myaccount.phoneConfirmed && myaccount.user.phone"
+                                data-modal-open="modalConfirmPhone">
+                            Подтвердить номер телефона
+                        </button>
+                    }
                 </div>
             </section>
 
@@ -308,8 +321,15 @@
                 isForbiddenAsChangingGeneralData: Model.IsForbiddenAsChangingGeneralData))
         }
         </div>
+
+        <section class="myaccount-card myaccount-card--plain myaccount-card--danger">
+            <a href="" class="myaccount-card__danger-link"
+               data-modal-open="modalDeleteAccount">Запрос на удаление личного кабинета</a>
+        </section>
     </div>
 </form>
 @Html.Partial("_PassportChangeModal")
 @Html.Partial("_PersonalChangeModal")
+@Html.Partial("_DeleteAccountModal")
+@Html.Partial("_ConfirmPhoneModal")
 

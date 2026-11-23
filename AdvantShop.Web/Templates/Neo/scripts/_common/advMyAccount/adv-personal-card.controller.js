@@ -22,6 +22,7 @@
             }
 
             account.user = account.user || {};
+            account.phoneConfirmed = Boolean(values && values.phoneConfirmed);
 
             ['lastname', 'firstname', 'patronymic', 'phone', 'email', 'birthday'].forEach(function (key) {
                 if (!account.user[key] && values && values[key]) {

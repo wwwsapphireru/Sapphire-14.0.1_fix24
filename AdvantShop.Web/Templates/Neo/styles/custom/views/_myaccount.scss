@@ -36,6 +36,20 @@
         grid-column: 1 / -1;
     }
 
+    .myaccount-card--plain {
+        border: 0;
+    }
+
+    .myaccount-card--danger {
+        border-color: #f0d4d4;
+    }
+
+    .myaccount-card--danger .myaccount-card__danger-link {
+        color: #e74343;
+        font-size: 14px;
+        text-decoration: underline;
+    }
+
     .myaccount-card__header {
         margin-bottom: 12px;
     }
@@ -150,6 +164,12 @@
         line-height: 1.4;
     }
 
+    .myaccount-phone-status {
+        margin-top: 8px;
+        color: #0a0;
+        font-size: 13px;
+    }
+
     @media (max-width: 767px) {
         .myaccount-grid--2,
         .myaccount-grid--3 {
@@ -249,6 +269,43 @@
 
     &__label {
         color: #666;
+        font-size: 13px;
+    }
+}
+
+.adv-confirm-phone {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    &__field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    &__label {
+        color: #666;
+        font-size: 13px;
+    }
+
+    &__code {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    &__field--code {
+        width: 120px;
+    }
+
+    &__error {
+        color: #e74c3c;
+        font-size: 12px;
+    }
+
+    &__status {
+        color: #0a0;
         font-size: 13px;
     }
 }
