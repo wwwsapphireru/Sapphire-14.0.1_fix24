@@ -236,7 +236,13 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
                     SmsConfirmationService.DeleteSmsConfirmationCode(customerId, phone, (byte)ePageType);
 
                     if (pageType != "login")
+                    {
+                        //Vadim_Dyl_381073705: код проверен — фиксируем подтверждение в сессии,
+                        //чтобы UserController.SendRequestConfirmPhone не доверял клиенту (T-07)
+                        MarkPhoneConfirmedInSession(customerId, smsConfirmationCode.Phone);
+
                         return JsonOk();
+                    }
 
                     var customersByPhone = SmsConfirmationService/*GlorySoft_004 CustomerService*/.GetCustomersByPhone(phone, /*GlorySoft_004*/null, null);
                     var customer = customersByPhone.FirstOrDefault(x => !string.IsNullOrEmpty(x.EMail)) 
@@ -294,6 +300,42 @@ namespace AdvantShop.Module.SmsConfirmation.Controllers
         {
             return Json(new { result = false, errors = new[] { error }, resetToPhone = true });
         }
+
+        #region Vadim_Dyl_381073705: отметка о подтверждённом телефоне (T-07)
+
+        // Ключ и формат значения согласованы с UserController.SendRequestConfirmPhone (AdvantShop.Web):
+        // модуль и сайт живут в разных сборках, поэтому контракт — значение в сессии.
+        // Значение: "<ticks истечения>|<только цифры телефона>".
+        private const string SmsConfirmedPhoneSessionPrefix = "SmsConfirmedPhone:";
+
+        private static string GetConfirmedPhoneSessionKey(Guid customerId)
+        {
+            return SmsConfirmedPhoneSessionPrefix + customerId.ToString("N");
+        }
+
+        private static string GetPhoneDigits(string phone)
+        {
+            return string.IsNullOrEmpty(phone)
+                ? string.Empty
+                : System.Text.RegularExpressions.Regex.Replace(phone, @"[^\d]", "");
+        }
+
+        /// <summary>
+        /// Подтверждение кодом прошло — запоминаем телефон в сессии.
+        /// Используется только для зарегистрированного покупателя (в чекауте/регистрации гостя — Guid.Empty).
+        /// </summary>
+        private void MarkPhoneConfirmedInSession(Guid customerId, string phone)
+        {
+            var digits = GetPhoneDigits(phone);
+            if (customerId == Guid.Empty || string.IsNullOrEmpty(digits) || HttpContext?.Session == null)
+                return;
+
+            var expiresAt = DateTime.Now.AddMinutes(SmsConfirmationService.SmsCodeLifetimeMinutes);
+
+            HttpContext.Session[GetConfirmedPhoneSessionKey(customerId)] = expiresAt.Ticks + "|" + digits;
+        }
+
+        #endregion
 
         #region my account tab
         public ActionResult MyAccountChangeEmail()

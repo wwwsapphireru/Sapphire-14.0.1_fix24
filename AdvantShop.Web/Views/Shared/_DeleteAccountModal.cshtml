@@ -1,0 +1,17 @@
+@using AdvantShop.Customers
+@*Vadim_Dyl_381073705: подтверждение запроса на удаление личного кабинета *@
+<div id="modalDeleteAccount" data-modal-control data-modal-class="modal-delete-account"
+     data-ng-controller="AdvDeleteAccountModalCtrl as deleteModal"
+     data-ng-init="deleteModal.customerId = '@CustomerContext.CustomerId'">
+    <div class="modal-header" data-modal-header>Удаление личного кабинета</div>
+    <div class="modal-content">
+        <p><strong>Внимание!</strong> Вы собираетесь удалить свой личный кабинет.</p>
+        <p>Запрос будет отправлен менеджеру. После подтверждения учетная запись будет удалена.</p>
+    </div>
+    <div class="modal-footer" data-modal-footer>
+        <button type="button" class="btn btn-small btn-confirm" data-ng-click="deleteModal.sendRequest()">
+            Отправить запрос
+        </button>
+        <button type="button" class="btn btn-small btn-action" data-ng-click="deleteModal.close()">Отмена</button>
+    </div>
+</div>

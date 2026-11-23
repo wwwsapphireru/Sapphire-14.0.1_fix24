@@ -3175,6 +3175,7 @@
     <Compile Include="Extensions\HtmlExtensions.cs" />
     <Compile Include="Extensions\InplaceExtensions.cs" />
     <Compile Include="Extensions\ProfilerExt.cs" />
+    <Compile Include="Extensions\CustomerFieldsValidation.cs" />
     <Compile Include="Extensions\PyrusApiService.cs" />
     <Compile Include="Handlers\Brands\BrandProductPagingHandler.cs" />
     <Compile Include="Handlers\Brands\BrandHandler.cs" />

@@ -210,7 +210,8 @@
                                maxlength="70"
                                data-ng-attr-type="{{$ctrl.inputPassword}}" />
                         <a class="showhidepass"
-                           data-ng-click="$ctrl.switchPasswordType('inputPassword');">
+                           data-ng-click="$ctrl.switchPasswordType('inputPassword');"
+                           aria-label="Показать пароль">
                             <span class="fa"
                                   data-ng-class="{
                                       'fa-eye': $ctrl.inputPassword === 'password',
@@ -239,7 +240,8 @@
                                maxlength="70"
                                data-ng-attr-type="{{$ctrl.inputPasswordConfirm}}" />
                         <a class="showhidepass"
-                           data-ng-click="$ctrl.switchPasswordType('inputPasswordConfirm');">
+                           data-ng-click="$ctrl.switchPasswordType('inputPasswordConfirm');"
+                           aria-label="Показать пароль">
                             <span class="fa"
                                   data-ng-class="{
                                       'fa-eye': $ctrl.inputPasswordConfirm === 'password',

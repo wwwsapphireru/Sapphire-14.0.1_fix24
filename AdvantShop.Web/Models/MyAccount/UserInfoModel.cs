@@ -36,6 +36,9 @@ namespace AdvantShop.Models.MyAccount
         
         public bool IsAgreeForPromotionalNewsletter { get; set; }
         public bool AllowChangePhone { get; set; }
+
+        /// <summary>Vadim_Dyl_381073705: подтверждение телефона по SMS — только при включённом модуле SmsConfirmation</summary>
+        public bool CanConfirmPhone { get; set; }
         public bool IsForbiddenAsChangingGeneralData { get; set; }
         public bool IsForbiddenAsChangingAddressBook { get; set; }
     }

@@ -48,6 +48,7 @@ import '../styles/views/catalog.scss';
 import '../styles/views/news.scss';
 import '../styles/views/brands.scss';
 import '../styles/views/registration.scss';
+import '../styles/custom/index.scss';
 
 import subscribeModule from '../../../scripts/_partials/subscribe/subscribe.module.js';
 
@@ -79,6 +80,8 @@ import '../scripts/_partials/payment/payment.module.ts';
 import '../scripts/_partials/cart/cart.module.js';
 import advRegistrationModule from '../scripts/_common/advRegistration/advRegistration.module.js';
 appDependency.addItem(advRegistrationModule);
+import advMyAccountModule from '../scripts/_common/advMyAccount/advMyAccount.module.js';
+appDependency.addItem(advMyAccountModule);
 import '../scripts/_partials/buy-one-click/styles/buyOneClick.scss';
 
 import '../scripts/_common/rating/rating.module.js';

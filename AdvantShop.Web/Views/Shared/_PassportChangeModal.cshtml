@@ -1,0 +1,57 @@
+@using AdvantShop.Customers
+@*Vadim_Dyl_381073705: запрос на изменение паспортных данных (нативный Pyrus-механизм 14.0.1) *@
+<div id="modalPassportChange" data-modal-control data-modal-class="modal-passport-change"
+     data-ng-controller="AdvPassportModalCtrl as passportModal"
+     data-ng-init="passportModal.customerId = '@CustomerContext.CustomerId'">
+    <div class="modal-header" data-modal-header>Изменение паспортных данных</div>
+    <div class="modal-content">
+        <form name="passportChangeForm" novalidate>
+            <div class="adv-passport-modal__grid">
+                <label class="adv-passport-modal__field">
+                    <span class="adv-passport-modal__label">Серия паспорта</span>
+                    <input type="text" class="input-small" data-adv-passport-field-id="13"
+                           data-adv-passport-input data-adv-passport-length="4" data-adv-passport-group
+                           data-ng-model="passportModal.fields[0].Value">
+                </label>
+                <label class="adv-passport-modal__field">
+                    <span class="adv-passport-modal__label">Номер паспорта</span>
+                    <input type="text" class="input-small" data-adv-passport-field-id="14"
+                           data-adv-passport-input data-adv-passport-length="6"
+                           data-ng-model="passportModal.fields[1].Value">
+                </label>
+                <label class="adv-passport-modal__field">
+                    <span class="adv-passport-modal__label">Дата выдачи</span>
+                    <span class="flatpickr-custom" ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat: 'Y-m-d', wrap: true, enableTime: false}">
+                        <input type="text" class="input-small flatpickr-custom__input"
+                               data-adv-passport-field-id="15"
+                               data-ng-flatpickr-input
+                               data-ng-model="passportModal.fields[2].Value"
+                               data-mask-control
+                               data-mask-control-preset="date"
+                               data-adv-mask-empty-valid>
+                        <span class="flatpickr-custom__toggle" data-toggle>
+                            <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                <path fill="currentColor" d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V192H0v272zm320-196c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM192 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM64 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM400 64h-48V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H160V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H48C21.5 64 0 85.5 0 112v48h448v-48c0-26.5-21.5-48-48-48z"></path>
+                            </svg>
+                        </span>
+                    </span>
+                </label>
+                <label class="adv-passport-modal__field adv-passport-modal__field--full">
+                    <span class="adv-passport-modal__label">Кем выдан</span>
+                    <textarea class="input-small" rows="2" data-adv-passport-field-id="16"
+                              data-ng-model="passportModal.fields[3].Value"
+                              placeholder="Например: ОУФМС России по г. Москве"></textarea>
+                </label>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer" data-modal-footer>
+        <button type="button" class="btn btn-small btn-confirm"
+                data-button-validation
+                data-button-validation-success="passportModal.sendRequest()">
+            Отправить запрос
+        </button>
+        <button type="button" class="btn btn-small btn-action" data-ng-click="passportModal.close()">Отмена</button>
+    </div>
+</div>
+

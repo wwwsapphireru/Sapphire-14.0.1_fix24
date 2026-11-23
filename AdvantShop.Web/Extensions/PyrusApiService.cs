@@ -536,6 +536,14 @@ namespace AdvantShop.Extensions
         private static FormFieldDate SetFormFieldDate(FormFieldDate field, string value, string format)
         {
             var f = field.DeepCloneJson();
+
+            // Vadim_Dyl_381073705: пустая дата — очищаем поле, а не падаем на ParseExact.
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                f.Value = null;
+                return f;
+            }
+
             f.Value = DateTime.ParseExact(value, format, CultureInfo.InvariantCulture);
             return f;
         }

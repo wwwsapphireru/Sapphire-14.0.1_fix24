@@ -11,6 +11,7 @@ using AdvantShop.Web.Infrastructure.Controllers;
 using AdvantShop.Web.Infrastructure.Extensions;
 using AdvantShop.Web.Infrastructure.Filters;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using AdvantShop.Core;
@@ -19,6 +20,8 @@ using AdvantShop.Core.Services.Configuration.Settings.Enums;
 using AdvantShop.Core.Services.Customers;
 using AdvantShop.Core.Services.Diagnostics;
 using AdvantShop.Core.Common.Extensions;
+using AdvantShop.Core.Modules;
+using AdvantShop.Core.Services.Smses;
 using AdvantShop.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
@@ -485,10 +488,17 @@ namespace AdvantShop.Controllers
 
             var customer = CustomerService.GetCustomer(guid);
 
+            // Vadim_Dyl_381073705: текущие значения полей нужны и для валидации изменений, и для тела заявки
+            var oldFields = CustomerFieldService.GetCustomerFieldsWithValue(customer.Id)
+                .Where(x => (x.ShowInRegistration || x.ShowInCheckout || x.Enabled) &&
+                            (x.CustomerType == customer.CustomerType || x.CustomerType == CustomerType.All)).ToList();
+
             //check email
             if (!ValidationHelper.IsValidEmail(email))
                 errors.Add("Введите корректный email");
-            if (!string.IsNullOrWhiteSpace(email) && CustomerService.IsEmailExist(email) && (exist != null && exist.Id != guid))
+            // Vadim_Dyl_381073705: занятость email проверяем по email, а не по результату поиска телефона
+            var emailExist = !string.IsNullOrWhiteSpace(email) ? CustomerService.GetCustomerByEmail(email) : null;
+            if (emailExist != null && emailExist.Id != guid)
                 errors.Add("Указанный email уже используется");
             if (SettingsCheckout.IsShowLastName && SettingsCheckout.IsRequiredLastName && String.IsNullOrWhiteSpace(lastname))
                 errors.Add("Поле \"Фамилия\" обязательно");
@@ -498,22 +508,35 @@ namespace AdvantShop.Controllers
                 errors.Add("Поле \"Отчество\" обязательно");
             if (customer.CustomerType != CustomerType.LegalEntity && SettingsCheckout.IsShowBirthDay && SettingsCheckout.IsRequiredBirthDay && birthday == null)
                 errors.Add("Поле \"День рождения\" обязательно");
+            // Vadim_Dyl_381073705: реквизиты юрлица — формат ИНН/КПП/ОГРН/ОКПО по CustomerFieldAssignment.
+            // Проверяем только изменяемые поля, чтобы старые значения в БД не блокировали правку других данных.
+            if (customer.CustomerType == CustomerType.LegalEntity && CustomerFields != null)
+            {
+                var changedFields = CustomerFields.Where(field =>
+                {
+                    var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
+                    return old == null || (old.Value ?? "") != (field.Value ?? "");
+                }).ToList();
+                errors.AddRange(CustomerFieldsValidation.ValidateLegalEntityFields(changedFields));
+            }
 
             int? task = null;
             if (errors.Count == 0)
             {
                 try
                 {
-                    var oldFields = CustomerFieldService.GetCustomerFieldsWithValue(customer.Id)
-                        .Where(x => (x.ShowInRegistration || x.ShowInCheckout || x.Enabled) &&
-                                    (x.CustomerType == customer.CustomerType || x.CustomerType == CustomerType.All)).ToList();
                     var body = "";//<p>ТЕКУЩИЕ УЧЕТНЫЕ ДАННЫЕ:</p>";
-                    if (customer.CustomerType == CustomerType.LegalEntity)
+                    if (customer.CustomerType == CustomerType.LegalEntity && CustomerFields != null)
                     {
+                        // Vadim_Dyl_381073705: текущие реквизиты организации + новые значения по изменённым полям
+                        // (в форме Pyrus нет отдельных полей под реквизиты, поэтому изменения идут в тело заявки).
                         foreach (var field in CustomerFields)
                         {
                             var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
-                            body += string.Format("{0}: {1}\r\n", field.Name, old != null ? old.Value : "");
+                            var oldValue = old != null ? old.Value : "";
+                            body += string.Format("{0}: {1}\r\n", field.Name, oldValue);
+                            if ((oldValue ?? "") != (field.Value ?? ""))
+                                body += string.Format("{0} (новое значение): {1}\r\n", field.Name, field.Value);
                         }
                     }
                     body += string.Format("Фамилия: {0}\r\n", customer.LastName);
@@ -584,9 +607,21 @@ namespace AdvantShop.Controllers
                     if (customer.CustomerType != CustomerType.LegalEntity)
                     {
                         if (!((customer.BirthDay == null && birthday.IsNullOrEmpty()) || (customer.BirthDay != null && customer.BirthDay.Value.ToString("dd.MM.yyyy") == birthday)))
-                            fields.Add("BirthDay", birthday);
+                        {
+                            // Vadim_Dyl_381073705: Pyrus ждёт дату в формате yyyy-MM-dd.
+                            DateTime birthdayDate;
+                            var birthdayForPyrus = birthday;
+                            if (DateTime.TryParseExact(birthday, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out birthdayDate) ||
+                                DateTime.TryParse(birthday, CultureInfo.InvariantCulture, DateTimeStyles.None, out birthdayDate))
+                            {
+                                birthdayForPyrus = birthdayDate.ToString("yyyy-MM-dd");
+                            }
+                            fields.Add("BirthDay", birthdayForPyrus);
+                        }
                     }
-                    if (customer.CustomerType != CustomerType.LegalEntity && CustomerFields != null)
+                    // Vadim_Dyl_381073705: реквизиты юрлица тоже попадают в fields — иначе заявка
+                    // только по реквизитам не создаётся и клиент не получает redirectTo.
+                    if (CustomerFields != null)
                     {
                         foreach (var field in CustomerFields)
                         {
@@ -598,7 +633,19 @@ namespace AdvantShop.Controllers
                             else
                             {
                                 //body += string.Format("<p>{0}: <strong>{1}</strong></p>", field.Name, field.Value);
-                                fields.Add(field.Name, field.Value);
+                                var fieldValue = field.Value;
+                                if (field.FieldType == CustomerFieldType.Date && fieldValue.IsNotEmpty())
+                                {
+                                    // Vadim_Dyl_381073705: Pyrus ждёт дату в формате yyyy-MM-dd.
+                                    DateTime fieldDate;
+                                    if (DateTime.TryParseExact(fieldValue, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out fieldDate) ||
+                                        DateTime.TryParse(fieldValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out fieldDate))
+                                    {
+                                        fieldValue = fieldDate.ToString("yyyy-MM-dd");
+                                    }
+                                }
+                                if (!fields.ContainsKey(field.Name))
+                                    fields.Add(field.Name, fieldValue);
                             }
                         }
                     }
@@ -669,11 +716,32 @@ namespace AdvantShop.Controllers
         [HttpPost, ValidateJsonAntiForgeryToken]
         public JsonResult SendRequestConfirmPhone(string customerId, string phone)//GlorySoft_031
         {
+            //Vadim_Dyl_381073705: телефон подтверждается только кодом из SMS (отметку ставит
+            //SmsConfirmationClientController.ConfirmSmsCode). Прямой вызов без кода PhoneConfirmed не выставляет (T-07)
+            var customer = CustomerContext.CurrentCustomer;
+            if (customer == null || customer.CustomerRole == Role.Guest)
+                return JsonConfirmPhoneError("Пользователь не авторизован");
+
+            // Vadim_Dyl_381073705: без включённого модуля SMS-авторизации подтверждать нечего
+            if (!ModulesRepository.IsActiveModule("SmsConfirmation"))
+                return JsonConfirmPhoneError("Подтверждение телефона по SMS отключено");
+
+            // Vadim_Dyl_381073705: без активного SMS-провайдера код отправить невозможно — функция недоступна
+            if (SmsNotifier.GetActiveSmsModule() == null)
+                return JsonConfirmPhoneError("Отправка SMS не настроена");
+
+            if (customerId.IsNotEmpty() && !string.Equals(customerId, customer.Id.ToString(), StringComparison.OrdinalIgnoreCase))
+                return JsonConfirmPhoneError("Пользователь не найден");
+
+            if (!IsPhoneConfirmedBySms(customer.Id, phone))
+                return JsonConfirmPhoneError("Телефон не подтвержден кодом из SMS");
+
             var errors = new List<string> { };
 
             try
             {
-                CustomerService.SetConfirmPhone(customerId, phone);
+                CustomerService.SetConfirmPhone(customer.Id.ToString(), phone);
+                RemovePhoneConfirmedBySms(customer.Id);
             }
             catch (Exception E)
             {
@@ -682,6 +750,68 @@ namespace AdvantShop.Controllers
 
             return Json(new { result = errors.Count == 0, errors = errors, title = "Ошибка при отправке запроса" });
         }
+
+        #region Vadim_Dyl_381073705: подтверждение телефона по SMS (T-07)
+
+        // Ключ и формат значения согласованы с SmsConfirmationClientController.ConfirmSmsCode:
+        // значение в сессии — "<ticks истечения>|<только цифры телефона>".
+        private const string SmsConfirmedPhoneSessionPrefix = "SmsConfirmedPhone:";
+
+        private static string GetPhoneDigits(string phone)
+        {
+            return string.IsNullOrEmpty(phone)
+                ? string.Empty
+                : System.Text.RegularExpressions.Regex.Replace(phone, @"[^\d]", "");
+        }
+
+        private static string GetConfirmedPhoneSessionKey(Guid customerId)
+        {
+            return SmsConfirmedPhoneSessionPrefix + customerId.ToString("N");
+        }
+
+        private JsonResult JsonConfirmPhoneError(string error)
+        {
+            return Json(new { result = false, errors = new List<string> { error }, title = "Ошибка при отправке запроса" });
+        }
+
+        /// <summary>
+        /// Проверяет, что именно этот телефон был подтверждён кодом из SMS в текущей сессии.
+        /// </summary>
+        private bool IsPhoneConfirmedBySms(Guid customerId, string phone)
+        {
+            var session = Session;
+            if (session == null || customerId == Guid.Empty)
+                return false;
+
+            var key = GetConfirmedPhoneSessionKey(customerId);
+            var value = session[key] as string;
+            if (value.IsNullOrEmpty())
+                return false;
+
+            var parts = value.Split(new[] { '|' }, 2);
+            long expiresAtTicks;
+            if (parts.Length != 2 || !long.TryParse(parts[0], out expiresAtTicks))
+            {
+                session.Remove(key);
+                return false;
+            }
+
+            if (new DateTime(expiresAtTicks) < DateTime.Now)
+            {
+                session.Remove(key);
+                return false;
+            }
+
+            return parts[1] == GetPhoneDigits(phone);
+        }
+
+        private void RemovePhoneConfirmedBySms(Guid customerId)
+        {
+            if (Session != null)
+                Session.Remove(GetConfirmedPhoneSessionKey(customerId));
+        }
+
+        #endregion
 
         [HttpPost, ValidateJsonAntiForgeryToken]
         public async Task<JsonResult> RetrySendRegCode(string customerId, string email, bool? createTask)//GlorySoft_031

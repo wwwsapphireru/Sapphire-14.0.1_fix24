@@ -1,0 +1,43 @@
+@using AdvantShop.Customers
+@*Vadim_Dyl_381073705: подтверждение телефона по SMS в личном кабинете *@
+<div id="modalConfirmPhone" data-modal-control data-modal-class="modal-confirm-phone"
+     data-ng-controller="AdvConfirmPhoneModalCtrl as confirmPhone"
+     data-ng-init="confirmPhone.customerId = '@CustomerContext.CustomerId'">
+    <div class="modal-header" data-modal-header>Подтверждение номера телефона</div>
+    <div class="modal-content">
+        <div class="adv-confirm-phone">
+            <label class="adv-confirm-phone__field">
+                <span class="adv-confirm-phone__label">Телефон</span>
+                <input type="text" class="input-small" data-ng-model="confirmPhone.phone"
+                       data-mask-control data-mask-control-preset="phone"
+                       data-adv-mask-empty-valid
+                       maxlength="70" placeholder="Номер телефона">
+            </label>
+
+            <div class="adv-confirm-phone__code" data-ng-if="confirmPhone.codeSent && !confirmPhone.codeConfirmed">
+                <label class="adv-confirm-phone__field adv-confirm-phone__field--code">
+                    <span class="adv-confirm-phone__label">SMS-код</span>
+                    <input type="text" class="input-small" data-ng-model="confirmPhone.smsCode"
+                           maxlength="4" inputmode="numeric" placeholder="4 цифры"
+                           data-ng-change="confirmPhone.confirmCode()">
+                </label>
+                <button type="button" class="btn btn-small btn-action"
+                        data-ng-click="confirmPhone.sendCode()"
+                        data-ng-disabled="confirmPhone.countdown > 0">
+                    {{ confirmPhone.countdown > 0 ? 'Повторно через ' + confirmPhone.countdown + ' с' : 'Получить код' }}
+                </button>
+            </div>
+
+            <div class="adv-confirm-phone__error" data-ng-if="confirmPhone.error">{{ confirmPhone.error }}</div>
+            <div class="adv-confirm-phone__status" data-ng-if="confirmPhone.codeConfirmed">Телефон подтвержден</div>
+        </div>
+    </div>
+    <div class="modal-footer" data-modal-footer>
+        <button type="button" class="btn btn-small btn-confirm"
+                data-ng-if="!confirmPhone.codeSent"
+                data-ng-click="confirmPhone.sendCode()">
+            Получить код
+        </button>
+        <button type="button" class="btn btn-small btn-action" data-ng-click="confirmPhone.close()">Отмена</button>
+    </div>
+</div>
