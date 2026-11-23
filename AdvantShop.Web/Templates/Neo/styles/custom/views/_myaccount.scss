@@ -376,3 +376,41 @@
         font-size: 13px;
     }
 }
+
+// Vadim_Dyl_381073705: датапикер ЛК — скруглённые квадраты вместо кружков (в стиле NEO).
+// line-height возвращаем принудительно: платформенный ody * { line-height: ... !important }
+// (настройка типографики) прижимает цифру к верху ячейки.
+.flatpickr-calendar {
+    .flatpickr-day {
+        border-radius: 6px;
+        line-height: 39px !important;
+    }
+
+    .flatpickr-day.selected,
+    .flatpickr-day.startRange,
+    .flatpickr-day.endRange,
+    .flatpickr-day.selected.inRange,
+    .flatpickr-day.startRange.inRange,
+    .flatpickr-day.endRange.inRange {
+        border-radius: 6px;
+    }
+
+    .flatpickr-day.selected.startRange,
+    .flatpickr-day.startRange.startRange {
+        border-radius: 6px 0 0 6px;
+    }
+
+    .flatpickr-day.selected.endRange,
+    .flatpickr-day.endRange.endRange {
+        border-radius: 0 6px 6px 0;
+    }
+
+    .flatpickr-day.today {
+        border-radius: 6px;
+    }
+}
+// Vadim_Dyl_381073705: при открытой модалке страница не скроллится
+html:has(.adv-modal.adv-modal-active),
+body:has(.adv-modal.adv-modal-active) {
+    overflow: hidden;
+}

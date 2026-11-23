@@ -24,7 +24,7 @@
                            data-ng-class="{'adv-passport-modal__field--full': field.FieldAssignment === 1 || field.FieldAssignment === 2 || field.FieldAssignment === 8}">
                         <span class="adv-passport-modal__label">{{ ::field.Name }}</span>
                         <span class="flatpickr-custom" data-ng-if="field.FieldType == 4"
-                              ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat: 'Y-m-d', wrap: true, enableTime: false}">
+                              ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat: 'Y-m-d', wrap: true, enableTime: false, animate: false}">
                             <input type="text" class="input-small flatpickr-custom__input"
                                    data-ng-flatpickr-input
                                    data-ng-model="field.Value"
@@ -53,7 +53,7 @@
                 @Html.Partial("_PersonalChangeContactFields")
                 <label class="adv-passport-modal__field">
                     <span class="adv-passport-modal__label">День рождения</span>
-                    <span class="flatpickr-custom" ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat: 'Y-m-d', wrap: true, enableTime: false}">
+                    <span class="flatpickr-custom" ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat: 'Y-m-d', wrap: true, enableTime: false, animate: false}">
                         <input type="text" class="input-small flatpickr-custom__input"
                                data-ng-flatpickr-input
                                data-ng-model="personalModal.change.birthday"
