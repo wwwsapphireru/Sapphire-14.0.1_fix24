@@ -1,6 +1,178 @@
-// Vadim_Dyl_381073705: личный кабинет — паспортная карточка и модалка смены паспорта.
+// Vadim_Dyl_381073705: личный кабинет — карточки по последней редакции 12.0.5,
+// паспортная карточка и модалка смены паспорта.
+
+.myaccount-common-info {
+    .myaccount-common-info__wrapper {
+        max-width: 100%;
+    }
+
+    .myaccount-common-info__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        align-items: stretch;
+        margin-bottom: 14px;
+
+        @media (max-width: 991px) {
+            grid-template-columns: 1fr;
+        }
+
+        .myaccount-card {
+            margin-bottom: 0;
+        }
+    }
+
+    .myaccount-card {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 14px;
+        padding: 16px 18px;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+        background: transparent;
+    }
+
+    .myaccount-card--full {
+        grid-column: 1 / -1;
+    }
+
+    .myaccount-card__header {
+        margin-bottom: 12px;
+    }
+
+    .myaccount-card__title {
+        margin: 0;
+        color: #333;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .myaccount-card__subtitle {
+        display: block;
+        margin-top: 4px;
+        color: #888;
+        font-size: 12px;
+    }
+
+    .myaccount-card__body {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .myaccount-card__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: auto;
+        padding-top: 14px;
+    }
+
+    .myaccount-row {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+    }
+
+    .myaccount-row__label {
+        flex: 0 0 170px;
+        max-width: 170px;
+        color: #666;
+        font-size: 13px;
+    }
+
+    .myaccount-row__value {
+        flex: 1 1 auto;
+        min-width: 0;
+        color: #333;
+        font-size: 14px;
+        word-break: break-word;
+    }
+
+    .myaccount-grid {
+        display: grid;
+        gap: 14px 18px;
+    }
+
+    .myaccount-grid--2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .myaccount-grid--3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .myaccount-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .myaccount-field__label {
+        color: #555;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .myaccount-field__value {
+        color: #333;
+        font-size: 14px;
+        word-break: break-word;
+    }
+
+    .myaccount-field__value .input-small,
+    .myaccount-common-info__fields .input-small,
+    .myaccount-common-info__fields textarea {
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .myaccount-field--dob {
+        max-width: 200px;
+    }
+
+    .myaccount-field--full {
+        grid-column: 1 / -1;
+    }
+
+    .myaccount-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #333;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .myaccount-checkbox__text {
+        line-height: 1.4;
+    }
+
+    @media (max-width: 767px) {
+        .myaccount-grid--2,
+        .myaccount-grid--3 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 575px) {
+        .myaccount-row {
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .myaccount-row__label {
+            flex-basis: auto;
+            max-width: none;
+        }
+    }
+}
 
 .adv-passport-card {
+    display: flex;
+    flex-direction: column;
     margin: 20px 0;
     padding: 16px 18px;
     border: 1px solid #e5e5e5;
@@ -28,11 +200,17 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
+        flex: 1 1 auto;
     }
 
     &__actions {
-        margin-top: 12px;
+        margin-top: auto;
+        padding-top: 14px;
     }
+}
+
+.myaccount-common-info__grid .adv-passport-card {
+    margin: 0;
 }
 
 .adv-passport-field-value {
@@ -51,7 +229,7 @@
 .adv-passport-modal {
     &__grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 14px;
 
         @media (max-width: 767px) {

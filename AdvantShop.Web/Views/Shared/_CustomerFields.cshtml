@@ -1,6 +1,69 @@
-﻿@using AdvantShop.Customers;
+@using AdvantShop.Customers;
 @model AdvantShop.ViewModel.Common.CustomerFieldsViewModel
 @*Vadim_Dyl_381073705: паспортные поля 13–16 в ЛК (ShowInUserEditing) *@
+
+@helper RenderPassportField(CustomerFieldWithValue field, int index, bool isFull, bool isReadonly)
+{
+    var nameAttr = "myaccount.user.CustomerFields[" + index + "].Value";
+    var idAttr = nameAttr.RemoveSymvolsExt("_");
+    var valueText = field.FieldType == CustomerFieldType.Date ? field.ValueDateFormat : field.Value;
+    var bindExpr = field.FieldType == CustomerFieldType.Date
+        ? "(myaccount.user.CustomerFields[" + index + "].Value | date:'dd.MM.yyyy')"
+        : "myaccount.user.CustomerFields[" + index + "].Value";
+    <label class="myaccount-field @(isFull ? "myaccount-field--full" : "")">
+        <span class="myaccount-field__label">@field.Name</span>
+        <span class="myaccount-field__value">
+            <span class="form-field-input" data-ng-hide="passport.locked">
+                @if (field.FieldType == CustomerFieldType.Date)
+                {
+                    <span class="flatpickr-custom" ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat: 'Y-m-d', wrap: true, enableTime: false}">
+                        <input type="text" id="@idAttr" name="@nameAttr" value="@field.ValueDateFormat.HtmlEncode()" class="input-small flatpickr-custom__input"
+                               data-adv-passport-field-id="@field.Id"
+                               data-ng-disabled="passport.locked"
+                               data-ng-model="@nameAttr"
+                               data-mask-control
+                               data-mask-control-preset="date"
+                               data-adv-mask-empty-valid
+                               data-ng-flatpickr-input
+                               @Html.Raw(isReadonly ? "readonly" : "") >
+                        @if (!isReadonly)
+                        {
+                            <span class="flatpickr-custom__toggle" data-toggle>
+                                <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                    <path fill="currentColor" d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V192H0v272zm320-196c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM192 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM64 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM400 64h-48V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H160V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H48C21.5 64 0 85.5 0 112v48h448v-48c0-26.5-21.5-48-48-48z"></path>
+                                </svg>
+                            </span>
+                        }
+                    </span>
+                }
+                else if (field.FieldType == CustomerFieldType.TextArea)
+                {
+                    <textarea class="input-small" id="@idAttr" name="@nameAttr" rows="2" data-adv-passport-field-id="@field.Id"
+                              data-ng-disabled="passport.locked"
+                              data-ng-model="@nameAttr"
+                              @Html.Raw(isReadonly ? "readonly" : "")>@field.Value</textarea>
+                }
+                else
+                {
+                    <input type="text" class="input-small" id="@idAttr" name="@nameAttr"
+                           data-adv-passport-field-id="@field.Id"
+                           data-ng-disabled="passport.locked"
+                           data-ng-model="@nameAttr"
+                           @Html.Raw(field.Id == 13 ? "data-adv-passport-group" : "")
+                           @Html.Raw(field.Id == 13 ? "data-adv-passport-input data-adv-passport-length=\"4\"" : field.Id == 14 ? "data-adv-passport-input data-adv-passport-length=\"6\"" : "")
+                           @Html.Raw(field.FieldType == CustomerFieldType.Number ? "pattern=\"^[\\d,\\.]*$\"" : "")
+                           @Html.Raw(isReadonly ? "readonly" : "") >
+                }
+            </span>
+            <span class="adv-passport-field-value" data-ng-show="passport.locked" data-ng-bind="@bindExpr">@valueText</span>
+            @Html.Hidden("myaccount.user.CustomerFields[" + index + "].Id", field.Id)
+            @Html.Hidden("myaccount.user.CustomerFields[" + index + "].Name", field.Name)
+            @Html.Hidden("myaccount.user.CustomerFields[" + index + "].FieldType", field.FieldType)
+            @Html.Hidden("myaccount.user.CustomerFields[" + index + "].SortOrder", field.SortOrder)
+            @Html.Hidden("myaccount.user.CustomerFields[" + index + "].Required", field.Required)
+        </span>
+    </label>
+}
 
 @if (Model != null)
 {
@@ -218,77 +281,34 @@
 
     if (passportFields.Count > 0)
     {
+        var passportGridFields = passportFields.Where(x => x.Id != 16).OrderBy(x => x.Id).ToList();
+        var passportFullFields = passportFields.Where(x => x.Id == 16).ToList();
+
         <section class="adv-passport-card" data-ng-controller="AdvPassportCardCtrl as passport">
             <div class="adv-passport-card__header">
                 <h3 class="adv-passport-card__title">Информация о паспорте</h3>
                 <span class="adv-passport-card__subtitle">(для оформления накладных в транспортных компаниях)</span>
             </div>
             <div class="adv-passport-card__body">
-                @foreach (var field in passportFields)
+                <div class="myaccount-grid myaccount-grid--3">
+                    @foreach (var field in passportGridFields)
+                    {
+                        var i = Model.CustomerFields.IndexOf(field);
+                        @RenderPassportField(field, i, false, isReadonly)
+                    }
+                </div>
+                @foreach (var field in passportFullFields)
                 {
                     var i = Model.CustomerFields.IndexOf(field);
-                    var nameAttr = Model.GetName(i, "Value");
-                    var idAttr = nameAttr.RemoveSymvolsExt("_");
-                    var disabled = Model.ShowMode == CustomerFieldShowMode.MyAccount && field.DisableCustomerEditing && !string.IsNullOrEmpty(field.Value);
-                    var valueText = field.FieldType == CustomerFieldType.Date ? field.ValueDateFormat : field.Value;
-            <label class="row middle-xs custom-field form-field-control adv-passport-field">
-                <span class="custom-field__name @Model.CssParamName">
-                    <span class="form-field-name @verticalIntervalSize">@field.Name</span>
-                </span>
-                <span class="custom-field__value @Model.CssParamValue">
-                    <span class="form-field-input @verticalIntervalSize" data-ng-hide="passport.locked">
-                        @if (field.FieldType == CustomerFieldType.Date)
-                        {
-                            <span class="flatpickr-custom" ng-flatpickr fp-opts="{dateFormat: 'd.m.Y', startDateFormat: 'Y-m-d', wrap: true, enableTime: false}">
-                                <input type="text" id="@idAttr" name="@nameAttr" value="@field.ValueDateFormat.HtmlEncode()" class="input-small flatpickr-custom__input"
-                                       data-adv-passport-field-id="@field.Id"
-                                       data-ng-disabled="passport.locked"
-                                       data-ng-model="@nameAttr"
-                                       data-mask-control
-                                       data-mask-control-preset="date"
-                                       data-ng-flatpickr-input
-                                       @Html.Raw(isReadonly ? "readonly" : "") >
-                                @if (!isReadonly)
-                                {
-                                    <span class="flatpickr-custom__toggle" data-toggle>
-                                        <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-                                            <path fill="currentColor" d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V192H0v272zm320-196c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM192 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM64 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM400 64h-48V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H160V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H48C21.5 64 0 85.5 0 112v48h448v-48c0-26.5-21.5-48-48-48z"></path>
-                                        </svg>
-                                    </span>
-                                }
-                            </span>
-                        }
-                        else if (field.FieldType == CustomerFieldType.TextArea)
-                        {
-                            <textarea class="input-small" id="@idAttr" name="@nameAttr" data-adv-passport-field-id="@field.Id"
-                                      data-ng-disabled="passport.locked"
-                                      data-ng-model="@nameAttr"
-                                      @Html.Raw(isReadonly ? "readonly" : "")>@field.Value</textarea>
-                        }
-                        else
-                        {
-                            <input type="text" class="input-small" id="@idAttr" name="@nameAttr"
-                                   data-adv-passport-field-id="@field.Id"
-                                   data-ng-disabled="passport.locked"
-                                   data-ng-model="@nameAttr"
-                                   @Html.Raw(field.Id == 13 ? "data-adv-passport-group" : "")
-                                   @Html.Raw(field.Id == 13 ? "data-adv-passport-input data-adv-passport-length=\"4\"" : field.Id == 14 ? "data-adv-passport-input data-adv-passport-length=\"6\"" : "")
-                                   @Html.Raw(field.FieldType == CustomerFieldType.Number ? "pattern=\"^[\\d,\\.]*$\"" : "")
-                                   @Html.Raw(isReadonly ? "readonly" : "") >
-                        }
-                    </span>
-                    <span class="adv-passport-field-value" data-ng-show="passport.locked"
-                          data-ng-bind="@(field.FieldType == CustomerFieldType.Date ? "(myaccount.user.CustomerFields[" + i + "].Value | date:'dd.MM.yyyy')" : "myaccount.user.CustomerFields[" + i + "].Value")">@valueText</span>
-                    @Html.Hidden(Model.GetName(i, "Id"), field.Id)
-                    @Html.Hidden(Model.GetName(i, "Name"), field.Name)
-                    @Html.Hidden(Model.GetName(i, "FieldType"), field.FieldType)
-                    @Html.Hidden(Model.GetName(i, "SortOrder"), field.SortOrder)
-                    @Html.Hidden(Model.GetName(i, "Required"), field.Required)
-                </span>
-            </label>
+                    @RenderPassportField(field, i, true, isReadonly)
                 }
             </div>
             <div class="adv-passport-card__actions">
+                <button type="button" class="btn btn-middle btn-confirm"
+                        data-ng-show="!passport.locked && !myaccount.isReadonly"
+                        data-button-validation data-button-validation-success="myaccount.saveUser()">
+                    Сохранить
+                </button>
                 <button type="button" class="btn btn-middle btn-action adv-passport-card__edit"
                         data-ng-hide="!passport.locked"
                         data-modal-open="modalPassportChange"
@@ -299,3 +319,4 @@
         </section>
     }
 }
+

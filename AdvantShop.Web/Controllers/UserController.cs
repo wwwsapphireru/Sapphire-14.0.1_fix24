@@ -11,6 +11,7 @@ using AdvantShop.Web.Infrastructure.Controllers;
 using AdvantShop.Web.Infrastructure.Extensions;
 using AdvantShop.Web.Infrastructure.Filters;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using AdvantShop.Core;
@@ -488,7 +489,9 @@ namespace AdvantShop.Controllers
             //check email
             if (!ValidationHelper.IsValidEmail(email))
                 errors.Add("Введите корректный email");
-            if (!string.IsNullOrWhiteSpace(email) && CustomerService.IsEmailExist(email) && (exist != null && exist.Id != guid))
+            // Vadim_Dyl_381073705: занятость email проверяем по email, а не по результату поиска телефона
+            var emailExist = !string.IsNullOrWhiteSpace(email) ? CustomerService.GetCustomerByEmail(email) : null;
+            if (emailExist != null && emailExist.Id != guid)
                 errors.Add("Указанный email уже используется");
             if (SettingsCheckout.IsShowLastName && SettingsCheckout.IsRequiredLastName && String.IsNullOrWhiteSpace(lastname))
                 errors.Add("Поле \"Фамилия\" обязательно");
@@ -584,7 +587,17 @@ namespace AdvantShop.Controllers
                     if (customer.CustomerType != CustomerType.LegalEntity)
                     {
                         if (!((customer.BirthDay == null && birthday.IsNullOrEmpty()) || (customer.BirthDay != null && customer.BirthDay.Value.ToString("dd.MM.yyyy") == birthday)))
-                            fields.Add("BirthDay", birthday);
+                        {
+                            // Vadim_Dyl_381073705: Pyrus ждёт дату в формате yyyy-MM-dd.
+                            DateTime birthdayDate;
+                            var birthdayForPyrus = birthday;
+                            if (DateTime.TryParseExact(birthday, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out birthdayDate) ||
+                                DateTime.TryParse(birthday, CultureInfo.InvariantCulture, DateTimeStyles.None, out birthdayDate))
+                            {
+                                birthdayForPyrus = birthdayDate.ToString("yyyy-MM-dd");
+                            }
+                            fields.Add("BirthDay", birthdayForPyrus);
+                        }
                     }
                     if (customer.CustomerType != CustomerType.LegalEntity && CustomerFields != null)
                     {
@@ -598,7 +611,18 @@ namespace AdvantShop.Controllers
                             else
                             {
                                 //body += string.Format("<p>{0}: <strong>{1}</strong></p>", field.Name, field.Value);
-                                fields.Add(field.Name, field.Value);
+                                var fieldValue = field.Value;
+                                if (field.FieldType == CustomerFieldType.Date && fieldValue.IsNotEmpty())
+                                {
+                                    // Vadim_Dyl_381073705: Pyrus ждёт дату в формате yyyy-MM-dd.
+                                    DateTime fieldDate;
+                                    if (DateTime.TryParseExact(fieldValue, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out fieldDate) ||
+                                        DateTime.TryParse(fieldValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out fieldDate))
+                                    {
+                                        fieldValue = fieldDate.ToString("yyyy-MM-dd");
+                                    }
+                                }
+                                fields.Add(field.Name, fieldValue);
                             }
                         }
                     }
