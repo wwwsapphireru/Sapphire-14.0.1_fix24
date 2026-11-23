@@ -48,6 +48,7 @@ import '../styles/views/catalog.scss';
 import '../styles/views/news.scss';
 import '../styles/views/brands.scss';
 import '../styles/views/registration.scss';
+import '../styles/custom/index.scss';
 
 import subscribeModule from '../../../scripts/_partials/subscribe/subscribe.module.js';
 

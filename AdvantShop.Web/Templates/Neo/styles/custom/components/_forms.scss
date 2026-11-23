@@ -1,0 +1,17 @@
+// Vadim_Dyl_381073705: формы (поля, ошибки, чекбоксы).
+// Сюда добавляются правки форм по мере переноса.
+
+// Font Awesome 5: нативные шаблоны используют legacy-класс `.fa`.
+// Neo text-scale задаёт `body * { font-family: ... !important }`, поэтому
+// для иконок нужен !important и более высокая специфичность.
+.fa,
+.fas {
+    font-family: 'Font Awesome 5 Free' !important;
+    font-weight: 900;
+    line-height: 1 !important;
+}
+
+// Место под иконку «показать пароль» в полях пароля.
+form.registration .form-field-input.relative input.input-small {
+    padding-right: 36px;
+}
