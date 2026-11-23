@@ -109,6 +109,10 @@
         gap: 14px 18px;
     }
 
+    .myaccount-grid--1 {
+        grid-template-columns: 1fr;
+    }
+
     .myaccount-grid--2 {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -128,6 +132,10 @@
         color: #555;
         font-size: 12px;
         font-weight: 600;
+        // Vadim_Dyl_381073705: метка по ширине текста, чтобы «*» стояла рядом с названием
+        align-self: flex-start;
+        display: inline-block;
+        max-width: 100%;
     }
 
     .myaccount-field__value {
@@ -246,7 +254,48 @@
     }
 }
 
+// Vadim_Dyl_381073705: юрлицо — заполненные реквизиты карточки организации выводятся текстом
+// (заголовок сверху, значение под ним — как у полей физлица)
+.myaccount-common-info__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .adv-locked-field-value {
+        display: block;
+        padding: 0;
+        color: #333;
+        font-size: 14px;
+        line-height: 1.4;
+        word-break: break-word;
+        white-space: pre-line;
+
+        &.ng-hide {
+            display: none;
+        }
+    }
+
+    .myaccount-field .form-field-input {
+        margin: 0;
+    }
+
+    // длинные реквизиты (название организации, адрес, банк) — в конце, на всю ширину
+    .myaccount-field--last {
+        order: 1;
+    }
+}
+
 .adv-passport-modal {
+    &__subtitle {
+        margin: 4px 0 10px;
+        color: #888;
+        font-size: 12px;
+
+        &:not(:first-child) {
+            margin-top: 18px;
+        }
+    }
+
     &__grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));

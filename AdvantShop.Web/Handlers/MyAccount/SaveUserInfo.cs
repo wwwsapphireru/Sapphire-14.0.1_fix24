@@ -7,6 +7,7 @@ using AdvantShop.Core;
 using AdvantShop.Core.Services.Localization;
 using AdvantShop.Customers;
 using AdvantShop.Diagnostics;
+using AdvantShop.Extensions;
 using AdvantShop.Helpers;
 using AdvantShop.Models.MyAccount;
 using AdvantShop.Web.Infrastructure.Handlers;
@@ -43,6 +44,20 @@ namespace AdvantShop.Handlers.MyAccount
             
             // Vadim_Dyl_381073705: паспорт — если заполнять начали, нужны все 4 поля и корректная длина серии/номера
             ValidatePassportFields();
+
+            // Vadim_Dyl_381073705: реквизиты юрлица — формат ИНН/КПП/ОГРН/ОКПО.
+            // Проверяем только те поля, которые реально сохраняем (прямое сохранение лишь заполняет пустые),
+            // чтобы уже сохранённые значения не блокировали правку других данных.
+            if (CustomerContext.CurrentCustomer.CustomerType == CustomerType.LegalEntity && _userInfo.CustomerFields != null)
+            {
+                var customerId = CustomerContext.CurrentCustomer.Id;
+                var newFields = _userInfo.CustomerFields
+                    .Where(x => string.IsNullOrEmpty(CustomerFieldService.GetCustomerFieldsWithValue(customerId, x.Id)?.Value))
+                    .ToList();
+                var fieldErrors = CustomerFieldsValidation.ValidateLegalEntityFields(newFields);
+                if (fieldErrors.Count > 0)
+                    throw new BlException(string.Join("; ", fieldErrors));
+            }
 
             var customer = CustomerContext.CurrentCustomer;
 
@@ -105,10 +120,17 @@ namespace AdvantShop.Handlers.MyAccount
 
                 if (_userInfo.CustomerFields != null)
                 {
+                    var isLegalEntity = customer.CustomerType == CustomerType.LegalEntity;
+
                     foreach (var customerField in _userInfo.CustomerFields)
                     {
                         var field = CustomerFieldService.GetCustomerFieldsWithValue(customer.Id, customerField.Id);
                         if (field == null || !field.Enabled || (field.DisableCustomerEditing && !string.IsNullOrEmpty(field.Value)))
+                            continue;
+
+                        // Vadim_Dyl_381073705: реквизиты юрлица напрямую только заполняются;
+                        // изменение уже заполненных — через заявку (Pyrus).
+                        if (isLegalEntity && !string.IsNullOrEmpty(field.Value))
                             continue;
 
                         CustomerFieldService.AddUpdateMap(customer.Id, customerField.Id, customerField.Value ?? "");

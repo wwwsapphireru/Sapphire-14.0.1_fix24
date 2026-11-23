@@ -488,6 +488,11 @@ namespace AdvantShop.Controllers
 
             var customer = CustomerService.GetCustomer(guid);
 
+            // Vadim_Dyl_381073705: текущие значения полей нужны и для валидации изменений, и для тела заявки
+            var oldFields = CustomerFieldService.GetCustomerFieldsWithValue(customer.Id)
+                .Where(x => (x.ShowInRegistration || x.ShowInCheckout || x.Enabled) &&
+                            (x.CustomerType == customer.CustomerType || x.CustomerType == CustomerType.All)).ToList();
+
             //check email
             if (!ValidationHelper.IsValidEmail(email))
                 errors.Add("Введите корректный email");
@@ -503,22 +508,35 @@ namespace AdvantShop.Controllers
                 errors.Add("Поле \"Отчество\" обязательно");
             if (customer.CustomerType != CustomerType.LegalEntity && SettingsCheckout.IsShowBirthDay && SettingsCheckout.IsRequiredBirthDay && birthday == null)
                 errors.Add("Поле \"День рождения\" обязательно");
+            // Vadim_Dyl_381073705: реквизиты юрлица — формат ИНН/КПП/ОГРН/ОКПО по CustomerFieldAssignment.
+            // Проверяем только изменяемые поля, чтобы старые значения в БД не блокировали правку других данных.
+            if (customer.CustomerType == CustomerType.LegalEntity && CustomerFields != null)
+            {
+                var changedFields = CustomerFields.Where(field =>
+                {
+                    var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
+                    return old == null || (old.Value ?? "") != (field.Value ?? "");
+                }).ToList();
+                errors.AddRange(CustomerFieldsValidation.ValidateLegalEntityFields(changedFields));
+            }
 
             int? task = null;
             if (errors.Count == 0)
             {
                 try
                 {
-                    var oldFields = CustomerFieldService.GetCustomerFieldsWithValue(customer.Id)
-                        .Where(x => (x.ShowInRegistration || x.ShowInCheckout || x.Enabled) &&
-                                    (x.CustomerType == customer.CustomerType || x.CustomerType == CustomerType.All)).ToList();
                     var body = "";//<p>ТЕКУЩИЕ УЧЕТНЫЕ ДАННЫЕ:</p>";
-                    if (customer.CustomerType == CustomerType.LegalEntity)
+                    if (customer.CustomerType == CustomerType.LegalEntity && CustomerFields != null)
                     {
+                        // Vadim_Dyl_381073705: текущие реквизиты организации + новые значения по изменённым полям
+                        // (в форме Pyrus нет отдельных полей под реквизиты, поэтому изменения идут в тело заявки).
                         foreach (var field in CustomerFields)
                         {
                             var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
-                            body += string.Format("{0}: {1}\r\n", field.Name, old != null ? old.Value : "");
+                            var oldValue = old != null ? old.Value : "";
+                            body += string.Format("{0}: {1}\r\n", field.Name, oldValue);
+                            if ((oldValue ?? "") != (field.Value ?? ""))
+                                body += string.Format("{0} (новое значение): {1}\r\n", field.Name, field.Value);
                         }
                     }
                     body += string.Format("Фамилия: {0}\r\n", customer.LastName);
@@ -601,7 +619,9 @@ namespace AdvantShop.Controllers
                             fields.Add("BirthDay", birthdayForPyrus);
                         }
                     }
-                    if (customer.CustomerType != CustomerType.LegalEntity && CustomerFields != null)
+                    // Vadim_Dyl_381073705: реквизиты юрлица тоже попадают в fields — иначе заявка
+                    // только по реквизитам не создаётся и клиент не получает redirectTo.
+                    if (CustomerFields != null)
                     {
                         foreach (var field in CustomerFields)
                         {
@@ -624,7 +644,8 @@ namespace AdvantShop.Controllers
                                         fieldValue = fieldDate.ToString("yyyy-MM-dd");
                                     }
                                 }
-                                fields.Add(field.Name, fieldValue);
+                                if (!fields.ContainsKey(field.Name))
+                                    fields.Add(field.Name, fieldValue);
                             }
                         }
                     }

@@ -1,0 +1,90 @@
+@using AdvantShop.Configuration
+@model AdvantShop.Models.MyAccount.UserInfoModel
+@*Vadim_Dyl_381073705: контактное лицо (ФИО) — общий блок для физлица и юрлица*@
+@{
+    var useFullNameSuggestions = Model.SuggestionsModule != null && Model.SuggestionsModule.SuggestFullNameInClient;
+    var gridClass = ViewData["gridClass"] as string;
+    if (gridClass.IsNullOrEmpty())
+    {
+        gridClass = "myaccount-grid--3";
+    }
+}
+<div class="myaccount-grid @gridClass">
+    <div class="myaccount-field" data-ng-if="personal.isLocked('lastname')">
+        <span class="myaccount-field__label">@T("MyAccount.CommonInfo.LastName"):</span>
+        <span class="myaccount-field__value" data-ng-bind="myaccount.user.lastname">@Model.LastName</span>
+    </div>
+    <div class="myaccount-field" data-ng-if="!personal.isLocked('lastname')">
+        <span class="myaccount-field__label @(SettingsCheckout.IsRequiredLastName ? "input-required" : "")">@T("MyAccount.CommonInfo.LastName"):</span>
+        <span class="autocompleter-block myaccount-field__value"
+              data-field="Value" data-autocompleter data-min-length="1"
+              data-request-url="@(Model.SuggestionsModule != null ? Model.SuggestionsModule.SuggestFullNameUrl : null)"
+              data-template-path="scripts/_common/autocompleter/templates/common.html"
+              data-params="{part: 'LastName', firstname: myaccount.user.firstname, patronymic: myaccount.user.patronymic}">
+            @Html.TextBoxFor(m => m.LastName, new
+            {
+                @class = "input-small",
+                data_ng_required = SettingsCheckout.IsRequiredLastName.ToLowerString(),
+                data_ng_model = "myaccount.user.lastname",
+                maxlength = "70",
+                autocomplete = useFullNameSuggestions ? "new-password" : "family-name",
+                data_autocompleter_input = "",
+                data_autocompleter_disabled = (!useFullNameSuggestions).ToLowerString(),
+                data_ng_readonly = "myaccount.isReadonly",
+                data_autocomplete_debounce = "400"
+            })
+        </span>
+    </div>
+
+    <div class="myaccount-field" data-ng-if="personal.isLocked('firstname')">
+        <span class="myaccount-field__label">@T("MyAccount.CommonInfo.Name"):</span>
+        <span class="myaccount-field__value" data-ng-bind="myaccount.user.firstname">@Model.FirstName</span>
+    </div>
+    <div class="myaccount-field" data-ng-if="!personal.isLocked('firstname')">
+        <span class="myaccount-field__label input-required">@T("MyAccount.CommonInfo.Name"):</span>
+        <span class="autocompleter-block myaccount-field__value"
+              data-field="Value" data-autocompleter data-min-length="1"
+              data-request-url="@(Model.SuggestionsModule != null ? Model.SuggestionsModule.SuggestFullNameUrl : null)"
+              data-template-path="scripts/_common/autocompleter/templates/common.html"
+              data-params="{part: 'FirstName', lastname: myaccount.user.lastname, patronymic: myaccount.user.patronymic}">
+            @Html.TextBoxFor(m => m.FirstName, new
+            {
+                @class = "input-small",
+                required = "required",
+                data_ng_model = "myaccount.user.firstname",
+                maxlength = "70",
+                autocomplete = useFullNameSuggestions ? "new-password" : "given-name",
+                data_autocompleter_input = "",
+                data_autocompleter_disabled = (!useFullNameSuggestions).ToLowerString(),
+                data_ng_readonly = "myaccount.isReadonly",
+                data_autocomplete_debounce = "400"
+            })
+        </span>
+    </div>
+
+    <div class="myaccount-field" data-ng-if="personal.isLocked('patronymic')">
+        <span class="myaccount-field__label">@T("MyAccount.CommonInfo.Patronymic"):</span>
+        <span class="myaccount-field__value" data-ng-bind="myaccount.user.patronymic">@Model.Patronymic</span>
+    </div>
+    <div class="myaccount-field" data-ng-if="!personal.isLocked('patronymic')">
+        <span class="myaccount-field__label @(SettingsCheckout.IsRequiredPatronymic ? "input-required" : "")">@T("MyAccount.CommonInfo.Patronymic"):</span>
+        <span class="autocompleter-block myaccount-field__value"
+              data-field="Value" data-autocompleter data-min-length="1"
+              data-request-url="@(Model.SuggestionsModule != null ? Model.SuggestionsModule.SuggestFullNameUrl : null)"
+              data-template-path="scripts/_common/autocompleter/templates/common.html"
+              data-params="{part: 'Patronymic', firstname: myaccount.user.firstname, lastname: myaccount.user.lastname}">
+            @Html.TextBoxFor(m => m.Patronymic, new
+            {
+                @class = "input-small",
+                data_ng_model = "myaccount.user.patronymic",
+                data_ng_required = SettingsCheckout.IsRequiredPatronymic.ToLowerString(),
+                maxlength = "70",
+                autocomplete = useFullNameSuggestions ? "new-password" : "additional-name",
+                data_autocompleter_input = "",
+                data_autocompleter_disabled = (!useFullNameSuggestions).ToLowerString(),
+                data_ng_readonly = "myaccount.isReadonly",
+                data_autocomplete_debounce = "400"
+            })
+        </span>
+    </div>
+</div>

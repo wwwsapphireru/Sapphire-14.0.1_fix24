@@ -13,7 +13,8 @@
         phone = Model.Phone ?? "",
         email = Model.Email ?? "",
         birthday = Model.BirthDay != null ? Model.BirthDay.Value.ToString("dd.MM.yyyy") : "",
-        phoneConfirmed = CustomerService.GetConfirmPhone(CustomerContext.CustomerId.ToString())
+        phoneConfirmed = CustomerService.GetConfirmPhone(CustomerContext.CustomerId.ToString()),
+        customerType = Model.CustomerTypeEntity.ToString()
     }).Replace("\"", "&quot;");
 }
 
@@ -133,122 +134,85 @@
                 </div>
             </section>
 
-        @* Блок: Личные данные / Информация об организации *@
-        <section class="myaccount-card @(Model.CustomerTypeEntity == CustomerType.LegalEntity ? "myaccount-card--full" : "")">
-            <div class="myaccount-card__header">
-                @if (Model.CustomerTypeEntity == CustomerType.LegalEntity)
-                {
-                    <h3 class="myaccount-card__title">Информация об организации</h3>
-                }
-                else
-                {
-                    <h3 class="myaccount-card__title">Личные данные</h3>
-                }
-            </div>
-            <div class="myaccount-card__body">
-                @if (!string.IsNullOrEmpty(Model.Organization))
-                {
-                    <div class="myaccount-row">
-                        <span class="myaccount-row__label">@T("MyAccount.CommonInfo.Organization")</span>
-                        <span class="myaccount-row__value">@Model.Organization</span>
-                    </div>
-                }
+        @* Блок: юрлицо — «Контактное лицо» и «Информация об организации» двумя карточками (2×2 как у физлица) *@
+        @if (Model.CustomerTypeEntity == CustomerType.LegalEntity)
+        {
+            <section class="myaccount-card">
+                <div class="myaccount-card__header">
+                    <h3 class="myaccount-card__title">Контактное лицо</h3>
+                </div>
+                <div class="myaccount-card__body">
+                    @Html.Partial("_ContactPersonFields", Model, new ViewDataDictionary(ViewData) { { "gridClass", "myaccount-grid--3" } })
+                    @if (SettingsDesign.ShowUserAgreementForPromotionalNewsletter)
+                    {
+                        <label class="myaccount-checkbox">
+                            @Html.CheckBoxFor(m => m.IsAgreeForPromotionalNewsletter, new { @class = "custom-input-native", data_ng_model = "myaccount.user.isAgreeForPromotionalNewsletter", data_e2e = "myAccountAgreeForPromotionalNewsletterCheckbox" })
+                            <span class="custom-input-checkbox"></span>
+                            <span class="myaccount-checkbox__text">@T("MyAccount.CommonInfo.UserAgreementForPromotionalNewsletter")</span>
+                        </label>
+                    }
+                </div>
+                <div class="myaccount-card__actions">
+                    <button ng-show="!myaccount.isReadonly && personal.contactCanSave()"
+                            data-button-validation data-button-validation-success="myaccount.saveUser()" type="button" class="btn btn-middle btn-confirm">
+                        Сохранить
+                    </button>
+                    <button ng-show="!myaccount.isReadonly && personal.contactCanEdit()"
+                            type="button" class="btn btn-middle btn-action"
+                            data-modal-open="modalPersonalChange"
+                            data-ng-click="personal.openChange()">
+                        Изменить данные
+                    </button>
+                </div>
+            </section>
 
-                @if (Model.CustomerTypeEntity == CustomerType.LegalEntity)
-                {
-                    <div class="myaccount-common-info__fields">
+            <section class="myaccount-card">
+                <div class="myaccount-card__header">
+                    <h3 class="myaccount-card__title">Информация об организации</h3>
+                </div>
+                <div class="myaccount-card__body">
+                    @if (!string.IsNullOrEmpty(Model.Organization))
+                    {
+                        <div class="myaccount-row">
+                            <span class="myaccount-row__label">@T("MyAccount.CommonInfo.Organization")</span>
+                            <span class="myaccount-row__value">@Model.Organization</span>
+                        </div>
+                    }
+                    <div class="myaccount-common-info__fields myaccount-grid myaccount-grid--2">
                         @Html.Partial("_CustomerFields", new CustomerFieldsViewModel(Model.CustomerFields,
                             ngModelName: "myaccount.user",
                             cssParamName: "col-xs-12 col-sm-4", cssParamValue: "col-xs-12 col-sm-8",
                             showMode: CustomerFieldShowMode.MyAccount, suggestions: Model.SuggestionsModule,
                             verticalIntervalCss: "vertical-interval-middle",
-                            isForbiddenAsChangingGeneralData: Model.IsForbiddenAsChangingGeneralData))
-                    </div>
-                    <div class="myaccount-card__subtitle">Контактное лицо</div>
-                }
-
-                <div class="myaccount-grid myaccount-grid--3">
-                    <div class="myaccount-field" data-ng-if="personal.isLocked('lastname')">
-                        <span class="myaccount-field__label">@T("MyAccount.CommonInfo.LastName"):</span>
-                        <span class="myaccount-field__value" data-ng-bind="myaccount.user.lastname">@Model.LastName</span>
-                    </div>
-                    <div class="myaccount-field" data-ng-if="!personal.isLocked('lastname')">
-                        <span class="myaccount-field__label @(SettingsCheckout.IsRequiredLastName ? "input-required" : "")">@T("MyAccount.CommonInfo.LastName"):</span>
-                        <span class="autocompleter-block myaccount-field__value"
-                              data-field="Value" data-autocompleter data-min-length="1"
-                              data-request-url="@(Model.SuggestionsModule != null ? Model.SuggestionsModule.SuggestFullNameUrl : null)"
-                              data-template-path="scripts/_common/autocompleter/templates/common.html"
-                              data-params="{part: 'LastName', firstname: myaccount.user.firstname, patronymic: myaccount.user.patronymic}">
-                            @Html.TextBoxFor(m => m.LastName, new
-                            {
-                                @class = "input-small",
-                                data_ng_required = SettingsCheckout.IsRequiredLastName.ToLowerString(),
-                                data_ng_model = "myaccount.user.lastname",
-                                maxlength = "70",
-                                autocomplete = useFullNameSuggestions ? "new-password" : "family-name",
-                                data_autocompleter_input = "",
-                                data_autocompleter_disabled = (!useFullNameSuggestions).ToLowerString(),
-                                data_ng_readonly = "myaccount.isReadonly",
-                                data_autocomplete_debounce = "400"
-                            })
-                        </span>
-                    </div>
-
-                    <div class="myaccount-field" data-ng-if="personal.isLocked('firstname')">
-                        <span class="myaccount-field__label">@T("MyAccount.CommonInfo.Name"):</span>
-                        <span class="myaccount-field__value" data-ng-bind="myaccount.user.firstname">@Model.FirstName</span>
-                    </div>
-                    <div class="myaccount-field" data-ng-if="!personal.isLocked('firstname')">
-                        <span class="myaccount-field__label input-required">@T("MyAccount.CommonInfo.Name"):</span>
-                        <span class="autocompleter-block myaccount-field__value"
-                              data-field="Value" data-autocompleter data-min-length="1"
-                              data-request-url="@(Model.SuggestionsModule != null ? Model.SuggestionsModule.SuggestFullNameUrl : null)"
-                              data-template-path="scripts/_common/autocompleter/templates/common.html"
-                              data-params="{part: 'FirstName', lastname: myaccount.user.lastname, patronymic: myaccount.user.patronymic}">
-                            @Html.TextBoxFor(m => m.FirstName, new
-                            {
-                                @class = "input-small",
-                                required = "required",
-                                data_ng_model = "myaccount.user.firstname",
-                                maxlength = "70",
-                                autocomplete = useFullNameSuggestions ? "new-password" : "given-name",
-                                data_autocompleter_input = "",
-                                data_autocompleter_disabled = (!useFullNameSuggestions).ToLowerString(),
-                                data_ng_readonly = "myaccount.isReadonly",
-                                data_autocomplete_debounce = "400"
-                            })
-                        </span>
-                    </div>
-
-                    <div class="myaccount-field" data-ng-if="personal.isLocked('patronymic')">
-                        <span class="myaccount-field__label">@T("MyAccount.CommonInfo.Patronymic"):</span>
-                        <span class="myaccount-field__value" data-ng-bind="myaccount.user.patronymic">@Model.Patronymic</span>
-                    </div>
-                    <div class="myaccount-field" data-ng-if="!personal.isLocked('patronymic')">
-                        <span class="myaccount-field__label @(SettingsCheckout.IsRequiredPatronymic ? "input-required" : "")">@T("MyAccount.CommonInfo.Patronymic"):</span>
-                        <span class="autocompleter-block myaccount-field__value"
-                              data-field="Value" data-autocompleter data-min-length="1"
-                              data-request-url="@(Model.SuggestionsModule != null ? Model.SuggestionsModule.SuggestFullNameUrl : null)"
-                              data-template-path="scripts/_common/autocompleter/templates/common.html"
-                              data-params="{part: 'Patronymic', firstname: myaccount.user.firstname, lastname: myaccount.user.lastname}">
-                            @Html.TextBoxFor(m => m.Patronymic, new
-                            {
-                                @class = "input-small",
-                                data_ng_model = "myaccount.user.patronymic",
-                                data_ng_required = SettingsCheckout.IsRequiredPatronymic.ToLowerString(),
-                                maxlength = "70",
-                                autocomplete = useFullNameSuggestions ? "new-password" : "additional-name",
-                                data_autocompleter_input = "",
-                                data_autocompleter_disabled = (!useFullNameSuggestions).ToLowerString(),
-                                data_ng_readonly = "myaccount.isReadonly",
-                                data_autocomplete_debounce = "400"
-                            })
-                        </span>
+                            isForbiddenAsChangingGeneralData: Model.IsForbiddenAsChangingGeneralData,
+                            showFilledAsText: true))
                     </div>
                 </div>
+                <div class="myaccount-card__actions">
+                    <button ng-show="!myaccount.isReadonly && personal.orgCanSave()"
+                            data-button-validation data-button-validation-success="myaccount.saveUser()" type="button" class="btn btn-middle btn-confirm">
+                        Сохранить
+                    </button>
+                    <button ng-show="!myaccount.isReadonly && personal.orgCanEdit()"
+                            type="button" class="btn btn-middle btn-action"
+                            data-modal-open="modalPersonalChange"
+                            data-ng-click="personal.openChange()">
+                        Изменить данные
+                    </button>
+                </div>
+            </section>
+        }
 
-                @if (Model.CustomerTypeEntity != CustomerType.LegalEntity)
-                {
+        @if (Model.CustomerTypeEntity != CustomerType.LegalEntity)
+        {
+            @* Блок: Личные данные (физлицо) *@
+            <section class="myaccount-card">
+                <div class="myaccount-card__header">
+                    <h3 class="myaccount-card__title">Личные данные</h3>
+                </div>
+                <div class="myaccount-card__body">
+                    @Html.Partial("_ContactPersonFields", Model)
+
                     <div class="myaccount-field myaccount-field--dob" data-ng-if="personal.isLocked('birthday')">
                         <span class="myaccount-field__label">@((SettingsCheckout.BirthDayFieldName ?? "").TrimEnd(':')):</span>
                         <span class="myaccount-field__value" data-ng-bind="personal.formatBirthday(myaccount.user.birthday)">@(Model.BirthDay != null ? Model.BirthDay.Value.ToString("dd.MM.yyyy") : "")</span>
@@ -286,33 +250,30 @@
                             }
                         </span>
                     </div>
-                }
 
-                @if (SettingsDesign.ShowUserAgreementForPromotionalNewsletter)
-                {
-                    <label class="myaccount-checkbox">
-                        @Html.CheckBoxFor(m => m.IsAgreeForPromotionalNewsletter, new { @class = "custom-input-native", data_ng_model = "myaccount.user.isAgreeForPromotionalNewsletter", data_e2e = "myAccountAgreeForPromotionalNewsletterCheckbox" })
-                        <span class="custom-input-checkbox"></span>
-                        <span class="myaccount-checkbox__text">@T("MyAccount.CommonInfo.UserAgreementForPromotionalNewsletter")</span>
-                    </label>
-                }
-            </div>
-            <div class="myaccount-card__actions">
-                <button ng-show="!myaccount.isReadonly && (!personal.isLocked('lastname') || !personal.isLocked('firstname') || !personal.isLocked('patronymic') || !personal.isLocked('birthday'))"
-                        data-button-validation data-button-validation-success="myaccount.saveUser()" type="button" class="btn btn-middle btn-confirm">
-                    Сохранить
-                </button>
-                <button ng-show="!myaccount.isReadonly && personal.isLocked('lastname') && personal.isLocked('firstname')"
-                        type="button" class="btn btn-middle btn-action"
-                        data-modal-open="modalPersonalChange"
-                        data-ng-click="personal.openChange()">
-                    Изменить данные
-                </button>
-            </div>
-        </section>
+                    @if (SettingsDesign.ShowUserAgreementForPromotionalNewsletter)
+                    {
+                        <label class="myaccount-checkbox">
+                            @Html.CheckBoxFor(m => m.IsAgreeForPromotionalNewsletter, new { @class = "custom-input-native", data_ng_model = "myaccount.user.isAgreeForPromotionalNewsletter", data_e2e = "myAccountAgreeForPromotionalNewsletterCheckbox" })
+                            <span class="custom-input-checkbox"></span>
+                            <span class="myaccount-checkbox__text">@T("MyAccount.CommonInfo.UserAgreementForPromotionalNewsletter")</span>
+                        </label>
+                    }
+                </div>
+                <div class="myaccount-card__actions">
+                    <button ng-show="!myaccount.isReadonly && personal.canSave()"
+                            data-button-validation data-button-validation-success="myaccount.saveUser()" type="button" class="btn btn-middle btn-confirm">
+                        Сохранить
+                    </button>
+                    <button ng-show="!myaccount.isReadonly && personal.canEdit()"
+                            type="button" class="btn btn-middle btn-action"
+                            data-modal-open="modalPersonalChange"
+                            data-ng-click="personal.openChange()">
+                        Изменить данные
+                    </button>
+                </div>
+            </section>
 
-        @if (Model.CustomerTypeEntity != CustomerType.LegalEntity)
-        {
             @Html.Partial("_CustomerFields", new CustomerFieldsViewModel(Model.CustomerFields,
                 ngModelName: "myaccount.user",
                 cssParamName: "col-xs-12 col-sm-4", cssParamValue: "col-xs-12 col-sm-8",

@@ -9,6 +9,8 @@
         var ctrl = this;
 
         ctrl.change = advPersonalService.change;
+        // Vadim_Dyl_381073705: ветка юрлица — реквизиты организации из заявки
+        ctrl.changeFields = advPersonalService.changeFields;
 
         ctrl.close = function () {
             modalService.close('modalPersonalChange');

@@ -18,7 +18,7 @@ namespace AdvantShop.ViewModel.Common
                                         string cssParamValue = "col-xs-12 col-sm-8", bool checkFields = false, 
                                         CustomerFieldShowMode? showMode = null, string ngVariableVisible = null,
                                         ISuggestions suggestions = null, string verticalIntervalCss = null,
-                                        bool isForbiddenAsChangingGeneralData = false)
+                                        bool isForbiddenAsChangingGeneralData = false, bool showFilledAsText = false)
         {
             CustomerFields = customerFields;
             ModelName = modelName;
@@ -30,6 +30,7 @@ namespace AdvantShop.ViewModel.Common
             Suggestions = suggestions;
             VerticalIntervalCss = verticalIntervalCss;
             IsForbiddenAsChangingGeneralData = isForbiddenAsChangingGeneralData;
+            ShowFilledAsText = showFilledAsText;
             if (checkFields)
             {
                 var modelFieldValues = CustomerFields != null
@@ -82,6 +83,10 @@ namespace AdvantShop.ViewModel.Common
 
         public CustomerFieldShowMode ShowMode { get; set; }
         public bool IsForbiddenAsChangingGeneralData { get; set; }
+
+        // Vadim_Dyl_381073705: в ЛК юрлица заполненные реквизиты показываем текстом,
+        // пустые — инпутами до сохранения (блокировка после сохранения).
+        public bool ShowFilledAsText { get; set; }
 
 
         public string CustomerFieldsSerialized { get { return CustomerFields != null ? JsonConvert.SerializeObject(CustomerFields) : "[]"; } }

@@ -101,6 +101,26 @@
         var idAttr = nameAttr.RemoveSymvolsExt("_");
         var disabled = Model.ShowMode == CustomerFieldShowMode.MyAccount && field.DisableCustomerEditing && !string.IsNullOrEmpty(field.Value);
         var ngShow = String.Empty;
+        // Vadim_Dyl_381073705: в ЛК юрлица заполненные реквизиты — текстом, пустые — инпутом до сохранения
+        var lockInputAttr = Model.ShowFilledAsText
+            ? string.Format("data-ng-hide=\"personal.isOrgFieldLocked({0})\"", i)
+            : String.Empty;
+        var lockValueAttr = Model.ShowFilledAsText
+            ? string.Format("data-ng-show=\"personal.isOrgFieldLocked({0})\"", i)
+            : String.Empty;
+        var lockBindExpr = field.FieldType == CustomerFieldType.Date
+            ? "(" + nameAttr + " | date:'dd.MM.yyyy')"
+            : nameAttr;
+        var lockInitialText = field.FieldType == CustomerFieldType.Date ? field.ValueDateFormat : field.Value;
+        // Vadim_Dyl_381073705: в карточке организации поля идут стопкой (заголовок сверху, значение под ним):
+        // короткие реквизиты (ИНН, КПП) — в две колонки, длинные текстовые (название, адрес, банк) —
+        // отдельной строкой на всю ширину в конце.
+        var isStacked = Model.ShowFilledAsText;
+        var isLongField = isStacked &&
+            (field.FieldAssignment == CustomerFieldAssignment.CompanyName ||
+             field.FieldAssignment == CustomerFieldAssignment.LegalAddress ||
+             field.FieldAssignment == CustomerFieldAssignment.BankName);
+        var isFullWidthField = isLongField;
         // Vadim_Dyl_381073705: паспортные поля 13–16 (серия, номер, дата выдачи, кем выдан)
         var isPassportField = field.Id >= 13 && field.Id <= 16;
         var passportFieldAttr = isPassportField
@@ -116,12 +136,19 @@
             ngShow = String.Format("data-ng-if=\"{0}=={1}\"", Model.NgVariableVisible, "'" + field.CustomerType + "'");
         }
 
-        <label class="row middle-xs custom-field form-field-control" @Html.Raw(ngShow)>
-            <span class="custom-field__name @Model.CssParamName @(field.FieldType == CustomerFieldType.Checkbox ? "visible-none" : "")">
-                <span class="form-field-name @(verticalIntervalSize)@(field.Required ? " input-required" : string.Empty)">@field.Name</span>
-            </span>
-            <span class="custom-field__value @Model.CssParamValue">
-                <span class="form-field-input @(verticalIntervalSize)">
+        <label class="@(isStacked ? "myaccount-field" : "row middle-xs custom-field form-field-control")@(isFullWidthField ? " myaccount-field--full myaccount-field--last" : "")" @Html.Raw(ngShow)>
+            @if (isStacked)
+            {
+                <span class="myaccount-field__label @(field.Required ? "input-required" : string.Empty)">@field.Name</span>
+            }
+            else
+            {
+                <span class="custom-field__name @Model.CssParamName @(field.FieldType == CustomerFieldType.Checkbox ? "visible-none" : "")">
+                    <span class="form-field-name @(verticalIntervalSize)@(field.Required ? " input-required" : string.Empty)">@field.Name</span>
+                </span>
+            }
+            <span class="@(isStacked ? "myaccount-field__value" : "custom-field__value " + Model.CssParamValue)">
+                <span class="form-field-input @(verticalIntervalSize)" @Html.Raw(lockInputAttr)>
 
                     @if (field.FieldType == CustomerFieldType.Text)
                     {
@@ -275,6 +302,10 @@
                     @Html.Hidden(Model.GetName(i, "SortOrder"), field.SortOrder)
                     @Html.Hidden(Model.GetName(i, "Required"), field.Required)
                 </span>
+                @if (Model.ShowFilledAsText)
+                {
+                    <span class="adv-locked-field-value" @Html.Raw(lockValueAttr) data-ng-bind="@lockBindExpr">@lockInitialText</span>
+                }
             </span>
         </label>
     }

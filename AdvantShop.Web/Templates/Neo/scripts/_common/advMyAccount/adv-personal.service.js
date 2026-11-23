@@ -42,7 +42,10 @@
             }
         }
 
-        function prepareChange(user) {
+        function prepareChange(user, customerType) {
+            var isLegalEntity = customerType === 'LegalEntity';
+            var passportFieldIds = [13, 14, 15, 16];
+
             service.change.lastname = user.lastname || '';
             service.change.firstname = user.firstname || '';
             service.change.patronymic = user.patronymic || '';
@@ -53,13 +56,18 @@
             service.changeFields.length = 0;
 
             if (Array.isArray(user.CustomerFields)) {
+                // Vadim_Dyl_381073705: юрлицо — все реквизиты организации (кроме паспортных 13–16),
+                // физлицо — только паспортные поля (прежнее поведение).
                 user.CustomerFields.filter(function (field) {
-                    return [13, 14, 15, 16].indexOf(field.Id) !== -1;
+                    var isPassportField = passportFieldIds.indexOf(field.Id) !== -1;
+                    return isLegalEntity ? !isPassportField : isPassportField;
                 }).forEach(function (field) {
                     service.changeFields.push({
                         Id: field.Id,
                         Name: field.Name,
                         FieldType: field.FieldType,
+                        FieldAssignment: field.FieldAssignment,
+                        Required: field.Required,
                         Value: field.Value,
                     });
                 });
@@ -83,12 +91,17 @@
                         var data = response.data;
 
                         if (data && data.result) {
-                            toaster.pop('success', '', 'Запрос на изменение личных данных отправлен');
+                            // Vadim_Dyl_381073705: если изменений нет, Pyrus-заявка не создаётся —
+                            // не закрываем модалку и не показываем ложный успех.
+                            if (!data.redirectTo) {
+                                toaster.pop('info', '', 'Вы не изменили данные');
+                                return false;
+                            }
+
+                            toaster.pop('success', '', 'Запрос на изменение данных отправлен');
                             modalService.close('modalPersonalChange');
 
-                            if (data.redirectTo) {
-                                $window.location = data.redirectTo;
-                            }
+                            $window.location = data.redirectTo;
 
                             return true;
                         }
