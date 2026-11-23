@@ -1,11 +1,15 @@
 (function () {
     'use strict';
 
-    // Vadim_Dyl_381073705: личные данные ЛК — блокировка заполненных полей и заявка в Pyrus.
+    // Vadim_Dyl_381073705: личные данные ЛК — блокировка заполненных полей,
+    // первичный ввод (пустое -> значение) сохраняется сразу, изменение заполненных уходит заявкой в Pyrus.
     angular.module('advMyAccount').factory('advPersonalService', advPersonalService);
 
     /* @ngInject */
-    function advPersonalService($http, $window, toaster, modalService) {
+    function advPersonalService($http, $window, $rootScope, toaster, modalService) {
+        var PRIMARY_PERSONAL_KEYS = ['lastname', 'firstname', 'patronymic', 'phone', 'birthday'];
+        var REQUEST_PERSONAL_KEYS = ['lastname', 'firstname', 'patronymic', 'phone', 'email', 'birthday'];
+
         var service = {
             initial: {},
             change: {
@@ -23,6 +27,12 @@
             markSaved: markSaved,
             prepareChange: prepareChange,
             sendRequest: sendRequest,
+            hasPrimaryValues: hasPrimaryValues,
+            hasRequestedChanges: hasRequestedChanges,
+            hasClearedValues: hasClearedValues,
+            canSubmit: canSubmit,
+            submitLabel: submitLabel,
+            isPrimaryPersonal: isPrimaryPersonal,
         };
 
         return service;
@@ -62,19 +72,50 @@
                     var isPassportField = passportFieldIds.indexOf(field.Id) !== -1;
                     return isLegalEntity ? !isPassportField : isPassportField;
                 }).forEach(function (field) {
+                    var value = field.Value != null ? field.Value : '';
                     service.changeFields.push({
                         Id: field.Id,
                         Name: field.Name,
                         FieldType: field.FieldType,
                         FieldAssignment: field.FieldAssignment,
                         Required: field.Required,
-                        Value: field.Value,
+                        Value: value,
+                        // снимок на момент открытия модалки: было ли поле заполнено
+                        InitialValue: value,
+                        WasFilled: isFilled(value),
                     });
                 });
             }
         }
 
-        function sendRequest(customerId) {
+        function sendRequest(customerId, user) {
+            if (hasClearedValues()) {
+                toaster.pop('error', '', 'Заполненные поля нельзя очищать — изменение только через заявку');
+                return false;
+            }
+
+            if (!canSubmit()) {
+                toaster.pop('info', '', 'Вы не изменили данные');
+                return false;
+            }
+
+            // отправляем только непустые значения: сервер сам решает,
+            // что сохранить сразу (первичный ввод), а что отправить заявкой
+            var payloadFields = service.changeFields
+                .filter(function (field) {
+                    return isFilled(field.Value);
+                })
+                .map(function (field) {
+                    return {
+                        Id: field.Id,
+                        Name: field.Name,
+                        FieldType: field.FieldType,
+                        FieldAssignment: field.FieldAssignment,
+                        Required: field.Required,
+                        Value: field.Value,
+                    };
+                });
+
             return $http
                 .post('user/sendRequestCommonInfo', {
                     customerId: customerId,
@@ -84,26 +125,44 @@
                     phone: service.change.phone,
                     email: service.change.email,
                     birthday: formatBirthday(service.change.birthday),
-                    CustomerFields: service.changeFields,
+                    CustomerFields: payloadFields,
                 })
                 .then(
                     function (response) {
                         var data = response.data;
 
                         if (data && data.result) {
-                            // Vadim_Dyl_381073705: если изменений нет, Pyrus-заявка не создаётся —
-                            // не закрываем модалку и не показываем ложный успех.
-                            if (!data.redirectTo) {
-                                toaster.pop('info', '', 'Вы не изменили данные');
-                                return false;
+                            if (data.requested && data.redirectTo) {
+                                toaster.pop(
+                                    'success',
+                                    '',
+                                    data.saved
+                                        ? 'Данные сохранены, запрос на изменение отправлен'
+                                        : 'Запрос на изменение данных отправлен',
+                                );
+                                modalService.close('modalPersonalChange');
+                                $window.location = data.redirectTo;
+                                return true;
                             }
 
-                            toaster.pop('success', '', 'Запрос на изменение данных отправлен');
-                            modalService.close('modalPersonalChange');
+                            if (data.saved) {
+                                // первичный ввод принят без согласования — обновляем карточки на месте
+                                applyPrimary(user);
+                                $rootScope.$broadcast('myaccount:userSaved');
+                                toaster.pop('success', '', 'Данные сохранены. Первичный ввод не требует согласования менеджера.');
+                                modalService.close('modalPersonalChange');
+                                return true;
+                            }
 
-                            $window.location = data.redirectTo;
+                            toaster.pop('info', '', 'Вы не изменили данные');
+                            return false;
+                        }
 
-                            return true;
+                        // первичный ввод мог сохраниться, даже если заявку отправить не удалось
+                        if (data && data.saved) {
+                            applyPrimary(user);
+                            $rootScope.$broadcast('myaccount:userSaved');
+                            toaster.pop('success', '', 'Данные сохранены. Первичный ввод не требует согласования менеджера.');
                         }
 
                         showErrors(data);
@@ -114,6 +173,133 @@
                         return false;
                     },
                 );
+        }
+
+        function getPrimaryFields() {
+            return service.changeFields.filter(function (field) {
+                return !field.WasFilled && isFilled(field.Value);
+            });
+        }
+
+        function getChangedFields() {
+            return service.changeFields.filter(function (field) {
+                return field.WasFilled && isFilled(field.Value) && normalize(field.Value) !== normalize(field.InitialValue);
+            });
+        }
+
+        function getClearedFields() {
+            return service.changeFields.filter(function (field) {
+                return field.WasFilled && !isFilled(field.Value);
+            });
+        }
+
+        function getPrimaryPersonal() {
+            var result = {};
+
+            PRIMARY_PERSONAL_KEYS.forEach(function (key) {
+                var initialValue = comparePersonalValue(key, service.initial[key]);
+                var newValue = comparePersonalValue(key, service.change[key]);
+
+                if (!initialValue && newValue) {
+                    result[key] = service.change[key];
+                }
+            });
+
+            return result;
+        }
+
+        function getRequestedPersonal() {
+            var result = {};
+
+            REQUEST_PERSONAL_KEYS.forEach(function (key) {
+                var initialValue = comparePersonalValue(key, service.initial[key]);
+                var newValue = comparePersonalValue(key, service.change[key]);
+
+                if (!newValue || newValue === initialValue) {
+                    return;
+                }
+
+                // email не сохраняем напрямую (регистрация/подтверждение по почте) — только заявкой
+                if (key === 'email' || initialValue) {
+                    result[key] = service.change[key];
+                }
+            });
+
+            return result;
+        }
+
+        // дату сравниваем в едином формате: flatpickr может отдать ISO, initial — dd.MM.yyyy
+        function comparePersonalValue(key, value) {
+            return key === 'birthday' ? formatBirthday(value) : normalize(value);
+        }
+
+        function hasPrimaryValues() {
+            return Object.keys(getPrimaryPersonal()).length > 0 || getPrimaryFields().length > 0;
+        }
+
+        function hasRequestedChanges() {
+            return Object.keys(getRequestedPersonal()).length > 0 || getChangedFields().length > 0;
+        }
+
+        function hasClearedValues() {
+            var clearedPersonal = REQUEST_PERSONAL_KEYS.some(function (key) {
+                return Boolean(normalize(service.initial[key])) && !normalize(service.change[key]);
+            });
+
+            return clearedPersonal || getClearedFields().length > 0;
+        }
+
+        function canSubmit() {
+            return hasPrimaryValues() || hasRequestedChanges() || hasClearedValues();
+        }
+
+        function isPrimaryPersonal(name) {
+            return !isLocked(name);
+        }
+
+        function submitLabel() {
+            var hasPrimary = hasPrimaryValues();
+            var hasRequested = hasRequestedChanges();
+
+            if (hasPrimary && hasRequested) {
+                return 'Сохранить и отправить';
+            }
+
+            if (hasRequested) {
+                return 'Отправить запрос';
+            }
+
+            return 'Сохранить';
+        }
+
+        function applyPrimary(user) {
+            if (!user) {
+                return;
+            }
+
+            var primaryPersonal = getPrimaryPersonal();
+            Object.keys(primaryPersonal).forEach(function (key) {
+                user[key] = service.change[key];
+            });
+
+            getPrimaryFields().forEach(function (field) {
+                var target = (user.CustomerFields || []).filter(function (item) {
+                    return item.Id === field.Id;
+                })[0];
+
+                if (target) {
+                    target.Value = field.Value;
+                }
+            });
+        }
+
+        function isFilled(value) {
+            var text = value != null ? String(value).trim() : '';
+            return text !== '' && text !== '0';
+        }
+
+        function normalize(value) {
+            return value != null ? String(value).trim() : '';
         }
 
         function formatBirthday(value) {

@@ -43,6 +43,10 @@
                             <div class="myaccount-field" data-ng-if="personal.isLocked('phone')">
                                 <span class="myaccount-field__label">@T("MyAccount.CommonInfo.Phone"):</span>
                                 <span class="myaccount-field__value" data-ng-bind="myaccount.user.phone">@Model.Phone</span>
+                                @if (Model.CustomerTypeEntity == CustomerType.PhysicalEntity)
+                                {
+                                    <span class="myaccount-phone-status" data-ng-if="myaccount.phoneConfirmed">Телефон подтвержден</span>
+                                }
                             </div>
                             <div class="myaccount-field" data-ng-if="!personal.isLocked('phone')">
                                 <span class="myaccount-field__label @(SettingsCheckout.IsRequiredPhone ? "input-required" : "")">@T("MyAccount.CommonInfo.Phone"):</span>
@@ -62,6 +66,10 @@
                                           maxlength = 70
                                       })
                                 </span>
+                                @if (Model.CustomerTypeEntity == CustomerType.PhysicalEntity)
+                                {
+                                    <span class="myaccount-phone-status" data-ng-if="myaccount.phoneConfirmed">Телефон подтвержден</span>
+                                }
                             </div>
                         }
                         else
@@ -69,13 +77,13 @@
                             <div class="myaccount-field">
                                 <span class="myaccount-field__label">@T("MyAccount.CommonInfo.Phone"):</span>
                                 <span class="myaccount-field__value" data-ng-init="myaccount.user.phone = '@Model.Phone'">@Model.Phone</span>
+                                @if (Model.CustomerTypeEntity == CustomerType.PhysicalEntity)
+                                {
+                                    <span class="myaccount-phone-status" data-ng-if="myaccount.phoneConfirmed">Телефон подтвержден</span>
+                                }
                             </div>
                         }
                     </div>
-                    @if (Model.CustomerTypeEntity == CustomerType.PhysicalEntity)
-                    {
-                        <div class="myaccount-phone-status" data-ng-if="myaccount.phoneConfirmed">Телефон подтвержден</div>
-                    }
                 </div>
                 <div class="myaccount-card__actions">
                     <button ng-show="!myaccount.isReadonly && @(Model.AllowChangePhone ? "!personal.isLocked('phone')" : "false")"

@@ -508,35 +508,205 @@ namespace AdvantShop.Controllers
                 errors.Add("Поле \"Отчество\" обязательно");
             if (customer.CustomerType != CustomerType.LegalEntity && SettingsCheckout.IsShowBirthDay && SettingsCheckout.IsRequiredBirthDay && birthday == null)
                 errors.Add("Поле \"День рождения\" обязательно");
-            // Vadim_Dyl_381073705: реквизиты юрлица — формат ИНН/КПП/ОГРН/ОКПО по CustomerFieldAssignment.
-            // Проверяем только изменяемые поля, чтобы старые значения в БД не блокировали правку других данных.
-            if (customer.CustomerType == CustomerType.LegalEntity && CustomerFields != null)
+
+            // Vadim_Dyl_381073705: первичный ввод (в БД пусто -> введено) сохраняем сразу, без согласования;
+            // в Pyrus-заявку уходят только изменения уже заполненных полей. Пустое значение заполненного поля
+            // не принимаем — изменение/очистка только через заявку.
+            var fields = new Dictionary<string, string>();
+            string primaryLastName = null, primaryFirstName = null, primaryPatronymic = null, primaryPhone = null;
+            DateTime? primaryBirthDay = null;
+
+            var oldLastName = (customer.LastName ?? "").Trim();
+            var newLastName = (lastname ?? "").Trim();
+            if (oldLastName != newLastName)
             {
-                var changedFields = CustomerFields.Where(field =>
+                if (newLastName.Length == 0)
+                    errors.Add("Поле «Фамилия» нельзя очистить — изменение только через заявку");
+                else if (oldLastName.Length == 0)
+                    primaryLastName = newLastName;
+                else
+                    fields["LastName"] = newLastName;
+            }
+
+            var oldFirstName = (customer.FirstName ?? "").Trim();
+            var newFirstName = (firstname ?? "").Trim();
+            if (oldFirstName != newFirstName)
+            {
+                if (newFirstName.Length == 0)
+                    errors.Add("Поле «Имя» нельзя очистить — изменение только через заявку");
+                else if (oldFirstName.Length == 0)
+                    primaryFirstName = newFirstName;
+                else
+                    fields["FirstName"] = newFirstName;
+            }
+
+            var oldPatronymic = (customer.Patronymic ?? "").Trim();
+            var newPatronymic = (patronymic ?? "").Trim();
+            if (oldPatronymic != newPatronymic)
+            {
+                if (newPatronymic.Length == 0)
+                    errors.Add("Поле «Отчество» нельзя очистить — изменение только через заявку");
+                else if (oldPatronymic.Length == 0)
+                    primaryPatronymic = newPatronymic;
+                else
+                    fields["Patronymic"] = newPatronymic;
+            }
+
+            var oldPhone = (customer.Phone ?? "").Trim();
+            var newPhone = (phone ?? "").Trim();
+            if (oldPhone != newPhone)
+            {
+                if (newPhone.Length == 0)
+                    errors.Add("Поле «Телефон» нельзя очистить — изменение только через заявку");
+                else if (oldPhone.Length == 0)
+                    primaryPhone = newPhone;
+                else
+                    fields["Phone"] = newPhone;
+            }
+
+            var oldEmail = (customer.EMail ?? "").Trim();
+            var newEmail = (email ?? "").Trim();
+            if (!string.Equals(oldEmail, newEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                // Vadim_Dyl_381073705: почту не меняем напрямую (регистрация/подтверждение по email) — только заявкой
+                if (newEmail.Length == 0)
+                    errors.Add("Поле «Email» нельзя очистить — изменение только через заявку");
+                else
+                    fields["EMail"] = newEmail;
+            }
+
+            if (customer.CustomerType != CustomerType.LegalEntity)
+            {
+                var oldBirthdayText = customer.BirthDay != null ? customer.BirthDay.Value.ToString("dd.MM.yyyy") : "";
+                var newBirthdayText = (birthday ?? "").Trim();
+                if (oldBirthdayText != newBirthdayText)
+                {
+                    DateTime birthdayDate;
+                    var hasBirthday = DateTime.TryParseExact(newBirthdayText, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out birthdayDate) ||
+                                      DateTime.TryParse(newBirthdayText, CultureInfo.InvariantCulture, DateTimeStyles.None, out birthdayDate);
+                    if (newBirthdayText.Length == 0)
+                        errors.Add("Поле «День рождения» нельзя очистить — изменение только через заявку");
+                    else if (!hasBirthday)
+                        errors.Add("Введите корректную дату рождения");
+                    else if (oldBirthdayText.Length == 0)
+                        primaryBirthDay = birthdayDate;
+                    else
+                        fields["BirthDay"] = birthdayDate.ToString("yyyy-MM-dd");
+                }
+            }
+
+            // Реквизиты организации: первичный ввод — сразу, изменение заполненных — в заявку
+            var primaryFields = new List<CustomerFieldWithValue>();
+            var changedFields = new List<CustomerFieldWithValue>();
+            if (CustomerFields != null)
+            {
+                foreach (var field in CustomerFields)
                 {
                     var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
-                    return old == null || (old.Value ?? "") != (field.Value ?? "");
-                }).ToList();
-                errors.AddRange(CustomerFieldsValidation.ValidateLegalEntityFields(changedFields));
+                    if (old == null)
+                        continue;
+
+                    var oldValue = (old.Value ?? "").Trim();
+                    var newValue = (field.Value ?? "").Trim();
+                    if (oldValue == newValue)
+                        continue;
+
+                    if (newValue.Length == 0)
+                    {
+                        errors.Add(string.Format("Поле «{0}» нельзя очистить — изменение только через заявку", field.Name));
+                        continue;
+                    }
+
+                    if (oldValue.Length == 0)
+                    {
+                        primaryFields.Add(field);
+                    }
+                    else
+                    {
+                        changedFields.Add(field);
+
+                        var fieldValue = newValue;
+                        if (field.FieldType == CustomerFieldType.Date && fieldValue.IsNotEmpty())
+                        {
+                            // Vadim_Dyl_381073705: Pyrus ждёт дату в формате yyyy-MM-dd.
+                            DateTime fieldDate;
+                            if (DateTime.TryParseExact(fieldValue, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out fieldDate) ||
+                                DateTime.TryParse(fieldValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out fieldDate))
+                            {
+                                fieldValue = fieldDate.ToString("yyyy-MM-dd");
+                            }
+                        }
+                        if (!fields.ContainsKey(field.Name))
+                            fields.Add(field.Name, fieldValue);
+                    }
+                }
+            }
+
+            // Vadim_Dyl_381073705: реквизиты юрлица — формат ИНН/КПП/ОГРН/ОКПО по CustomerFieldAssignment
+            if (customer.CustomerType == CustomerType.LegalEntity && (primaryFields.Count > 0 || changedFields.Count > 0))
+                errors.AddRange(CustomerFieldsValidation.ValidateLegalEntityFields(primaryFields.Concat(changedFields).ToList()));
+
+            // Сохраняем первичный ввод сразу — он не требует согласования менеджера
+            var saved = false;
+            if (errors.Count == 0)
+            {
+                var customerChanged = false;
+
+                if (primaryLastName != null)
+                {
+                    customer.LastName = StringHelper.HtmlEncode(primaryLastName);
+                    customerChanged = true;
+                }
+                if (primaryFirstName != null)
+                {
+                    customer.FirstName = StringHelper.HtmlEncode(primaryFirstName);
+                    customerChanged = true;
+                }
+                if (primaryPatronymic != null)
+                {
+                    customer.Patronymic = StringHelper.HtmlEncode(primaryPatronymic);
+                    customerChanged = true;
+                }
+                if (primaryPhone != null)
+                {
+                    customer.Phone = StringHelper.HtmlEncode(primaryPhone);
+                    customer.StandardPhone = StringHelper.ConvertToStandardPhone(primaryPhone);
+                    customerChanged = true;
+                }
+                if (primaryBirthDay.HasValue)
+                {
+                    customer.BirthDay = primaryBirthDay;
+                    customerChanged = true;
+                }
+
+                if (customerChanged)
+                {
+                    CustomerService.UpdateCustomer(customer);
+                    saved = true;
+                }
+
+                foreach (var field in primaryFields)
+                {
+                    CustomerFieldService.AddUpdateMap(customer.Id, field.Id, field.Value ?? "");
+                    saved = true;
+                }
             }
 
             int? task = null;
-            if (errors.Count == 0)
+            if (errors.Count == 0 && fields.Count > 0)
             {
                 try
                 {
                     var body = "";//<p>ТЕКУЩИЕ УЧЕТНЫЕ ДАННЫЕ:</p>";
-                    if (customer.CustomerType == CustomerType.LegalEntity && CustomerFields != null)
+                    if (customer.CustomerType == CustomerType.LegalEntity)
                     {
-                        // Vadim_Dyl_381073705: текущие реквизиты организации + новые значения по изменённым полям
-                        // (в форме Pyrus нет отдельных полей под реквизиты, поэтому изменения идут в тело заявки).
-                        foreach (var field in CustomerFields)
+                        // Vadim_Dyl_381073705: в форме Pyrus нет отдельных полей под реквизиты,
+                        // поэтому изменённые значения идут ещё и в тело заявки.
+                        foreach (var field in changedFields)
                         {
                             var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
-                            var oldValue = old != null ? old.Value : "";
-                            body += string.Format("{0}: {1}\r\n", field.Name, oldValue);
-                            if ((oldValue ?? "") != (field.Value ?? ""))
-                                body += string.Format("{0} (новое значение): {1}\r\n", field.Name, field.Value);
+                            body += string.Format("{0}: {1}\r\n", field.Name, old != null ? old.Value : "");
+                            body += string.Format("{0} (новое значение): {1}\r\n", field.Name, field.Value);
                         }
                     }
                     body += string.Format("Фамилия: {0}\r\n", customer.LastName);
@@ -545,121 +715,23 @@ namespace AdvantShop.Controllers
                     body += string.Format("Телефон: {0}\r\n", customer.Phone);
                     body += string.Format("Email: {0}\r\n", customer.EMail);
                     if (customer.CustomerType != CustomerType.LegalEntity)
+                    {
                         body += string.Format("День рождения: {0}\r\n", customer.BirthDay != null ? customer.BirthDay.Value.ToString("dd.MM.yyyy") : "");
-                    if (customer.CustomerType != CustomerType.LegalEntity && CustomerFields != null)
-                    {
-                        foreach (var field in CustomerFields)
+                        if (CustomerFields != null)
                         {
-                            var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
-                            body += string.Format("{0}: {1}\r\n", field.Name, old != null ? old.Value : "");
-                        }
-                    }
-                    //body += "<p>&nbsp;</p><p>НОВЫЕ УЧЕТНЫЕ ДАННЫЕ:</p>";
-                    //if (customer.CustomerType == CustomerType.LegalEntity && CustomerFields != null)
-                    //{
-                    //    foreach (var field in CustomerFields)
-                    //    {
-                    //        var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
-                    //        if (old == null || old.Value == field.Value)
-                    //            body += string.Format("<p>{0}: {1}</p>", field.Name, field.Value);
-                    //        else
-                    //            body += string.Format("<p>{0}: <strong>{1}</strong></p>", field.Name, field.Value);
-                    //    }
-                    //}
-                    //if (customer.LastName == lastname)
-                    //    body += string.Format("<p>Фамилия: {0}</p>", lastname);
-                    //else
-                    //    body += string.Format("<p>Фамилия: <strong>{0}</strong></p>", lastname);
-                    //if (customer.FirstName == firstname)
-                    //    body += string.Format("<p>Имя: {0}</p>", firstname);
-                    //else
-                    //    body += string.Format("<p>Имя: <strong>{0}</strong></p>", firstname);
-                    //if (customer.Patronymic == patronymic)
-                    //    body += string.Format("<p>Отчество: {0}</p>", patronymic);
-                    //else
-                    //    body += string.Format("<p>Отчество: <strong>{0}</strong></p>", patronymic);
-                    //if (customer.Phone == phone)
-                    //    body += string.Format("<p>Телефон: {0}</p>", phone);
-                    //else
-                    //    body += string.Format("<p>Телефон: <strong>{0}</strong></p>", phone);
-                    //if (customer.EMail == email)
-                    //    body += string.Format("<p>Email: {0}</p>", email);
-                    //else
-                    //    body += string.Format("<p>Email: <strong>{0}</strong></p>", email);
-                    //if (customer.CustomerType != CustomerType.LegalEntity)
-                    //{
-                    //    if ((customer.BirthDay == null && birthday.IsNullOrEmpty()) || (customer.BirthDay != null && customer.BirthDay.Value.ToString("dd.MM.yyyy") == birthday))
-                    //        body += string.Format("<p>День рождения: {0}</p>", birthday);
-                    //    else
-                    //        body += string.Format("<p>День рождения: <strong>{0}</strong></p>", birthday);
-                    //}
-                    var fields = new Dictionary<string, string>();
-                    if (customer.LastName != lastname)
-                        fields.Add("LastName", lastname);
-                    if (customer.FirstName != firstname)
-                        fields.Add("FirstName", firstname);
-                    if (customer.Patronymic != patronymic)
-                        fields.Add("Patronymic", patronymic);
-                    if (customer.Phone != phone)
-                        fields.Add("Phone", phone);
-                    if (customer.EMail != email)
-                        fields.Add("EMail", email);
-                    if (customer.CustomerType != CustomerType.LegalEntity)
-                    {
-                        if (!((customer.BirthDay == null && birthday.IsNullOrEmpty()) || (customer.BirthDay != null && customer.BirthDay.Value.ToString("dd.MM.yyyy") == birthday)))
-                        {
-                            // Vadim_Dyl_381073705: Pyrus ждёт дату в формате yyyy-MM-dd.
-                            DateTime birthdayDate;
-                            var birthdayForPyrus = birthday;
-                            if (DateTime.TryParseExact(birthday, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out birthdayDate) ||
-                                DateTime.TryParse(birthday, CultureInfo.InvariantCulture, DateTimeStyles.None, out birthdayDate))
+                            foreach (var field in CustomerFields)
                             {
-                                birthdayForPyrus = birthdayDate.ToString("yyyy-MM-dd");
-                            }
-                            fields.Add("BirthDay", birthdayForPyrus);
-                        }
-                    }
-                    // Vadim_Dyl_381073705: реквизиты юрлица тоже попадают в fields — иначе заявка
-                    // только по реквизитам не создаётся и клиент не получает redirectTo.
-                    if (CustomerFields != null)
-                    {
-                        foreach (var field in CustomerFields)
-                        {
-                            var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
-                            if (old == null || (old.Value ?? "") == (field.Value ?? ""))
-                            {
-                                //body += string.Format("<p>{0}: {1}</p>", field.Name, field.Value);
-                            }
-                            else
-                            {
-                                //body += string.Format("<p>{0}: <strong>{1}</strong></p>", field.Name, field.Value);
-                                var fieldValue = field.Value;
-                                if (field.FieldType == CustomerFieldType.Date && fieldValue.IsNotEmpty())
-                                {
-                                    // Vadim_Dyl_381073705: Pyrus ждёт дату в формате yyyy-MM-dd.
-                                    DateTime fieldDate;
-                                    if (DateTime.TryParseExact(fieldValue, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out fieldDate) ||
-                                        DateTime.TryParse(fieldValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out fieldDate))
-                                    {
-                                        fieldValue = fieldDate.ToString("yyyy-MM-dd");
-                                    }
-                                }
-                                if (!fields.ContainsKey(field.Name))
-                                    fields.Add(field.Name, fieldValue);
+                                var old = oldFields.FirstOrDefault(x => x.Id == field.Id);
+                                body += string.Format("{0}: {1}\r\n", field.Name, old != null ? old.Value : "");
                             }
                         }
                     }
-                    //MailService.SendMailNow(guid,
-                    //    SettingsMail.EmailForRegReport + (customer.Manager != null ? ";" + customer.Manager.Email : ""),
-                    //    "Запрос на изменение личных данных", body, true);
-                    if (fields.Count > 0)
-                    {
-                        var pyrusResponse = await PyrusApiService.CreateFormTaskChangeCommonInfo(1534880, body, fields, customer.EMail);
-                        if (pyrusResponse.Key == null)
-                            errors.Add("Ошибка при отправке запроса");
-                        else
-                            task = pyrusResponse.Key?.Id;
-                    }
+
+                    var pyrusResponse = await PyrusApiService.CreateFormTaskChangeCommonInfo(1534880, body, fields, customer.EMail);
+                    if (pyrusResponse.Key == null)
+                        errors.Add("Ошибка при отправке запроса");
+                    else
+                        task = pyrusResponse.Key?.Id;
                 }
                 catch (Exception E)
                 {
@@ -668,7 +740,7 @@ namespace AdvantShop.Controllers
                 }
             }
 
-            return Json(new { result = errors.Count == 0, errors = errors, title = title, redirectTo = (task.HasValue ? $"feedback/success?task={task}" : null) });
+            return Json(new { result = errors.Count == 0, errors = errors, title = title, saved = saved, requested = task.HasValue, redirectTo = (task.HasValue ? $"feedback/success?task={task}" : null) });
         }
 
         [HttpPost, ValidateJsonAntiForgeryToken]
