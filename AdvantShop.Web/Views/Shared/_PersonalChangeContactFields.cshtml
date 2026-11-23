@@ -2,20 +2,25 @@
 <label class="adv-passport-modal__field">
     <span class="adv-passport-modal__label">Фамилия</span>
     <input type="text" class="input-small" data-ng-model="personalModal.change.lastname" maxlength="70" required>
+    <span class="adv-passport-modal__hint" data-ng-if="personalModal.isPrimaryPersonal('lastname')">Сохранится сразу, без согласования</span>
 </label>
 <label class="adv-passport-modal__field">
     <span class="adv-passport-modal__label">Имя</span>
     <input type="text" class="input-small" data-ng-model="personalModal.change.firstname" maxlength="70" required>
+    <span class="adv-passport-modal__hint" data-ng-if="personalModal.isPrimaryPersonal('firstname')">Сохранится сразу, без согласования</span>
 </label>
 <label class="adv-passport-modal__field">
     <span class="adv-passport-modal__label">Отчество</span>
-    <input type="text" class="input-small" data-ng-model="personalModal.change.patronymic" maxlength="70">
+    <input type="text" class="input-small" data-ng-model="personalModal.change.patronymic" maxlength="70"
+           data-ng-required="!personalModal.isPrimaryPersonal('patronymic')">
+    <span class="adv-passport-modal__hint" data-ng-if="personalModal.isPrimaryPersonal('patronymic')">Сохранится сразу, без согласования</span>
 </label>
 <label class="adv-passport-modal__field">
     <span class="adv-passport-modal__label">Телефон</span>
     <input type="text" class="input-small" data-ng-model="personalModal.change.phone"
            data-mask-control data-mask-control-preset="phone" data-adv-mask-empty-valid
            maxlength="70" placeholder="Номер телефона" required>
+    <span class="adv-passport-modal__hint" data-ng-if="personalModal.isPrimaryPersonal('phone')">Сохранится сразу, без согласования</span>
 </label>
 <label class="adv-passport-modal__field">
     <span class="adv-passport-modal__label">Email</span>
