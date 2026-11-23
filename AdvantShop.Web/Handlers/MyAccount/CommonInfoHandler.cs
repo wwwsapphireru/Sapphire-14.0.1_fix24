@@ -27,7 +27,7 @@ namespace AdvantShop.Handlers.MyAccount
                 ShowCustomerGroup = customer.CustomerGroup.CustomerGroupId != CustomerGroupService.DefaultCustomerGroup,
                 CustomerGroup = customer.CustomerGroup.GroupName,
                 CustomerFields = CustomerFieldService.GetCustomerFieldsWithValue(customer.Id)
-                    .Where(x => (x.ShowInRegistration || x.ShowInCheckout) &&
+                    .Where(x => (x.ShowInRegistration || x.ShowInCheckout || x.ShowInUserEditing) && // Vadim_Dyl_381073705: показывать поля, разрешённые к редактированию в ЛК
                                 (x.CustomerType == customer.CustomerType || x.CustomerType == CustomerType.All))
                     .ToList(),
                 BirthDay = customer.BirthDay,

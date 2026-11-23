@@ -15,3 +15,21 @@
 form.registration .form-field-input.relative input.input-small {
     padding-right: 36px;
 }
+
+// Ошибки паспортных полей в ЛК (серия/номер/дата выдачи/кем выдан).
+.custom-field input.adv-passport-invalid {
+    border-color: #e74c3c;
+
+    &:focus {
+        border-color: #e74c3c;
+    }
+}
+
+.adv-passport-error-text {
+    display: block;
+    margin-top: 4px;
+    color: #e74c3c;
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: left;
+}

@@ -80,6 +80,8 @@ import '../scripts/_partials/payment/payment.module.ts';
 import '../scripts/_partials/cart/cart.module.js';
 import advRegistrationModule from '../scripts/_common/advRegistration/advRegistration.module.js';
 appDependency.addItem(advRegistrationModule);
+import advMyAccountModule from '../scripts/_common/advMyAccount/advMyAccount.module.js';
+appDependency.addItem(advMyAccountModule);
 import '../scripts/_partials/buy-one-click/styles/buyOneClick.scss';
 
 import '../scripts/_common/rating/rating.module.js';

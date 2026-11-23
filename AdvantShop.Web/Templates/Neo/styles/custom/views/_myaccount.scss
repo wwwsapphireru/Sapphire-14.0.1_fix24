@@ -1,2 +1,76 @@
-// Vadim_Dyl_381073705: личный кабинет (паспорт, модалки, SMS).
-// Сюда будут добавляться стили этапа P1-1/P1-2.
+// Vadim_Dyl_381073705: личный кабинет — паспортная карточка и модалка смены паспорта.
+
+.adv-passport-card {
+    margin: 20px 0;
+    padding: 16px 18px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+
+    &__header {
+        margin-bottom: 12px;
+    }
+
+    &__title {
+        margin: 0;
+        color: #333;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    &__subtitle {
+        display: block;
+        margin-top: 4px;
+        color: #888;
+        font-size: 12px;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &__actions {
+        margin-top: 12px;
+    }
+}
+
+.adv-passport-field-value {
+    display: block;
+    padding: 9px 0;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: pre-line;
+
+    &.ng-hide {
+        display: none;
+    }
+}
+
+.adv-passport-modal {
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+
+        @media (max-width: 767px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &__field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        &--full {
+            grid-column: 1 / -1;
+        }
+    }
+
+    &__label {
+        color: #666;
+        font-size: 13px;
+    }
+}

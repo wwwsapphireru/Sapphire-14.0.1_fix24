@@ -1,8 +1,8 @@
 /* @ngInject */
-function MyAccountCtrl($http, $window, $location, toaster, $translate, $timeout, tabsService) {
-    let ctrl = this,
-        activeTabHeader,
-        processCompanyNameTimer;
+function MyAccountCtrl($http, $window, $location, toaster, $translate, $timeout, tabsService, $rootScope) {
+    const ctrl = this;
+    let activeTabHeader;
+    let processCompanyNameTimer;
 
     ctrl.orderHistoryMode = 'all';
     ctrl.commonInfo = {};
@@ -51,6 +51,7 @@ function MyAccountCtrl($http, $window, $location, toaster, $translate, $timeout,
             const data = response.data;
             if (data != null && data.result) {
                 toaster.pop('success', '', $translate.instant('Js.MyAccount.ChangesSaved'));
+                $rootScope.$broadcast('myaccount:userSaved'); // Vadim_Dyl_381073705
             } else if (data != null && data.errors != null) {
                 data.errors.forEach((err) => {
                     toaster.pop('error', '', err);
@@ -84,18 +85,18 @@ function MyAccountCtrl($http, $window, $location, toaster, $translate, $timeout,
             () => {
                 if (item != null && item.CompanyData) {
                     ctrl.user.CustomerFields.forEach((field) => {
-                        if (field.FieldAssignment == 1) field.Value = item.CompanyData.CompanyName;
-                        else if (field.FieldAssignment == 2) field.Value = item.CompanyData.LegalAddress;
-                        else if (field.FieldAssignment == 3) field.Value = item.CompanyData.INN;
-                        else if (field.FieldAssignment == 4) field.Value = item.CompanyData.KPP;
-                        else if (field.FieldAssignment == 5) field.Value = item.CompanyData.OGRN;
-                        else if (field.FieldAssignment == 6) field.Value = item.CompanyData.OKPO;
+                        if (field.FieldAssignment === 1) field.Value = item.CompanyData.CompanyName;
+                        else if (field.FieldAssignment === 2) field.Value = item.CompanyData.LegalAddress;
+                        else if (field.FieldAssignment === 3) field.Value = item.CompanyData.INN;
+                        else if (field.FieldAssignment === 4) field.Value = item.CompanyData.KPP;
+                        else if (field.FieldAssignment === 5) field.Value = item.CompanyData.OGRN;
+                        else if (field.FieldAssignment === 6) field.Value = item.CompanyData.OKPO;
                     });
                 } else if (item != null && item.BankData) {
                     ctrl.user.CustomerFields.forEach((field) => {
-                        if (field.FieldAssignment == 7) field.Value = item.BankData.BIK;
-                        else if (field.FieldAssignment == 8) field.Value = item.BankData.BankName;
-                        else if (field.FieldAssignment == 9) field.Value = item.BankData.CorrespondentAccount;
+                        if (field.FieldAssignment === 7) field.Value = item.BankData.BIK;
+                        else if (field.FieldAssignment === 8) field.Value = item.BankData.BankName;
+                        else if (field.FieldAssignment === 9) field.Value = item.BankData.CorrespondentAccount;
                     });
                 }
             },

@@ -64,6 +64,8 @@ import '../../../scripts/_partials/order-product/orderProduct.module.js';
 import '../scripts/_partials/cart/cart.module.js';
 import advRegistrationModule from '../../../scripts/_common/advRegistration/advRegistration.module.js';
 appDependency.addItem(advRegistrationModule);
+import advMyAccountModule from '../../../scripts/_common/advMyAccount/advMyAccount.module.js';
+appDependency.addItem(advMyAccountModule);
 import '../scripts/_partials/order/styles/orderHistory.scss';
 
 import "../../../features/sticky-buy-button"

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using AdvantShop.Configuration;
 using AdvantShop.Core;
 using AdvantShop.Core.Services.Localization;
@@ -39,6 +41,9 @@ namespace AdvantShop.Handlers.MyAccount
             if (!valid)
                 throw new BlException(LocalizationService.GetResource("MyAccount.SaveUserInfo.ErrorRequiredFields"));
             
+            // Vadim_Dyl_381073705: паспорт — если заполнять начали, нужны все 4 поля и корректная длина серии/номера
+            ValidatePassportFields();
+
             var customer = CustomerContext.CurrentCustomer;
 
             if (!string.IsNullOrWhiteSpace(_userInfo.Phone) && customer.Phone != _userInfo.Phone)
@@ -47,6 +52,37 @@ namespace AdvantShop.Handlers.MyAccount
 
                 if (standardPhone != null && CustomerService.IsPhoneExist(_userInfo.Phone, standardPhone))
                     throw new BlException("Пользователь с телефоном \"" + _userInfo.Phone + "\" уже существует");
+            }
+        }
+
+        private void ValidatePassportFields()
+        {
+            const int serialId = 13, numberId = 14;
+            var passportFieldIds = new[] { serialId, numberId, 15, 16 };
+            var fields = _userInfo.CustomerFields?
+                .Where(x => passportFieldIds.Contains(x.Id))
+                .ToList() ?? new List<CustomerFieldWithValue>();
+
+            if (fields.Count == 0)
+                return;
+
+            Func<CustomerFieldWithValue, bool> isFilled = x =>
+                !string.IsNullOrWhiteSpace(x.Value) && x.Value.Trim() != "0";
+
+            var started = fields.Any(isFilled);
+            if (!started)
+                return;
+
+            if (fields.Count != passportFieldIds.Length || fields.Any(x => !isFilled(x)))
+                throw new BlException("Заполните все паспортные данные");
+
+            foreach (var field in fields)
+            {
+                var expectedLength = field.Id == serialId ? 4 : field.Id == numberId ? 6 : 0;
+                if (expectedLength > 0 && !Regex.IsMatch(field.Value.Trim(), "^\\d{" + expectedLength + "}$"))
+                    throw new BlException(field.Id == serialId
+                        ? "Серия паспорта должна содержать 4 цифры"
+                        : "Номер паспорта должен содержать 6 цифр");
             }
         }
 
